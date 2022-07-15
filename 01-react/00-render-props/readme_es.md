@@ -39,6 +39,8 @@ npm install @types/react-transition-group --save-dev
 - Nos vamos a crear un componente que llamaremos _my-form.component_ en este
   componente vamos a añadir un formulario con datos del paciente:
 
+_./src/my-form.component.tsx_
+
 ```tsx
 import React from "react";
 
@@ -103,6 +105,16 @@ export const MyForm = () => {
 };
 ```
 
-```
+- Vamos a instanciar ese componente en APP
 
+_./src/app.tsx_
+
+```diff
+import React from "react";
++ import {MyForm} from "./my-form.component";
+
+export const App = () => {
+-  return <h1>Hello React !!</h1>;
++  return <MyForm />;
+};
 ```

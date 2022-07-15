@@ -1,5 +1,6 @@
 import React from "react";
+import { MyForm } from "./my-form.component";
 
 export const App = () => {
-  return <h1>Hello React !!</h1>;
+  return <MyForm />;
 };
