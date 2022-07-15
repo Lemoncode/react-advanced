@@ -118,3 +118,57 @@ export const App = () => {
 +  return <MyForm />;
 };
 ```
+
+Probamos que esto funciona:
+
+```bash
+npm start
+````
+
+Vamos a añadir una animación al campo "Temperatura" cuando la temperatura sea mayor a 38.9 el input hace un flip y lo ponemos con el fondo rojo, cuando
+cambia a menor volvemos a hacer un flip y ponemos el color de fondo a blanco.
+
+Podríamos hacerlo diretamente en el componente:
+
+Pero esto es un mal olor... el código cuesta de leer, y además a tus jefes
+les ha gustado la animación y quieren repetirla en más sitios.
+
+Una opción que nos podemos plantear es implementar un componente genérico que
+haga de wrapper y utilizar la propiedad children esto quedaría de la 
+siguiente manera:
+
+```tsx
+```
+
+```diff
+```
+
+No esta mal, pero qué pasa si queremos informar al componente hijo de 
+si se está ejecutando una animación... ouch, aquí se nos complica la cosa,
+podríamos plantear tirar por contexto pero esa solución es engorrosa.
+
+Vamos a implementar esto con render props.
+
+Primero vamos a reproducir el comportamiento actual con render props:
+
+```
+```
+
+Ahora vamos a capturar cuando se lanza y termina una animación:
+
+Y vamos a pasarselo al componente que pintamos en las render props 
+por parametro !!
+
+```tsx
+```
+En el componente recibimos el parametro y vamos a añadir un indicador
+que nos diga si la animación está en curso o no
+
+```diff
+````
+
+¡ Ya lo tenemos ! Y si quisieramos hacer lo mismo para la presíon arterial
+pues sólo tendrámos que añadir nuestro componente y configurar la render props:
+
+```diff
+```

@@ -22,40 +22,42 @@ export const MyForm = () => {
 
   return (
     <form>
-      <label>
-        Nombre:
-        <input
-          type="text"
-          name="name"
-          value={patient.name}
-          onChange={handleChange}
-        />
-      </label>
-      <label>
-        Temperatura:
-        <input
-          type="number"
-          name="temperature"
-          value={patient.temperature}
-          onChange={handleChange}
-        />
-      </label>
-      <label>
-        Presión arterial:
-        <input
-          type="number"
-          name="bloodPressureH"
-          value={patient.bloodPressureH}
-          onChange={handleChange}
-        />
-        /
-        <input
-          type="number"
-          name="bloodPressureL"
-          value={patient.bloodPressureL}
-          onChange={handleChange}
-        />
-      </label>
+      <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+        <label>
+          Nombre:
+          <input
+            type="text"
+            name="name"
+            value={patient.name}
+            onChange={handleChange}
+          />
+        </label>
+        <label>
+          Temperatura:
+          <input
+            type="number"
+            name="temperature"
+            value={patient.temperature}
+            onChange={handleChange}
+          />
+        </label>
+        <label>
+          Presión arterial:
+          <input
+            type="number"
+            name="bloodPressureH"
+            value={patient.bloodPressureH}
+            onChange={handleChange}
+          />
+          /
+          <input
+            type="number"
+            name="bloodPressureL"
+            value={patient.bloodPressureL}
+            onChange={handleChange}
+          />
+        </label>
+      </div>
     </form>
   );
 };
