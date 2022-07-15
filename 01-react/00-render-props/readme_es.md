@@ -1,11 +1,16 @@
-# 03 Webpack React
+# 00 Render Props
 
 ## Resumen
 
-Este ejemplo toma como punto de partida el ejemplo _02-webpack-boiler_.
+Vamos a añadir una animación un componente cuando se cumpla una condición, veremos que esto para un caso
+concreto está bien pero ¿Y si queremos reusar este comportamiento en otros componentes?
 
-Vamos a ir paso a paso añdiendo la configuración necesaria para que integrar
-**React** en nuestro proceso de build.
+Veremos como hacer esto aplicando composición y la propiedad children, ... nos daremos cuenta
+de una limitación.
+
+Después nos pondremos a implementar este comportamiento usando render props.
+
+Este ejemplo toma como punto de partida el ejemplo _02-webpack-boiler_.
 
 ## Paso a Paso
 
@@ -15,105 +20,89 @@ Vamos a ir paso a paso añdiendo la configuración necesaria para que integrar
 npm install
 ```
 
-- Vamos a instalar _react_ y _react-dom_
+- Para manejarnos con animaciones nos vamos a instalar:
+  - Animate.css: una librería para trabajar con animaciones CSS que es agnóstica de framework.
+  - React-transition-group: una librería para gestionar animaciones con React.
 
 ```bash
-npm install react react-dom --save
+npm install animate.css --save
 ```
-
-- Vamos a instalarnos los typing de _react_ y _react-dom_
 
 ```bash
-npm install @types/react @types/react-dom --save-dev
+npm install react-transition-group --save
 ```
 
-Así tenemos la librería de React y los bindings para que se integre con un navegador web.
-
-- En el index.html vamos a meter el _div_ que nos servirá como punto de entrada para instanciar
-  nuestra aplicación React.
-
-_./src/index.html_
-
-```diff
-  <body>
--    <h1 class="my-text">Hello World !</h1>
-+    <div id="root"></div>
-  </body>
+```bash
+npm install @types/react-transition-group --save-dev
 ```
 
-- Vamos a crear nuestro primero componente React.
-
-_./src/app.tsx_
+- Nos vamos a crear un componente que llamaremos _my-form.component_ en este
+  componente vamos a añadir un formulario con datos del paciente:
 
 ```tsx
 import React from "react";
 
-export const App = () => {
-  return <h1>Hello React !!</h1>;
+interface Patient {
+  name: string;
+  temperature: number;
+  bloodPressureH: number;
+  bloodPressureL: number;
+}
+
+export const MyForm = () => {
+  const [patient, setPatient] = React.useState<Patient>({
+    name: "",
+    temperature: 0,
+    bloodPressureH: 0,
+    bloodPressureL: 0,
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPatient({ ...patient, [name]: value });
+  };
+
+  return (
+    <form>
+      <label>
+        Nombre:
+        <input
+          type="text"
+          name="name"
+          value={patient.name}
+          onChange={handleChange}
+        />
+      </label>
+      <label>
+        Temperatura:
+        <input
+          type="number"
+          name="temperature"
+          value={patient.temperature}
+          onChange={handleChange}
+        />
+      </label>
+      <label>
+        Presión arterial:
+        <input
+          type="number"
+          name="bloodPressureH"
+          value={patient.bloodPressureH}
+          onChange={handleChange}
+        />
+        /
+        <input
+          type="number"
+          name="bloodPressureL"
+          value={patient.bloodPressureL}
+          onChange={handleChange}
+        />
+      </label>
+    </form>
+  );
 };
 ```
 
-- Es hora de instanciar ese compente principal, para poder integrarlo con el navegador
-  tenemos que hacer uso a _ReactDOM.render_
-
-_./src/index.tsx_
-
-```tsx
-import React from "react";
-import { createRoot } from "react-dom/client";
-import { App } from "./app";
-
-const container = document.getElementById("root");
-const root = createRoot(container);
-
-root.render(<App />);
 ```
 
-- Vamos por buen camino, pero si intentamos ejecutar esto no va fallar, ya que _babel_ no sabe
-  como transformar el _jsx_ (recordemos que esto era un azúcar, que en realidad era un XML) a
-  javaScript, para que babel sea capaz de entender esto tenemos que instalar el _preset_
-  _@babel/preset-react_
-
-Primero lo instalamos
-
-```bash
-npm install @babel/preset-react --save-dev
-```
-
-_.babelrc_
-
-```diff
-{
-  "presets": [
-      "@babel/preset-env",
-      "@babel/preset-typescript",
-+     "@babel/preset-react"
-  ]
-}
-```
-
-> Por cierto, el sufijo _rc_ es bastante habitual en linux, significa "runcom".
-> (Sistema CTSS 1962-63) Archivo de script que contiene instrucciones de inicio para un programa de aplicación.
-> En otras palabras, "rc" es algo que se quedó atrás en los años sesenta, y se ha utilizado con bastante frecuencia para los archivos de configuración en diferentes tipos de programas desde entonces, incluyendo Node, Babel y muchos, muchos otros.
-> Más información [en stackoverflow](https://stackoverflow.com/questions/36212256/what-are-rc-files-in-nodejs).
-
-> Otra curiosidad... qué es un _preset_ ... empecemos por lo que es un plugin de babel: las transformaciones de babel
-> se habilitan aplicando plugins, hay un montón de plugins y si tienes que ir añadiendo uno a uno se puede convertir en una pesadilla,
-> para hacer esto más fácil, babel ha agrupado conjuntos comunes de plugins en _presets_, por ejemplo @babel-preset-react
-> incluye los siguientes plugins:
-
-- @babel/plugin-syntax-jsx
-- @babel/plugin-transform-react-jsx
-- @babel/plugin-transform-react-display-name
-
-- Es hora de saltar al _webpack.config.js_
-
-- Nos podemos asegurar de que tenemos como extension valida _ts_ y _tsx_
-- También que en el loader aceptamos tanto _ts_ como _tsx_
-- Y en el app tenemos como punto de entrada _index.tsx_
-
-* Vamos a comprobar que hemos dejado todo funcionando:
-
-```bash
-npm start
 ```
