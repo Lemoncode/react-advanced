@@ -1,5 +1,6 @@
 import React from "react";
 import { CSSTransition } from "react-transition-group";
+import { AnimationWrapper } from "./animation-wrapper.component";
 
 interface Patient {
   name: string;
@@ -40,14 +41,7 @@ export const MyForm = () => {
           />
         </label>
 
-        <CSSTransition
-          in={feverFlag}
-          classNames={{
-            enter: "animate__animated animate__flipInX",
-            exit: "animate__animated animate__flipOutX",
-          }}
-          timeout={500}
-        >
+        <AnimationWrapper inProp={feverFlag}>
           <label>
             Temperatura:
             <input
@@ -58,7 +52,7 @@ export const MyForm = () => {
               style={{ background: feverFlag ? "lightCoral" : "white" }}
             />
           </label>
-        </CSSTransition>
+        </AnimationWrapper>
         <label>
           Presión arterial:
           <input

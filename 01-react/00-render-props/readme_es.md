@@ -207,12 +207,66 @@ Una opción que nos podemos plantear es implementar un componente genérico que
 haga de wrapper y utilizar la propiedad children esto quedaría de la
 siguiente manera:
 
-```tsx
+_./src/animation-wrapper.component.tsx_
 
+```tsx
+import React from "react";
+import { CSSTransition } from "react-transition-group";
+
+interface Props {
+  inProp: boolean;
+  children: React.ReactNode;
+}
+
+export const AnimationWrapper: React.FC<Props> = (props) => {
+  const { inProp, children } = props;
+
+  return (
+    <CSSTransition
+      in={inProp}
+      classNames={{
+        enter: "animate__animated animate__flipInX",
+        exit: "animate__animated animate__flipOutX",
+      }}
+      timeout={500}
+    >
+      {children}
+    </CSSTransition>
+  );
+};
 ```
 
-```diff
+Y vamos a actualizar nuestro código:
 
+_./src/my-form.component.tsx_
+
+```diff
+import React from "react";
+- import { CSSTransition } from "react-transition-group";
++ import { AnimationWrapper } from "./animation-wrapper.component";
+// (...)
+
+-        <CSSTransition
+-          in={feverFlag}
+-          classNames={{
+-            enter: "animate__animated animate__flipInX",
+-            exit: "animate__animated animate__flipOutX",
+-          }}
+-          timeout={500}
+-        >
++        <AnimationWrapper inProp={feverFlag}>
+          <label>
+            Temperatura:
+            <input
+              type="number"
+              name="temperature"
+              value={patient.temperature}
+              onChange={handleChange}
+              style={{ background: feverFlag ? "lightCoral" : "white" }}
+            />
+          </label>
+-        </CSSTransition>
++        </AnimationWrapper>
 ```
 
 No esta mal, pero qué pasa si queremos informar al componente hijo de
