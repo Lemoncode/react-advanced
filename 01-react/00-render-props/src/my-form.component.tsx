@@ -1,4 +1,5 @@
 import React from "react";
+import { CSSTransition } from "react-transition-group";
 
 interface Patient {
   name: string;
@@ -14,6 +15,12 @@ export const MyForm = () => {
     bloodPressureH: 0,
     bloodPressureL: 0,
   });
+
+  const [feverFlag, setFeverFlag] = React.useState(false);
+
+  React.useEffect(() => {
+    setFeverFlag(patient.temperature > 38.9);
+  }, [patient.temperature]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -32,15 +39,26 @@ export const MyForm = () => {
             onChange={handleChange}
           />
         </label>
-        <label>
-          Temperatura:
-          <input
-            type="number"
-            name="temperature"
-            value={patient.temperature}
-            onChange={handleChange}
-          />
-        </label>
+
+        <CSSTransition
+          in={feverFlag}
+          classNames={{
+            enter: "animate__animated animate__flipInX",
+            exit: "animate__animated animate__flipOutX",
+          }}
+          timeout={500}
+        >
+          <label>
+            Temperatura:
+            <input
+              type="number"
+              name="temperature"
+              value={patient.temperature}
+              onChange={handleChange}
+              style={{ background: feverFlag ? "lightCoral" : "white" }}
+            />
+          </label>
+        </CSSTransition>
         <label>
           Presión arterial:
           <input
