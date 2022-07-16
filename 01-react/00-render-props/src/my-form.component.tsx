@@ -41,18 +41,22 @@ export const MyForm = () => {
           />
         </label>
 
-        <AnimationWrapper inProp={feverFlag}>
-          <label>
-            Temperatura:
-            <input
-              type="number"
-              name="temperature"
-              value={patient.temperature}
-              onChange={handleChange}
-              style={{ background: feverFlag ? "lightCoral" : "white" }}
-            />
-          </label>
-        </AnimationWrapper>
+        <AnimationWrapper
+          inProp={feverFlag}
+          render={(animationInProgress) => (
+            <label>
+              Temperatura:
+              <input
+                type="number"
+                name="temperature"
+                value={patient.temperature}
+                onChange={handleChange}
+                style={{ background: feverFlag ? "lightCoral" : "white" }}
+              />
+              {animationInProgress ? "Animation in progress" : "quiet"}
+            </label>
+          )}
+        />
         <label>
           Presión arterial:
           <input

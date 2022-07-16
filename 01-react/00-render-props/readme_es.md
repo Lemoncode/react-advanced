@@ -270,36 +270,111 @@ import React from "react";
 ```
 
 No esta mal, pero qué pasa si queremos informar al componente hijo de
-si se está ejecutando una animación... ouch, aquí se nos complica la cosa,
-podríamos plantear tirar por contexto pero esa solución es engorrosa.
+si se está ejecutando una animación, a nivel de wrapper
+podemos sacar estos datos de la siguiente manera:
+
+_./src/animation-wrapper.component.tsx_
+
+```diff
+export const AnimationWrapper : React.FC<Props> = (props) => {
+  const { inProp, children } = props;
++  const [animationInProgress, setAnimationInProgress] = React.useState(false);
+
+  return (
+      <CSSTransition
+        in={inProp}
+        classNames={{
+          enter: "animate__animated animate__flipInX",
+          exit: "animate__animated animate__flipOutX",
+        }}
+        timeout={500}
++       onEnter={() => setAnimationInProgress(true)}
++       onEntered={() => setAnimationInProgress(false)}
++       onExit={() => setAnimationInProgress(true)}
++       onExited={() => setAnimationInProgress(false)}
+      >
+        {children}
+      </CSSTransition>
+  )
+};
+```
+
+Pero... ouch, aquí se nos complica la cosa,podríamos plantear tirar por contexto pero esa solución es engorrosa, o usar _React.cloneElement_ pero
+eso es casí peor todavía.
 
 Vamos a implementar esto con render props.
 
-Primero vamos a reproducir el comportamiento actual con render props:
+Primero vamos a reproducir el comportamiento actual con render props, fijate:
 
-```
+- Que ahora en vez de children, vamos a crear una propiedad de tipo
+  función que devuelve un componente.
+- Fíjate que en esa función vamos a pasarle por parámetro el flag
+  en el que le indicamos si hay una animación en curso (ya veremos
+  como consumir esto)
 
-```
-
-Ahora vamos a capturar cuando se lanza y termina una animación:
-
-Y vamos a pasarselo al componente que pintamos en las render props
-por parametro !!
-
-```tsx
-
-```
-
-En el componente recibimos el parametro y vamos a añadir un indicador
-que nos diga si la animación está en curso o no
+_./src/animation-wrapper.component.tsx_
 
 ```diff
+import React from "react";
+import { CSSTransition } from "react-transition-group";
 
+interface Props {
+  inProp: boolean;
+-  children: React.ReactNode;
++  render: (animationInProgress: boolean) => JSX.Element;
+}
+
+export const AnimationWrapper: React.FC<Props> = (props) => {
+-  const { inProp, children } = props;
++  const { inProp, render } = props;
+
+  const [animationInProgress, setAnimationInProgress] = React.useState(false);
+
+  return (
+    <CSSTransition
+      in={inProp}
+      classNames={{
+        enter: "animate__animated animate__flipInX",
+        exit: "animate__animated animate__flipOutX",
+      }}
+      timeout={500}
+      onEnter={() => setAnimationInProgress(true)}
+      onEntered={() => setAnimationInProgress(false)}
+      onExit={() => setAnimationInProgress(true)}
+      onExited={() => setAnimationInProgress(false)}
+    >
+-      {children}
++      {render(animationInProgress)}
+    </CSSTransition>
+  );
+};
+```
+
+Vamos ahora a adaptar nuestro componente que consume esta render prop,
+y darle uso al parametro de _animationInProgress_:
+
+_./src/my-form.component.tsx_
+
+```diff
+    </label>
+
+-    <AnimationWrapper inProp={feverFlag}>
++    <AnimationWrapper inProp={feverFlag} render={(animationInProgress) => (
+      <label>
+        Temperatura:
+        <input
+          type="number"
+          name="temperature"
+          value={patient.temperature}
+          onChange={handleChange}
+          style={{ background: feverFlag ? "lightCoral" : "white" }}
+        />
++       {animationInProgress ? "Animation in progress" : "quiet"}
+      </label>
++    )}/>
+-    </AnimationWrapper>
+    <label>
 ```
 
 ¡ Ya lo tenemos ! Y si quisieramos hacer lo mismo para la presíon arterial
 pues sólo tendrámos que añadir nuestro componente y configurar la render props:
-
-```diff
-
-```
