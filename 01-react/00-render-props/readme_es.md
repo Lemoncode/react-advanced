@@ -383,6 +383,26 @@ el mismo comportamiento para el segundo campo de tensión arterial, si está
 por encima de 14 debería de saltar la animación (también podemos hacer que se
 ponga con fondo en rojo)
 
+# Render Props en el mundo Real, Formik o Final Form
+
+En este ejemplo puedes ver un caso de uso real:
+
+https://github.com/Lemoncode/master-frontend-lemoncode/blob/master/04-frameworks/01-react/05-architecture/06-form-validation/src/pods/login/login.component.tsx
+
+# Challenge
+
+En este post nos explican como hacer una render prop para capturar el movimiento
+del ratón:
+
+https://es.reactjs.org/docs/render-props.html
+
+En este ejemplo como hacer un magnifier de imagenes a pelo:
+
+https://www.w3schools.com/howto/howto_js_image_magnifier_glass.asp
+
+¿Te animas a hacer una render prop que de la posición del ratón y 
+combinarla con el magnifier?
+
 # ¿Te apuntas a nuestro máster?
 
 Si te ha gustado este ejemplo y tienes ganas de aprender Front End
