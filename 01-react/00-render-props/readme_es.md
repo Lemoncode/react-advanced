@@ -88,15 +88,15 @@ export const MyForm = () => {
         Presión arterial:
         <input
           type="number"
-          name="bloodPressureH"
-          value={patient.bloodPressureH}
+          name="bloodPressureL"
+          value={patient.bloodPressureL}
           onChange={handleChange}
         />
         /
         <input
           type="number"
-          name="bloodPressureL"
-          value={patient.bloodPressureL}
+          name="bloodPressureH"
+          value={patient.bloodPressureH}
           onChange={handleChange}
         />
       </label>
