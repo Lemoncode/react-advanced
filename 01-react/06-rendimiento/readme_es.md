@@ -4,4 +4,5 @@
 - Contexto y Rendimiento.
 - Recoil / Jotai.
 - Virtualizando contenido
+- React swr
 - Cargas de módulos bajo demanda
