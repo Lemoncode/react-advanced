@@ -165,5 +165,166 @@ export const AppLayout: React.FC<Props> = ({ children }) => {
 
 - Ahora vamos a llevar la lista de usuarios de github a un contexto, ¿Por qué? Porque queremos
   mejorar la usabilidad de nuestra página:
+
   - Si navegamos a otra página, cuando volvemos queremos mostrar datos.
   - Mientras en background la consulta se vuelve a ejecutar.
+
+- Para ver que problema resolvemos vamos a meterle un retraso de 3 segundos a la api que nos pide
+  datos de github
+
+_./src/pods/list/list.api.ts_
+
+```diff
+import { MemberEntityApi } from "./list.api-model";
+import { MemberEntity } from "./list.vm";
+
+- export const getMemberCollection = (): Promise<MemberEntityApi[]> =>
+-  fetch(`https://api.github.com/orgs/lemoncode/members`).then((response) =>
+-    response.json()
+-  );
+
++ export const getMemberCollection = (): Promise<MemberEntityApi[]> => {
++  const promise = new Promise<MemberEntityApi[]>((resolve, reject) => {
++    setTimeout(() => {
++      fetch(`https://api.github.com/orgs/lemoncode/members`).then((response) =>
++        resolve(response.json()));
++    }, 3000);
++  });
++
++  return promise;
++ }
+```
+
+- En este caso podríamos plantear si poner el context y provider dentro de correo o dentro del pod en
+  el que se usa, en este caso lo vamos a poner dentro del pod ya que sólo lo usaremos allí, si más
+  adelante lo usáramos en más de una ventana podríamos plantear moverlo a creo (a nivel de imports
+  es más correcto tenerlo allí, a nivel de código es más correcto tenerlo en el pod).
+
+_./src/pods/list/list.context.ts_
+
+```ts
+import React from "react";
+import { MemberEntity } from "./list.vm";
+
+export interface MemberListContextVm {
+  memberList: MemberEntity[];
+  loadMemberList: () => void;
+}
+
+export const MemberListContext = React.createContext<MemberListContextVm>({
+  memberList: [],
+  loadMemberList: () => {
+    console.log(
+      "If you are reading this, likely you forgot to wrap your component with the MemberListContext.Provider"
+    );
+  },
+});
+```
+
+_./src/pods/list/list.provider.ts_
+
+```ts
+import React from "react";
+import { MemberEntity } from "./list.vm";
+import { MemberListContext, MemberListContextVm } from "./list.context";
+import { getMemberCollection } from "./list.repository";
+
+interface Props {
+  children: React.ReactNode;
+}
+
+export const MemberListProvider: React.FC<Props> = ({ children }) => {
+  const [memberList, setMemberList] = React.useState<MemberEntity[]>([]);
+
+  const loadMemberList = () =>
+    getMemberCollection().then((memberCollection) =>
+      setMemberList(memberCollection)
+    );
+
+  return (
+    <MemberListContext.Provider
+      value={{
+        memberList,
+        loadMemberList,
+      }}
+    >
+      {children}
+    </MemberListContext.Provider>
+  );
+};
+
+export const useMemberListContext = () => {
+  const context = React.useContext<MemberListContextVm>(MemberListContext);
+  if (!context) {
+    throw new Error("MemberListContext must be used within a ProfileProvider");
+  }
+  return context;
+};
+```
+
+Vamos a exponer el provider en el _index_
+
+```diff
+export * from "./list.container";
++ export * from "./list.provider";
+```
+
+Vamos a definirlo por encima del router:
+
+_./src/app.tsx_
+
+```diff
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { RouterComponent } from "@/core";
+import { ProfileProvider } from "@/core/providers";
++ import { MemberListProvider } from "@/pods/list";
+
+export const App = () => {
+  return (
+    <ProfileProvider>
++     <MemberListProvider>
+        <RouterComponent />
++      </MemberListProvider>
+    </ProfileProvider>
+  );
+};
+```
+
+Y ahora darle uso en _list.container.tsx_:
+
+_./src/pods/list/list.container.tsx_
+
+```diff
+import React from "react";
+import { ListComponent } from "./list.component";
+import { MemberEntity } from "./list.vm";
+import { getMemberCollection } from "./list.repository";
+import { mapMemberCollectionFromApiToVm } from "./list.mapper";
+import { MemberEntityApi } from "./list.api-model";
++ import { useMemberListContext } from "./list.provider";
+
+export const ListContainer: React.FC = () => {
+-  const [members, setMembers] = React.useState<MemberEntity[]>([]);
++  const {memberList, loadMemberList} = useMemberListContext();
+
+
+  React.useEffect(() => {
+-    getMemberCollection().then((memberCollection) =>
+-      setMembers(memberCollection)
+-    );
++    loadMemberList();
+  }, []);
+
+-  return <ListComponent members={members} />;
++  return <ListComponent members={memberList} />;
+
+};
+
+```
+
+Si ahora ejecutamos podemos ver que la segunda vez que navegamos a la página, mostramos la lista
+que se cargo anteriormente mientras se carga la nueva, ofreciendo una mejor experiencia de usuario.
+
+Nos puede surgir una duda aquí y es ¿Y que hacemos con la primera carga? Sería buena idea mostrar
+un indicador de que la página está cargando

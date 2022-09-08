@@ -14,7 +14,3 @@ export const ProfileContext = React.createContext<ProfileContextVm>({
       "** If you area reading this, likely you have forgotten to add the provider on top of your app"
     ),
 });
-
-interface Props {
-  children: React.ReactNode;
-}
