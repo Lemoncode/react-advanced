@@ -327,4 +327,169 @@ Si ahora ejecutamos podemos ver que la segunda vez que navegamos a la página, m
 que se cargo anteriormente mientras se carga la nueva, ofreciendo una mejor experiencia de usuario.
 
 Nos puede surgir una duda aquí y es ¿Y que hacemos con la primera carga? Sería buena idea mostrar
-un indicador de que la página está cargando
+un indicador de que la página está cargando.
+
+Ahora seguro que se nos ha quedado una espinita clavada y eso ¿Como reporto al usuario de que
+estoy cargando datos y tiene que esperar un poco? Aquí podemos ver de jugar con flags, con
+react suspense... pero si podemos lanzar las consultas desde cualquier parte de la aplicación
+es algo que se nos puede terminar haciendo cuesta arriba, una microlibrería que nos puede ser
+de ayuda es React Promise Tracker:
+
+Vamos a instalar la librería:
+
+```bash
+npm install react-promise-tracker --save
+```
+
+Vamos a crear un componente que nos muestre el indicador de carga:
+
+_./src/common/components/loading-indicator.tsx_
+
+```tsx
+import React from "react";
+
+export const LoadingIndicator = (props) => {
+  return <h1>Hey some async call in progress ! </h1>;
+};
+```
+
+Vamos a mostrarlo / ocultarlo si hay una llamada asíncrona bloqueante en marcha:
+
+_./src/common/components/loading-indicator.tsx_
+
+```diff
+import React from "react";
++ import { usePromiseTracker } from "react-promise-tracker";
+
+export const LoadingIndicator = (props) => {
++  const {promiseInProgress} = usePromiseTracker();
+
+-  return <h1>Hey some async call in progress ! </h1>;
++   promiseInProgress &&
++    <h1>Hey some async call in progress ! </h1>
+};
+```
+
+> Una opción más mantenible sería separar esto del loading indicator para poder aprovecharlo en otros proyectos.
+
+Añadimos un barrel bajo components
+
+_./src/common/components/index.ts_
+
+```ts
+export * from "./loading-indicator";
+```
+
+Vamos a añadir el componente en el _app.tsx_:
+
+_./src/app.tsx_
+
+```diff
+import React from "react";
+import { RouterComponent } from "@/core";
+import { ProfileProvider } from "@/core/providers";
+import { MemberListProvider } from "@/pods/list";
++ import { LoadingIndicator } from "@/common/components";
+
+export const App = () => {
+  return (
+    <ProfileProvider>
+      <MemberListProvider>
+        <RouterComponent />
++       <LoadingIndicator/>
+      </MemberListProvider>
+    </ProfileProvider>
+  );
+};
+```
+
+Ahora vamos al contexto donde lanzamos la llamada asíncrona, en este caso sólo queremos mostrar
+el spinner si es la primera vez que hacemos la petición.
+
+_./src/pods/list/list.provider.tsx_
+
+```diff
+import React from "react";
++ import { trackPromise } from 'react-promise-tracker';
+import { MemberEntity } from "./list.vm";
+import { MemberListContext, MemberListContextVm } from "./list.context";
+import { getMemberCollection } from "./list.repository";
+
+interface Props {
+  children: React.ReactNode;
+}
+
+export const MemberListProvider: React.FC<Props> = ({ children }) => {
+  const [memberList, setMemberList] = React.useState<MemberEntity[]>([]);
+
+  const loadMemberList = () =>
+-    getMemberCollection().then((memberCollection) =>
++    const promise = getMemberCollection().then((memberCollection) => {
+
+      setMemberList(memberCollection)
+    );
++   if(memberList.length === 0) {
++     trackPromise(promise);
++   }
++ }
+```
+
+Vamos a darle un poco de estilo al componente de indicador de carga en progreso.
+
+Para ello nos vamos a instalar _react-loader-spinner_:
+
+```bash
+npm install react-loader-spinner --save
+```
+
+Vamos a importar ese _loader_ en nuestro componente de _loading-indicator.tsx_:
+
+_./src/common/components/loading-indicator.tsx_
+
+```diff
+import React from "react";
+import { usePromiseTracker } from "react-promise-tracker";
++ import Loader from "react-loader-spinner";
+
+export const LoadingIndicator = (props) => {
+```
+
+Y vamos a darle uso (añadimos un estilado temporal en un proyecto real, extraeríamos a un fichero css el estilado):
+
+_./src/common/components/loading-indicator.tsx_
+
+```diff
+export const LoadingIndicator = (props) => {
+  const { promiseInProgress } = usePromiseTracker();
+
+  return promiseInProgress &&
+-    <h1>Hey some async call in progress ! </h1>;
++    <div
++      style={{
++        width: "100%",
++        height: "100",
++        display: "flex",
++        justifyContent: "center",
++        alignItems: "center"
++      }}
++    >
++      <ThreeDots color="#2BAD60" height="100" width="100" />
++    </div>
+};
+```
+
+> En una app real miraríamos que esta capa estuviera siempre por encima etc...
+
+- Vamos a probarlo
+
+```bash
+npm start
+```
+
+React Promise Tracker se encarga de llevar un contador interno con todas las promesas que se hayan lanzado.
+
+Extras que tienes con esta librería:
+
+- Puedes definir el tracker por areas de tu UI.
+- Puedes añadir un delay para que se muestra el indicador de carga, así en conexiones rápidas
+  evitas parpadeos innecesarios.

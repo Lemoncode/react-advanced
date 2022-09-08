@@ -1,4 +1,5 @@
 import React from "react";
+import { trackPromise } from "react-promise-tracker";
 import { MemberEntity } from "./list.vm";
 import { MemberListContext, MemberListContextVm } from "./list.context";
 import { getMemberCollection } from "./list.repository";
@@ -10,10 +11,15 @@ interface Props {
 export const MemberListProvider: React.FC<Props> = ({ children }) => {
   const [memberList, setMemberList] = React.useState<MemberEntity[]>([]);
 
-  const loadMemberList = () =>
-    getMemberCollection().then((memberCollection) =>
+  const loadMemberList = () => {
+    const promise = getMemberCollection().then((memberCollection) =>
       setMemberList(memberCollection)
     );
+
+    if (memberList.length === 0) {
+      trackPromise(promise);
+    }
+  };
 
   return (
     <MemberListContext.Provider
