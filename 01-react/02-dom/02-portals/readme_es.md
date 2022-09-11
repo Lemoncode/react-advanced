@@ -407,7 +407,96 @@ no tenemos varios handlers escuchando el evento del teclado_
 ¿Y si queremos añadir una animación para que el modal se muestre de
 una forma más suave?
 
+En nuestro caso queremos destruir el modal cuando se cierre, para
+ellos vamos a tirar por el render null (lo que tenemos ahora), esto
+hace que tengamos que usar una librería de ayuda para disparar las
+transiciones.
 
+```bash
+npm install react-transition-group
+```
+
+Y sus typings:
+
+```bash
+npm install @types/react-transition-group -D
+```
+
+- Vamos a añadir el import a nuestro modal:
+
+_./src/app.tsx_
+
+```diff
+import React from "react";
+import { ReactPortalComponent } from "./common/components/react-portal.component";
+import { Modal } from "./common/components/modal";
++ import { CSSTransition } from "react-transition-group";
+```
+
+Y le indicamos que transición queremos aplicar, sobre
+que node, y que en cuanto termine la misma desmonte
+el componente:
+
+```diff
+export const App = () => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const handleOpen = () => setIsOpen(true);
+  const handleClose = () => setIsOpen(false);
++ const nodeRef = React.useRef();
+
+  return (
+    <div>
+      <h1> Hello React !!</h1>
+      <button onClick={handleOpen}>Click to Open Modal</button>
+      <ReactPortalComponent wrapperId="lastnode">
++        <CSSTransition
++          in={isOpen}
++          timeout={{ entry: 0, exit: 300 }}
++          unmountOnExit
++          classNames="modal"
++          nodeRef={nodeRef}
++        >
++         <div className="modal" ref={nodeRef}>
+          <Modal handleClose={handleClose} isOpen={isOpen}>
+            This is Modal Content!
+          </Modal>
++         </div>
++        </CSSTransition>
+      </ReactPortalComponent>
+    </div>
+  );
+};
+```
+
+Y para la clase modal le añadimos algunos estados de transición en css:
+
+_./src/common/components/modal/modal.css_
+
+```diff
+.modal {
+  position: fixed;
+  inset: 0; /* inset sets all 4 values (top right bottom left) much like how we set padding, margin etc., */
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+  z-index: 999;
+  padding: 40px 20px 20px;
+}
+
++ .modal-enter-done {
++  opacity: 1;
++  pointer-events: auto;
++  transform: scale(1);
++ }
++ .modal-exit {
++  opacity: 0;
++  transform: scale(0.4);
++ }
+```
 
 # Ejercicio
 
