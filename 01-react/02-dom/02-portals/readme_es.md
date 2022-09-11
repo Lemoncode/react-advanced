@@ -215,3 +215,169 @@ _./src/index.html_
 -    <div id="lastnode"></div>
   </body>
 ```
+
+- Bueno, hasta aquí hemos hecho una alarde que "bonito es esto pero para que sirve", vamos a implementar
+  un diálogo modal.
+
+Para ello creamos un nuevo componentes, va a aceptar tres propiedades:
+
+- isOpen: flag para saber si está abierto o cerrado el modal.
+- handleClose: función que se ejecuta cuando se cierra el modal.
+- children: contenido del modal.
+
+Vamos a definir algo de estilado:
+
+- Para clase model no pondremos z-index (más adelante se lo añadiremos ya que nos podemos
+  encontrar algún control que si lo use y nos juegue una mala pasada)
+
+_./src/common/components/modal/modal.css_
+
+```css
+.modal {
+  position: fixed;
+  inset: 0; /* inset sets all 4 values (top right bottom left) much like how we set padding, margin etc., */
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+  padding: 40px 20px 20px;
+}
+
+.modal-content {
+  width: 70%;
+  height: 70%;
+  background-color: #282c34;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+```
+
+_./src/common/components/modal/modal.tsx_
+
+```tsx
+import "./modal.css";
+import React from "react";
+
+interface Props {
+  children: React.ReactNode;
+  isOpen: boolean;
+  handleClose: () => void;
+}
+
+export const Modal: React.FC<Props> = (props) => {
+  const { children, isOpen, handleClose } = props;
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal">
+      <button className="close-btn" onClick={handleClose}>
+        Close
+      </button>
+      <div className="modal-content">{children}</div>
+    </div>
+  );
+};
+```
+
+Vamos a crear un barrel:
+
+_./src/common/components/modal/index.ts_
+
+```ts
+export * from "./modal";
+```
+
+Vamos a darle uso a este modal:
+
+Primero vamos a importarlo:
+
+_./src/app.tsx_
+
+```diff
+import React from "react";
+import { ReactPortalComponent } from "./common/components/react-portal.component";
++ import {Modal} from './common/components/modal';
+```
+
+Ahora vamos a añadir el flag de _isOpen_ y la función de _handleClose_ en nuestro app:
+
+_./src/app.tsx_
+
+```diff
+export const App = () => {
++  const [isOpen, setIsOpen] = React.useState(false);
++  const handleOpen = () => setIsOpen(true);
++  const handleClose = () => setIsOpen(false);
+
+  return (
+    <div>
+```
+
+Y ya vamos a darle uso a nuestro modal, fíjate que lo ponemos dentro del portal para que se
+renderice en el último nodo del DOM.
+
+_./src/app.tsx_
+
+```diff
+  return (
+    <div>
+      <h1> Hello React !!</h1>
+-      <ReactPortalComponent wrapperId="lastnode">
+-        <h3>I want to be at the end</h3>
+-      </ReactPortalComponent>
+-      <h2> Sub title</h2>
++        <button onClick={handleOpen}>
++          Click to Open Modal
++        </button>
++        <ReactPortalComponent wrapperId="lastnode">
++          <Modal handleClose={handleClose} isOpen={isOpen}>
++            This is Modal Content!
++          </Modal>
++        </ReactPortalComponent>
+    </div>
+  );
+```
+
+Lo probamos:
+
+```bash
+npm start
+```
+
+Y bien,vamos ahora a por el martillo fino.
+
+Lo primero, SI le vamos a añadir un z-index elevado para evitar que algún componente de terceros que
+pueda usar este atributo muestre su componente por encima:
+
+Después, ¿Qué pasa si queremos cerrar el modal con el teclado? Es muy normal que un usuario quiera
+que esto se cierre pulsando ESC:
+
+_./src/common/components/modal/modal.tsx_
+
+```diff
+
+```
+
+Y para finalizar pongamos un desafío... que pasaría si quisieramos mostrar un modal dentro de otro modal?
+(ojo esto lo se puede considerar mala práctica, pero si te lo encuentras en un proyecto puede ser divertido
+de resolver):
+
+Si lo intentamos ahora que pasaría:
+
+¿Qué nos haría falta?
+
+- Una solución podría pasar por tener un generador de Ids e ir incrementando el id del wrapper
+  cada vez que se crea.
+
+¿Lo intentas?
+
+# Referencias
+
+Este ejemplo se base en el material expuesto en este post https://blog.logrocket.com/build-modal-with-react-portals/
