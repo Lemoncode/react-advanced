@@ -356,14 +356,60 @@ Y bien,vamos ahora a por el martillo fino.
 Lo primero, SI le vamos a añadir un z-index elevado para evitar que algún componente de terceros que
 pueda usar este atributo muestre su componente por encima:
 
-Después, ¿Qué pasa si queremos cerrar el modal con el teclado? Es muy normal que un usuario quiera
-que esto se cierre pulsando ESC:
+_./src/common/components/modal/modal.css_
+
+```css
+.modal {
+  position: fixed;
+  inset: 0; /* inset sets all 4 values (top right bottom left) much like how we set padding, margin etc., */
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+  z-index: 999;
+  padding: 40px 20px 20px;
+}
+```
+
+Después, ¿Qué pasa si queremos cerrar el modal con el teclado? Es muy normal que un usuario quiera que esto se cierre pulsando ESC:
+
+En este caso vamos a buscar una solución en el propio componente
+modal, en cuanto se cargue el componente y se asigne el handler
+de cierre coloco un event listener para escuchar el evento del teclado,
+y lo desmonto en cuanto se desmonte el componente:
 
 _./src/common/components/modal/modal.tsx_
 
 ```diff
+export const Modal: React.FC<Props> = (props) => {
+  const { children, isOpen, handleClose } = props;
 
++  useEffect(() => {
++    const closeOnEscapeKey = e => e.key === "Escape" ? handleClose() : null;
++    document.body.addEventListener("keydown", closeOnEscapeKey);
++    return () => {
++      document.body.removeEventListener("keydown", closeOnEscapeKey);
++    };
++  }, [handleClose])
+
+  if (!isOpen) return null;
+
+  return (
 ```
+
+_Esta solución puede estar bien si tengo un sólo modal, pero si
+tuviera más de uno podría darme algún quebradero de cabeza, ya que
+no tenemos varios handlers escuchando el evento del teclado_
+
+¿Y si queremos añadir una animación para que el modal se muestre de
+una forma más suave?
+
+
+
+# Ejercicio
 
 Y para finalizar pongamos un desafío... que pasaría si quisieramos mostrar un modal dentro de otro modal?
 (ojo esto lo se puede considerar mala práctica, pero si te lo encuentras en un proyecto puede ser divertido
