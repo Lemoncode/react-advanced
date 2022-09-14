@@ -500,7 +500,7 @@ _./src/common/components/modal/modal.css_
 
 # Ejercicio
 
-Y para finalizar pongamos un desafío... que pasaría si quisieramos mostrar un modal dentro de otro modal?
+Y para finalizar pongamos un desafío... que pasaría si quisiéramos mostrar un modal dentro de otro modal?
 (ojo esto lo se puede considerar mala práctica, pero si te lo encuentras en un proyecto puede ser divertido
 de resolver):
 
@@ -508,10 +508,105 @@ Si lo intentamos ahora que pasaría:
 
 ¿Qué nos haría falta?
 
-- Una solución podría pasar por tener un generador de Ids e ir incrementando el id del wrapper
-  cada vez que se crea.
+- Una solución podría pasar por tener un generador de Ids e ir incrementando el id del wrapper cada vez que se crea.
 
 ¿Lo intentas?
+
+Una posible solución (ojo no óptima, aquí se ve lo importante del martillo
+fino y o complicado que es sacar un componente reusable)
+
+En el portal component añadimos un generador de ids unico
+
+_./src/common/components/react-portal.component.tsx_
+
+```tsx
+let currentID = 0;
+
+function addUniqueNumberSuffixToId(wrapperID: string): string {
+  currentID += 1;
+
+  return `${wrapperID}_${currentID}`;
+}
+```
+
+Actualizamos el createWrapper
+
+_./src/common/components/react-portal.component.tsx_
+
+```diff
+export const ReactPortalComponent: React.FC<Props> = (props) => {
+  const [wrapperElement, setWrapperElement] = React.useState(null);
+  const { children, wrapperId } = props;
++  const [wrapperIdWithSuffix, setWrapperIdWithSuffix] = React.useState(null);
+
+  React.useLayoutEffect(() => {
++    let wrapperIdWithSuffix = addUniqueNumberSuffixToId(wrapperId);
+-    let element = document.getElementById(wrapperId);
++    let element = document.getElementById(wrapperIdWithSuffix);
+    let createdOnTheFly = false;
+
+    if (!element) {
+-      element = createWrapperAndAppendToBody(wrapperIdWithSuffix);
++      element = createWrapperAndAppendToBody(wrapperIdWithSuffix);
+      createdOnTheFly = true;
+    }
+
+    setWrapperElement(element);
++    setWrapperIdWithSuffix(wrapperIdWithSuffix);
+
+    return () => {
+      // Si lo hemos creado de forma dinámica lo borramos cuando toque
+      if (createdOnTheFly && element.parentNode) {
+        element.parentNode.removeChild(element);
+      }
+    };
+  }, [wrapperId]);
+
+  // Ojo en el primer render wrapperElement va a ser nulo, saltamos ese caso
+  if (wrapperElement === null) return null;
+
+-  return createPortal(children, document.getElementById(wrapperId));
++  return createPortal(children, document.getElementById(wrapperIdWithSuffix));
+};
+```
+
+Y en el App:
+
+_./src/app.tsx_
+
+```diff
+            <Modal handleClose={handleClose} isOpen={isOpen}>
+              This is Modal Content!
+              <button onClick={handleOpenInnerModal}>
+                Show inception modal
+              </button>
+-              <ReactPortalComponent wrapperId="lastnode">
+-                <div>
+-                  <Modal
+-                    handleClose={handleCloseInnerModal}
+-                    isOpen={isOpenInnerModal}
+-                  >
+-                    Inception modal :D
+-                  </Modal>
+-                </div>
+-              </ReactPortalComponent>
+            </Modal>
+```
+
+Vamos a probar
+
+```bash
+npm start
+```
+
+Esto tiene un montón de flecos:
+
+- El estilado del modal habría que verlo.
+- La animación habría que meterla en un componente intermedio al menos.
+
+Fíjate que el botón de ESC si funciona, será por el bubble up de los eventos?
+
+Aquí podemos ver como implementar componentes genéricos es tarea complicada.
 
 # Referencias
 
