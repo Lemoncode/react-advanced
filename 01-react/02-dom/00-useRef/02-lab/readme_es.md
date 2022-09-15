@@ -23,18 +23,16 @@ export const App = () => {
 +  return (
 +    <>
 +      <video
-+        ref={vRef}
 +        autoPlay
 +        muted
-+        onTimeUpdate={onTimeUpdate}
 +      >
 +        <source src="https://www.w3schools.com/html/movie.mp4" />
 +      </video>
 +      <p>
 +        Minuto segundos actual / Duración del video
 +      </p>
-+    </div>
-)
++    </>
++ )
 };
 ```
 
