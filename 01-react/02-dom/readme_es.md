@@ -2,6 +2,9 @@
 
 ## Refs & elementos HTML
 
+Por que use Ref
+https://stackoverflow.com/questions/60454476/is-using-document-getelementbyid-in-react-an-anti-pattern
+
 -> Ejemplo window title
 -> Ejercicio youtube y práctica
 https://stackoverflow.com/questions/70859692/react-video-current-length-is-not-updating
