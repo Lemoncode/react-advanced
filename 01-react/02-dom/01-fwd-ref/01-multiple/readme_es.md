@@ -170,6 +170,20 @@ el foco en cada uno:
 ```
 
 > Este código ha quedado un tanto sucio, aplicando curry podríamos hacer
-limpia y refactoring ¿Te animas?
+> limpia y refactoring ¿Te animas?
 
 # Otras aproximaciones
+
+Se puede extender / jugar con Forward Ref
+
+https://thewebdev.info/2021/11/14/how-to-forward-multiple-refs-with-react/
+
+https://fettblog.eu/typescript-react-generic-forward-refs/
+
+useMergedRef
+
+https://github.com/jaredLunde/react-hook/tree/master/packages/merged-ref#readme
+https://codesandbox.io/s/uhj08
+
+Pueden estar bien si queremos tratar un array de elementos iguales, también te van
+a dar quebradores de cabeza con el tipado en TypeScript
