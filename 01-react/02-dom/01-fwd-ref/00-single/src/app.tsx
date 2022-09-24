@@ -6,6 +6,7 @@ export function App() {
   const [firstName, setFirstName] = React.useState("");
   const [secondName, setSecondName] = React.useState("");
 
+
   const handleSetFocus = () => {
     if (secondInputRef.current) {
       secondInputRef.current.focus();
