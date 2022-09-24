@@ -38,6 +38,13 @@ module.exports = {
           },
           {
             loader: "css-loader",
+            options: {
+              modules: {
+                exportLocalsConvention: "camelCase",
+                localIdentName: "[path][name]__[local]--[hash:base64:5]",
+                localIdentContext: path.resolve(__dirname, "src"),
+              },
+            },
           },
         ],
       },
