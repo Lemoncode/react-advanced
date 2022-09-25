@@ -4,8 +4,8 @@ import {
   createDefaultKanbanContent,
   CardContent,
 } from "./model";
-import { loadKanbanContent } from "./kanban.api";
-import { Column } from "./column.component";
+import { loadKanbanContent } from "./api";
+import { Column } from "./components";
 import classes from "./kanban.container.css";
 
 export const KanbanContainer: React.FC = () => {

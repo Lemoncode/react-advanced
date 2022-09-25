@@ -1,5 +1,5 @@
 import React from "react";
-import { CardContent } from "./model";
+import { CardContent } from "../model";
 import classes from "./card.component.css";
 
 interface Props {

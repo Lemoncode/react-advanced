@@ -741,6 +741,34 @@ _./src/kanban/column/column.component.tsx_
 npm start
 ```
 
+- Ya tenemos nuestro tablero montado, es hora de ver como va quedando
+  nuestra carpeta _kanban_ parece que hay muchos ficheros, sería buena idea
+  organizar un poco, vamos a crear dos carpetas:
+- _components_: donde meteremos los componentes que no son contenedores.
+- _api_: donde meteremos los ficheros que se encargan de la comunicación
+  con el backend (que en este caso son mock).
+
+Vamos a crear un barrel para cada una de ellas:
+
+_./src/kanban/components/index.ts_
+
+```ts
+export * from "./card.component";
+export * from "./column.component";
+```
+
+_./src/kanban/api/index.ts_
+
+```ts
+export * from "./kanban.api";
+```
+
+Y arreglamos los imports de:
+
+- api
+- components
+- kanban.container
+
 ### Drag & Drop
 
 - Vamos a instalar la librería _react-dnd_ que le hace falta

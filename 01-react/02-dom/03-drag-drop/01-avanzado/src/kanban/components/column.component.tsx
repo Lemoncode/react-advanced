@@ -1,6 +1,6 @@
 import React from "react";
 import classes from "./column.component.css";
-import { CardContent } from "./model";
+import { CardContent } from "../model";
 import { Card } from "./card.component";
 
 interface Props {
