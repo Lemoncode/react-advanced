@@ -275,6 +275,7 @@ export interface CardContent {
 }
 
 export interface Column {
+  id : number;
   name: string;
   content: CardContent[];
 }
@@ -360,6 +361,7 @@ import { CardContent, KanbanContent } from "./model";
 export const mockData: KanbanContent = {
   columns: [
     {
+      id: 1,
       name: "Backglog",
       content: [
         {
@@ -385,6 +387,7 @@ export const mockData: KanbanContent = {
       ],
     },
     {
+      id: 2,
       name: "Doing",
       content: [
         {
@@ -394,6 +397,7 @@ export const mockData: KanbanContent = {
       ],
     },
     {
+      id: 3
       name: "Done",
       content: [
         {
@@ -510,7 +514,7 @@ export const KanbanContainer: React.FC = () => {
   return (
     <div className={classes.container}>
       {kanbanContent.columns.map((column) => (
-        <h4>{column.name}</h4>
+        <h4 key={column.id}>{column.name}</h4>
       ))}
     </div>
   );
@@ -566,3 +570,105 @@ npm start
 ✅ Somos capaces de mostrar un contenedor vació...
 
 Vamos a definir el componente de columnas:
+
+- Vamos a por el estilado.
+- En nuestro caso el componente columna va a recibir del contenedor el nombre de la misma y una lista de tareas (lo llamaremos content, aquí con el naming
+  tendríamos mucha discusión, quizás un nombre más apropiado podría ser
+  _cardContentCollection_).
+
+Sobre el estilado:
+
+- La columna va a ser otro contenedor flex.
+- Para la prueba va a tener un ancho fijo (apuntar martillo fino para después
+  si añadir media queries para poner un ancho relativo o por porcentajes).
+- Le pondremos overflow por si hubiera más cards que espacio en la columna
+  (martillo fino todo, resolver esto cuando se integre en real)
+- Le añadimos un color de fondo a cada columna (TODO martillo fino aquí, o bien
+  en la aplicación real usar los colores que vengan, o bien exponer una API de
+  CSS / tematizado o mediante variables HTML).
+- La altura le damos el 100% del alto del contenedor padre.
+
+_./src/kanban/column/column.css_
+
+```css
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 250px;
+  height: 100vh;
+  overflow: hidden;
+  border: 1px solid rgb(4, 1, 19);
+  background-color: aliceblue;
+}
+```
+
+- Hora de tocar el código, como en el contenedor, montamos el minimo, y
+  simplemente mostramos el nombre de cada card para probar que tenemos
+  un mínimo.
+
+_./src/kanban/column/column.tsx_
+
+```tsx
+import React from "react";
+import classes from "./column.css";
+import { CardContent } from "./model";
+
+interface Props {
+  name : string;
+  content: CardContent[];
+}
+
+export const Column : React.FC<Props> = (props) => {
+  const {name, content} = props;
+
+  return (
+    <div className={classes.container}>
+      <h4>{name}</h4>
+      {content.map((card) => (
+        <h5>{card.name}</h5>
+      ))}
+    </div>
+  );
+  )
+}
+```
+
+> Pregunta aquí... ¿Merecería la pena exponer la columna en el barrel?
+
+- Ya nos falta tiempo para probarlo :), vamos a integrarlo en nuestro
+  contenedor de Kanban:
+
+_./src/kanban/kanban.container.tsx_
+
+```diff
+import React from "react";
+import {
+  KanbanContent,
+  createDefaultKanbanContent,
+  CardContent,
+} from "./model";
+import { loadKanbanContent } from "./container.api";
+import classes from "./container.css";
++ import { Column } from "./column";
+```
+
+```diff
+  return (
+    <div className={classes.container}>
+      {kanbanContent.columns.map((column) => (
+-        <h4 key={column.id}>{column.name}</h4>
++         <Column key={column.id} name={column.name} content={column.content} />
+      ))}
+      ))}
+    </div>
+  );
+};
+```
+
+- Corremos a probarlo :)
+
+```bash
+npm start
+```
+
+Esto empieza a tener buena pinta, ahora vamos a por el componente de card:
