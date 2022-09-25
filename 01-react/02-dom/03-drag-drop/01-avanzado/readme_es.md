@@ -771,6 +771,9 @@ Y arreglamos los imports de:
 
 ### Drag & Drop
 
+Es hora de ir a por el _cogollo_ de la demo, vamos a implementar la funcionalidad
+de drag and drop entre columnas.
+
 - Vamos a instalar la librería _react-dnd_ que le hace falta
   un _backend_ (ojo no es backend de servidor) para trabajar con drag & drop
   en este caso elegimos la librería _react-dnd-html5-backend_.
@@ -786,13 +789,103 @@ _./src/app.tsx_
 ```diff
 import React from "react";
 + import { HTML5Backend } from "react-dnd-html5-backend";
++ import { DndProvider } from "react-dnd";
+import { KanbanContainer } from "./kanban";
 
 export const App = () => {
--  return <h1>Hello React !!</h1>;
+-  return <KanbanContainer />;
 +  return (
 +    <DndProvider backend={HTML5Backend}>
-+       <h1>Hello React !!</h1>
++       <KanbanContainer />
 +    </DndProvider>
 +  );
 };
+```
+
+- Siguiente paso, tenemos que definir que tipos de items vamos a habilitar para arrastrar:
+  - En este caso añadimos sólo las cards (a futuro podríamos también dar la opción de arrastrar columnas).
+  - La definición de _itemTypes_ la vamos a colocar debajo de _kanban_, si fueramos a usarlo a nivel de
+    aplicación global y kanban estuviera dentro de un panel de la ventana podríamos pensar en promocionar
+    _ItemTypes_ a un nivel superior (de nuevo, martillo fino, igual con el drag and drop, ¿Lo dejamos
+    a nivel de contenedor de kanban?).
+
+_./src/kanban/model.ts_
+
+```diff
++ export const ItemTypes = {
++  CARD: 'card',
++ }
+
+export interface CardContent {
+  id: number;
+  title: string;
+}
+```
+
+- Siguiente paso, vamos a definir la acción de drag en el componente de card, para ello:
+  - Hacemos uso del hook _useDrag_ de _react-dnd_.
+  - Esto nos devuelve un array con tres entradas:
+    - Item 0: aquí recibimos una serie de propiedades que nos ayudan a definir el comportamiento del drag.
+    - Item 1: un ref del objeto que queremos arrastrar (en este caso la card)
+    - Item 2: un ref del objeto que vamos a usar para poner como preview cuando arrastremos (aquí
+      podemos también cambiar y usar una imagen).
+  - Las ref las tenemos que asociar:
+    - Al componente que queremos arrastrar.
+    - Al rectángulo verde sobre el que haremos drag
+
+_./src/kanban/components/card.component.tsx_
+
+```diff
+import React from "react";
++ import { useDrag } from "react-dnd";
+- import { CardContent } from "../model";
++ import { CardContent, ItemTypes } from "../model";
+import classes from "./card.component.css";
+```
+
+_./src/kanban/components/card.component.tsx_
+
+```diff
+export const Card: React.FC<Props> = (props) => {
+  const { content } = props;
+
++  const [{ opacity }, drag, preview] = useDrag(() => ({
++    type: ItemTypes.CARD, // Definimos que es de tipo CARD esto lo usaremos en el drop
++    item: content,        // Aquí le pasamos el contenido de la card, así en el drop tenemos toda la info
++    collect: (monitor) => ({  // En esta función monitorizamos el estado del drag y cambiamos la opacidad del card
++      opacity: monitor.isDragging() ? 0.4 : 1,
++    }),
++    end: (item, monitor) => { // Una vez que ha concluido el drag, si el drop ha sido exitoso, mostramos un mensaje
++      if (monitor.didDrop) {
++        console.log("Drop succeeded !")
++      }
++    },
++  }));
+
+  return (
+-    <div className={classes.card}>
++    <div ref={preview} className={classes.card}>
+-      <div className={classes.dragHandle} />
++      <div ref={drag} className={classes.dragHandle} />
+      {content.title}
+    </div>
+  );
+};
+```
+
+- Nos queda sólo un detalle, vamos a mostrar el card con una opacidad para marcar que es el elemento que se
+  está arrastrando.
+
+_./src/kanban/components/card.component.css_
+
+```diff
+  return (
+-    <div ref={preview} className={classes.card}>
++    <div ref={preview} className={classes.card} style={{opacity}}>
+```
+
+- Vamos a probar :)
+
+```bash
+npm start
 ```

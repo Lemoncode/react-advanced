@@ -1,3 +1,7 @@
+export const ItemTypes = {
+  CARD: "card",
+};
+
 export interface CardContent {
   id: number;
   title: string;
