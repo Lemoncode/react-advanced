@@ -573,6 +573,7 @@ _./src/kanban/column/column.component.css_
 .container {
   display: flex;
   flex-direction: column;
+  align-items: center;
   width: 250px;
   height: 100vh;
   overflow: hidden;
@@ -593,12 +594,12 @@ import classes from "./column.component.css";
 import { CardContent } from "./model";
 
 interface Props {
-  name : string;
+  name: string;
   content: CardContent[];
 }
 
-export const Column : React.FC<Props> = (props) => {
-  const {name, content} = props;
+export const Column: React.FC<Props> = (props) => {
+  const { name, content } = props;
 
   return (
     <div className={classes.container}>
@@ -608,7 +609,7 @@ export const Column : React.FC<Props> = (props) => {
       ))}
     </div>
   );
-}
+};
 ```
 
 > Pregunta aquí... ¿Merecería la pena exponer la columna en el barrel?
@@ -651,6 +652,94 @@ npm start
 ```
 
 Esto empieza a tener buena pinta, ahora vamos a por el componente de card:
+
+En cuanto estilado vamos a definir:
+
+- Una clase para estilar el card (ancho, borde...).
+- Una clase para estilar el handler sobre el que se hará drag
+  (podríamos haber elegido poder hacer drag en toda la card, pero mejor
+  delimitarlo a un área).
+
+El diseño es mínimo, más adelante habría que aplicar _martillo fino_ para
+dejar una card con aspecto profesional.
+
+_./src/kanban/card.component.css_
+
+```css
+.card {
+  border: 1px dashed gray;
+  padding: 5px 15px;
+  margin-bottom: 10px;
+  background-color: white;
+  width: 210px;
+}
+
+.drag-handle {
+  background-color: green;
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  margin-right: 10px;
+  cursor: move;
+}
+```
+
+Vamos ahora a por el tsx:
+
+_./src/kanban/card.component.tsx_
+
+```tsx
+import React from "react";
+import { CardContent } from "./model";
+import classes from "./card.component.css";
+
+interface Props {
+  content: CardContent;
+}
+
+export const Card: React.FC<Props> = (props) => {
+  const { content } = props;
+
+  return (
+    <div className={classes.card}>
+      <div className={classes.dragHandle} />
+      {content.title}
+    </div>
+  );
+};
+```
+
+- Como siempre corremos a usarlo en nuestro componente de columna y ver los resultados:
+
+_./src/kanban/column/column.component.tsx_
+
+```diff
+import React from "react";
+import classes from "./column.component.css";
+import { CardContent } from "./model";
++ import {Card} from './card.component';
+```
+
+_./src/kanban/column/column.component.tsx_
+
+```diff
+  return (
+    <div className={classes.container}>
+      <h4>{name}</h4>
+      {content.map((card) => (
+-        <h5>{card.title}</h5>
++       <Card key={card.id} content={card} />
+      ))}
+      ))}
+    </div>
+  );
+```
+
+- A ver que tal sale :)
+
+```bash
+npm start
+```
 
 ### Drag & Drop
 

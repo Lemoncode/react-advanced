@@ -1,6 +1,7 @@
 import React from "react";
 import classes from "./column.component.css";
 import { CardContent } from "./model";
+import { Card } from "./card.component";
 
 interface Props {
   name: string;
@@ -14,7 +15,7 @@ export const Column: React.FC<Props> = (props) => {
     <div className={classes.container}>
       <h4>{name}</h4>
       {content.map((card) => (
-        <h5>{card.title}</h5>
+        <Card key={card.id} content={card} />
       ))}
     </div>
   );
