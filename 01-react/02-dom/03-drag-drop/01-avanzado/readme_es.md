@@ -239,7 +239,7 @@ Oye pero en mi aplicación real tengo más campos o campos diferentes
 Así pues de momento creamos el siguiente modelo, primero definimos un item
 (card):
 
-_./src/model.ts_
+_./src/kanban/model.ts_
 
 ```ts
 export interface CardContent {
@@ -260,6 +260,7 @@ export interface CardContent {
 }
 
 + export interface Column {
++  id: number;
 +  name: string;
 +  content: CardContent[];
 + }
@@ -267,6 +268,8 @@ export interface CardContent {
 
 Y ahora definimos la entidad de _Kanban_ que de momento ponemos como
 una lista de columnas.
+
+_./src/kanban/model.ts_
 
 ```diff
 export interface CardContent {
@@ -291,6 +294,8 @@ export interface Column {
   (creamos un factory), de esta manera nos ahorramos ir haciendo chequeos
   de campo nulo etc...
 
+_./src/kanban/model.ts_
+
 ```diff
 export interface KanbanContent {
   columns: Column[];
@@ -299,36 +304,6 @@ export interface KanbanContent {
 + export const createDefaultKanbanContent = (): KanbanContent => ({
 +  columns: [],
 + });
-```
-
-### Componentes
-
-### Drag & Drop
-
-- Vamos a instalar la librería _react-dnd_ que le hace falta
-  un _backend_ (ojo no es backend de servidor) para trabajar con drag & drop
-  en este caso elegimos la librería _react-dnd-html5-backend_.
-
-```bash
-npm install react-dnd react-dnd-html5-backend
-```
-
-- Vamos a habilitar el proveedor de drag and drop a nivel de aplicación.
-
-_./src/app.tsx_
-
-```diff
-import React from "react";
-+ import { HTML5Backend } from "react-dnd-html5-backend";
-
-export const App = () => {
--  return <h1>Hello React !!</h1>;
-+  return (
-+    <DndProvider backend={HTML5Backend}>
-+       <h1>Hello React !!</h1>
-+    </DndProvider>
-+  );
-};
 ```
 
 Toca crear una api simulada para cargar los datos, así como datos de prueba,
@@ -443,6 +418,10 @@ que ver con UI a ficheros TS planos, de esta manera:
 - Es más fácil de testear, tenemos piezas que hacen una cosa y una sóla
   cosa.
 
+### Componentes
+
+Vamos empezar a trabajar en el UI
+
 - Definamos el contenedor del kanban, lo primero un poco de estilado:
 
 El div contenedor:
@@ -462,8 +441,8 @@ _./src/kanban/kanban.container.css_
   flex: 1;
   column-gap: 5px;
   min-width: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
   border: 1px solid rgb(89, 118, 10);
   background-color: burlywood;
@@ -499,7 +478,7 @@ import {
   createDefaultKanbanContent,
   CardContent,
 } from "./model";
-import { loadKanbanContent } from "./container.api";
+import { loadKanbanContent } from "./kanban.api";
 import classes from "./container.css";
 
 export const KanbanContainer: React.FC = () => {
@@ -672,3 +651,31 @@ npm start
 ```
 
 Esto empieza a tener buena pinta, ahora vamos a por el componente de card:
+
+### Drag & Drop
+
+- Vamos a instalar la librería _react-dnd_ que le hace falta
+  un _backend_ (ojo no es backend de servidor) para trabajar con drag & drop
+  en este caso elegimos la librería _react-dnd-html5-backend_.
+
+```bash
+npm install react-dnd react-dnd-html5-backend
+```
+
+- Vamos a habilitar el proveedor de drag and drop a nivel de aplicación.
+
+_./src/app.tsx_
+
+```diff
+import React from "react";
++ import { HTML5Backend } from "react-dnd-html5-backend";
+
+export const App = () => {
+-  return <h1>Hello React !!</h1>;
++  return (
++    <DndProvider backend={HTML5Backend}>
++       <h1>Hello React !!</h1>
++    </DndProvider>
++  );
+};
+```
