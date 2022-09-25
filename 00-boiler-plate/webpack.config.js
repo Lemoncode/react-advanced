@@ -8,7 +8,7 @@ module.exports = {
     extensions: [".js", ".ts", ".tsx"],
   },
   entry: {
-    app: ["./index.tsx", "./styles.css"],
+    app: ["./index.tsx", "./global/styles.css"],
   },
   devtool: "eval-source-map",
   stats: "errors-only",
@@ -32,6 +32,19 @@ module.exports = {
       },
       {
         test: /\.css$/,
+        include: /global/,
+        use: [
+          {
+            loader: "style-loader",
+          },
+          {
+            loader: "css-loader",
+          },
+        ],
+      },
+      {
+        test: /\.css$/,
+        exclude: /global/,
         use: [
           {
             loader: "style-loader",
