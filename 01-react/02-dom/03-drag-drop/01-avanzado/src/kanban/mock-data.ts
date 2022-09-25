@@ -39,7 +39,7 @@ export const mockData: KanbanContent = {
       ],
     },
     {
-      id: 3
+      id: 3,
       name: "Done",
       content: [
         {

@@ -372,7 +372,7 @@ export const mockData: KanbanContent = {
       ],
     },
     {
-      id: 3
+      id: 3,
       name: "Done",
       content: [
         {
@@ -522,16 +522,16 @@ Así que vamos a crear un barrel dentro del kanban para exportar nuestro contene
 _./src/kanban/index.ts_
 
 ```ts
-export * from "./container";
+export * from "./kanban.container";
 ```
 
 Y lo instanciamos en el app de nuestra aplicación de prueba:
 
 _./src/app.tsx_
 
-```tsx
+```diff
 import React from "react";
-import { KanbanContainer } from "./kanban";
++ import { KanbanContainer } from "./kanban";
 
 export const App = () => {
 -  return <h1>Hello React !!</h1>;
