@@ -567,7 +567,7 @@ Sobre el estilado:
   CSS / tematizado o mediante variables HTML).
 - La altura le damos el 100% del alto del contenedor padre.
 
-_./src/kanban/column/column.css_
+_./src/kanban/column/column.component.css_
 
 ```css
 .container {
@@ -585,11 +585,11 @@ _./src/kanban/column/column.css_
   simplemente mostramos el nombre de cada card para probar que tenemos
   un mínimo.
 
-_./src/kanban/column/column.tsx_
+_./src/kanban/column/column.component.tsx_
 
 ```tsx
 import React from "react";
-import classes from "./column.css";
+import classes from "./column.component.css";
 import { CardContent } from "./model";
 
 interface Props {
@@ -604,11 +604,10 @@ export const Column : React.FC<Props> = (props) => {
     <div className={classes.container}>
       <h4>{name}</h4>
       {content.map((card) => (
-        <h5>{card.name}</h5>
+        <h5>{card.title}</h5>
       ))}
     </div>
   );
-  )
 }
 ```
 
@@ -627,8 +626,9 @@ import {
   CardContent,
 } from "./model";
 import { loadKanbanContent } from "./container.api";
++ import { Column } from "./column.component";
 import classes from "./container.css";
-+ import { Column } from "./column";
+
 ```
 
 ```diff

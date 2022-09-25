@@ -5,6 +5,7 @@ import {
   CardContent,
 } from "./model";
 import { loadKanbanContent } from "./kanban.api";
+import { Column } from "./column.component";
 import classes from "./kanban.container.css";
 
 export const KanbanContainer: React.FC = () => {
@@ -19,7 +20,7 @@ export const KanbanContainer: React.FC = () => {
   return (
     <div className={classes.container}>
       {kanbanContent.columns.map((column) => (
-        <h4 key={column.id}>{column.name}</h4>
+        <Column key={column.id} name={column.name} content={column.content} />
       ))}
     </div>
   );
