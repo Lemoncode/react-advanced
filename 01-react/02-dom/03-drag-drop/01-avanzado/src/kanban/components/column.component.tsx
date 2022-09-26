@@ -8,10 +8,11 @@ interface Props {
   name: string;
   content: CardContent[];
   onAddCard: (card: CardContent) => void;
+  onRemoveCard: (cardContent: CardContent) => void;
 }
 
 export const Column: React.FC<Props> = (props) => {
-  const { name, content, onAddCard } = props;
+  const { name, content, onAddCard, onRemoveCard } = props;
 
   const [collectedProps, drop] = useDrop(() => ({
     accept: ItemTypes.CARD,
@@ -32,7 +33,7 @@ export const Column: React.FC<Props> = (props) => {
     <div ref={drop} className={classes.container}>
       <h4>{name}</h4>
       {content.map((card) => (
-        <Card key={card.id} content={card} />
+        <Card key={card.id} content={card} onRemoveCard={onRemoveCard} />
       ))}
     </div>
   );

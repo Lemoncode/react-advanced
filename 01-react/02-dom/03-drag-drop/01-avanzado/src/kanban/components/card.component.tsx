@@ -5,10 +5,11 @@ import classes from "./card.component.css";
 
 interface Props {
   content: CardContent;
+  onRemoveCard: (cardContent: CardContent) => void;
 }
 
 export const Card: React.FC<Props> = (props) => {
-  const { content } = props;
+  const { content, onRemoveCard } = props;
 
   const [{ opacity }, drag, preview] = useDrag(() => ({
     type: ItemTypes.CARD, // Definimos que es de tipo CARD esto lo usaremos en el drop
@@ -22,7 +23,7 @@ export const Card: React.FC<Props> = (props) => {
     end: (item, monitor) => {
       // Una vez que ha concluido el drag, si el drop ha sido exitoso, mostramos un mensaje
       if (monitor.didDrop) {
-        console.log("Drop succeeded !");
+        onRemoveCard(content);
       }
     },
   }));

@@ -1104,4 +1104,222 @@ _./src/kanban/kanban.container.tsx_
 npm start
 ```
 
+- ¡ Bueeeenoooo ! Este es el momento en el que te vienes arriba y piensas que esto de drag & drop
+  es pan comido... vamos a empezar a meternos en el fango.
+
+- Añadimos una tarjeta a la columna destino, pero necesitamos eliminarla de la columna origen,
+  Podemos seguir dos aproximaciones:
+
+  - En la card tenemos un evento "end" del drag en el que podemos comprobar que todo ha ido bien
+    y eliminar la tarjeta de la columna origen.
+
+  - En la columna destino podríamos en el AddCard del container hacer las dos operaciones: borrar la
+    antigua de la columna que toque y añadir la nueva.
+
+¿Qué opcíon tomarías? ... esta decisión tan inocente vamos a ver que nos va a llevar a más de un quebradero
+de cabeza :).
+
+Vamos a arrancar por la primera, tenemos dos puntos de entrada:
+
+- El evento "end" del drag, donde eliminamos la card antigua.
+- El evento "drop" del drop, donde la añadimos a la columna que toque.
+
+El drop ya lo tenemos implementados, vamos a por el end drag, en principio podría ser algo así como
+
+_./src/kanban/components/card.component.tsx_
+
+```diff
+interface Props {
+  content: CardContent;
++ onRemoveCard: (cardContent: CardContent) => void;
+}
+
+export const Card: React.FC<Props> = (props) => {
+-  const { content } = props;
++  const { content, onRemoveCard } = props;
+```
+
+_./src/kanban/components/card.component.tsx_
+
+```diff
+    end: (item, monitor) => {
+      // Una vez que ha concluido el drag, si el drop ha sido exitoso, mostramos un mensaje
+      if (monitor.didDrop) {
+-        console.log("Drop succeeded !");
++        onRemoveCard(content);
+      }
+    },
+  }));
+```
+
+Y vamos a burbujear esto hacía la columna y hacía el container (esto ya empieza a oler a contexto :),
+apuntar martillo fino :))
+
+_./src/kanban/components/column.component.tsx_
+
+```diff
+interface Props {
+  name: string;
+  content: CardContent[];
+  onAddCard: (card: CardContent) => void;
++ onRemoveCard: (cardContent: CardContent) => void;
+}
+
+export const Column: React.FC<Props> = (props) => {
+-  const { name, content, onAddCard  } = props;
++  const { name, content, onAddCard, onRemoveCard  } = props;
+```
+
+_./src/kanban/components/column.component.tsx_
+
+```diff
+  return (
+    <div ref={drop} className={classes.container}>
+      <h4>{name}</h4>
+      {content.map((card) => (
+        <Card key={card.id}
+              content={card}
++             onRemoveCard={onRemoveCard} />
+              />
+      ))}
+    </div>
+  );
+```
+
+Vámonos al kanban container y vamos a implementar el remove card, vamos a currificar el id de la columna
+¿Me decís vosotros como funcionaría?
+
+_./src/kanban/kanban.container.tsx_
+
+```diff
+  const handleAddCard = (columnId: number) => (card: CardContent) => {
+    setKanbanContent(
+      produce(kanbanContent, (draft) => {
+        const column = draft.columns.find((c) => c.id === columnId);
+        if (column) {
+          column.content.push(card);
+        }
+      })
+    );
+  };
+
++  const handleRemoveCard = (columnId: number) => (card: CardContent) => {
++    const columnIndex = kanbanContent.columns.findIndex(
++      (c) => c.id === columnId
++    );
++
++    if (columnIndex !== -1) {
++      setKanbanContent(
++        produce(kanbanContent, (draft) => {
++          draft.columns[columnIndex].content = kanbanContent.columns[
++            columnIndex
++          ].content.filter((c) => c.id !== card.id);
++        })
++      );
++    }
++  };
+
+  return (
+    <div className={classes.container}>
+```
+
+_./src/kanban/kanban.container.tsx_
+
+```diff
+  return (
+    <div className={classes.container}>
+      {kanbanContent.columns.map((column) => (
+        <Column
+          key={column.id}
+          name={column.name}
+          content={column.content}
+          onAddCard={handleAddCard(column.id)}
++         onRemoveCard={handleRemoveCard(column.id)}
+        />
+      ))}
+    </div>
+  );
+```
+
+- Si nos paramos este código empieza a oler a que hace falta un refactor, empezamos a tener un _bombazo_
+  de código en el componente, pero bueno vamos a probar y ver nuestro drag & drop en acción:
+
+```bash
+npm start
+```
+
+En este momento nos entra el modo pánico... ¡ Esto ha dejado de funcionar y tiene un comportamiento caotico !
+Prueba a arrastrar y soltar tarjetas y ver que pasa:
+
+- La primera vez que arrastras una tarjeta, desaparece de la columna origen y no aparece en la destino.
+- La segunda vez que arrastras una tarjeta, aparece la anterior en la columna origen y no aparece en la
+  de destino :).
+
+Esto es un indicador de que nuestro código se está convirtiendo en una _castaña_ empieza a alcanzar
+el status de _spaghetti code_ y que es hora de refactorizar.
+
+Lo primero vamos a investigar porque pasa esto, os dejo un tiempo para que lo investiguéis, y me digáis
+que puede ser (iré dando pistas).
+
+**_ESPERA 10/15 MINUTOS INVESTIGACION_**
+
+Pistas:
+
+- Estamos tratando con un callback, que puede pasar con el estado si no tenemos cuidado.
+- Comenta la linea en la que se borra.
+
+**_SOLUCION_**
+
+Lo que está pasando aquí es que al hacer un setState en el callback estamos tirando del valor antiguo
+que tenía la función (¿os acordáis del ejemplo de async closure?), entonces cuando hacemos un setState
+lo estamos haciendo con los valores de la columna antigua antes de hacer el drop (primero se ejecuta el
+drop después el end drag), de ahí el glitch que tenemos.
+
+Vamos primero a poner un parche para que funcione, y luego toca pararse y refactorizar antes de que
+esto se nos vaya de las manos.
+
+La solución es tocar en una sola línea de código, en el setState del callback, vamos a pasarle una función
+en vez del nuevo valor, en está función se nos alimenta el último estado, no el que se quedó colgado en el
+closure:
+
+```diff
+    if (columnIndex !== -1) {
+-      setKanbanContent(
++      setKanbanContent((kanbanContentLatest) => 
+-        produce(kanbanContentLatest, (draft) => {
++        produce(kanbanContentLatest, (draft) => {
+-          draft.columns[columnIndex].content = kanbanContent.columns[
++          draft.columns[columnIndex].content = kanbanContentLatest.columns[
+            columnIndex
+          ].content.filter((c) => c.id !== card.id);
+        })
+      );
+    }
+```
+
+- Vale con esto las cosas vuelven a funcionar, pero nos deja mal sabor de boca:
+  - El código que se ha quedado es un galimatias.
+  - Partimos de que controlamos el orden, primero drop después end drag (tendríamos que añadir lo mismo
+  en el EndDrag).
+  - Tenemos riesgo de introducir más condiciones de carrera.
+  - Todavía no hemos empezado a _rascar casos arista_, por ejemplo: 
+    - Que pasa si arrastro y suelto una card en la misma columna.
+    - Que pasa si quiero insertar una card siguiendo un orden.
+    - ...
+
+Ahora mismo toca parar y refactorizar, que un código funcione no quiere decir que sea una solución aceptable,
+vamos a plantear este escenario, podemos pensar en varias aproximaciones:
+  - Una podría ser utilizar useReducer, tener el estado en el reducer y las acciones ADDCard y RemoveCard,
+  de esta manera sacamos estado fuera y nos quitamos el problema del closure hell. Este caso podría ser útil si
+  la zona de drag y la de drop no se hablaran, pero en este caso tenemos un container comun.
+
+  - La segunda es dejar que el drop se encarga de todo, de esta manera:
+    - Tenemos un único punto de entrada (no hay condiciones de carrera).
+    - Simplificamos código (al menos la parte de drag y el burbujeo hacia arriba).
+
+De momento vamos a por la segunda opción, dejando al puerta a utilizar useReducer a futuro (por ejemplo
+se complica la cosa y ahora queremos distinguir entre drag y eliminar y drag y copiar, etc...)
+
+
+
 ** No olvidar intercalar y comentar drop cards o columns y comentar **
