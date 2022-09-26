@@ -2,47 +2,26 @@ import React from "react";
 import {
   KanbanContent,
   createDefaultKanbanContent,
-  CardContent,
   DragItemInfo,
 } from "./model";
 import { loadKanbanContent } from "./api";
 import { Column } from "./components";
 import classes from "./kanban.container.css";
-import produce from "immer";
-import { moveCardColumn } from "./kanban.business";
+import { KanbanContext } from "./providers/kanban.context";
 
-const useKanbanState = (): [
-  KanbanContent,
-  React.Dispatch<React.SetStateAction<KanbanContent>>
-] => {
-  const [kanbanContent, setKanbanContent] = React.useState<KanbanContent>(
-    createDefaultKanbanContent()
-  );
+export const KanbanContainer: React.FC = () => {
+  const { kanbanContent, setKanbanContent, moveCard } =
+    React.useContext(KanbanContext);
 
   React.useEffect(() => {
     loadKanbanContent().then((content) => setKanbanContent(content));
   }, []);
 
-  return [kanbanContent, setKanbanContent];
-};
-
-export const KanbanContainer: React.FC = () => {
-  const [kanbanContent, setKanbanContent] = useKanbanState();
-
   const handleMoveCard =
     (columnDestinationId: number) => (dragItemInfo: DragItemInfo) => {
       const { columnId: columnOriginId, content } = dragItemInfo;
 
-      setKanbanContent((kanbanContentLatest) =>
-        moveCardColumn(
-          {
-            columnOriginId,
-            columnDestinationId,
-            content,
-          },
-          kanbanContentLatest
-        )
-      );
+      moveCard(columnDestinationId, dragItemInfo);
     };
 
   return (

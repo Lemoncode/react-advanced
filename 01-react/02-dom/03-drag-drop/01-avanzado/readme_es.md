@@ -2100,10 +2100,7 @@ import {
 export interface KanbanContextModel {
   kanbanContent: KanbanContent;
   setKanbanContent: (kanbanContent: KanbanContent) => void;
-  moveCard: (
-    moveInfo: DragItemInfo,
-    kanbanContent: KanbanContent
-  ) => KanbanContent;
+  moveCard: (columnDestinationId: number, dragItemInfo: DragItemInfo) => void;
 }
 
 export const KanbanContext = React.createContext<KanbanContextModel>({
@@ -2169,6 +2166,114 @@ export const KanbanProvider: React.FC<Props> = ({ children }) => {
 };
 ```
 
-- Ahora podríamos colocar el context a nive
+- Vamos a colocar el context en el app donde se instancia el kanban, así
+  cuando si creamos más de un kanban no compartiran estado (también, podríamos
+  haber creado un componente wrapper dentro de la carpeta kanban).
+
+_./src/kanban/index.ts_
+
+```diff
+export * from "./kanban.container";
++ export * from "./providers/kanban.provider";
+```
+
+_./src/app.tsx_
+
+```diff
+import React from "react";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { DndProvider } from "react-dnd";
+- import { KanbanContainer } from "./kanban";
++ import { KanbanContainer, KanbanProvider } from "./kanban";
+
+
+export const App = () => {
+  return (
+    <DndProvider backend={HTML5Backend}>
++     <KanbanProvider>
+        <KanbanContainer />
++     </KanbanProvider>
+    </DndProvider>
+  );
+};
+```
+
+- Vamos a hacer limpia de _kanban.container_ y añadir nuestro contexto
+  (vemos que lo dejamos todo funcionando y después empezaremos a quitar
+  propiedades en los columns y cards para tirar de contexto).
+
+_./src/kanban/kanban.container.tsx_
+
+```diff
+import React from "react";
+import {
+  KanbanContent,
+-  createDefaultKanbanContent,
+-  CardContent,
+-  DragItemInfo,
+} from "./model";
+import { loadKanbanContent } from "./api";
+import { Column } from "./components";
+import classes from "./kanban.container.css";
+- import produce from "immer";
+- import { moveCardColumn } from "./kanban.business";
++ import { KanbanContext } from "./providers/kanban.context";
+
+- const useKanbanState = (): [
+-  KanbanContent,
+-  React.Dispatch<React.SetStateAction<KanbanContent>>
+-] => {
+-  const [kanbanContent, setKanbanContent] = React.useState<KanbanContent>(
+-    createDefaultKanbanContent()
+-  );
+-
+-  React.useEffect(() => {
+-    loadKanbanContent().then((content) => setKanbanContent(content));
+-  }, []);
+-
+-  return [kanbanContent, setKanbanContent];
+- };
+
+export const KanbanContainer: React.FC = () => {
++ const {kanbanContent, setKanbanContent, moveCard} = React.useContext(KanbanContext);
+-  const [kanbanContent, setKanbanContent, moveCard] = useKanbanState();
+
++  React.useEffect(() => {
++    loadKanbanContent().then((content) => setKanbanContent(content));
++  }, []);
+
+  const handleMoveCard =
+    (columnDestinationId: number) => (dragItemInfo: DragItemInfo) => {
+      const { columnId: columnOriginId, content } = dragItemInfo;
+
++      moveCard(columnDestinationId, dragItemInfo);
+-      setKanbanContent((kanbanContentLatest) =>
+-        moveCardColumn(
+-          {
+-            columnOriginId,
+-            columnDestinationId,
+-            content,
+-          },
+-          kanbanContentLatest
+-        )
+-      );
+    };
+
+  return (
+    <div className={classes.container}>
+      {kanbanContent.columns.map((column) => (
+        <Column
+          key={column.id}
+          columnId={column.id}
+          name={column.name}
+          content={column.content}
+          onMoveCard={handleMoveCard(column.id)}
+        />
+      ))}
+    </div>
+  );
+};
+```
+
 
 ** No olvidar intercalar y comentar drop cards o columns y comentar **

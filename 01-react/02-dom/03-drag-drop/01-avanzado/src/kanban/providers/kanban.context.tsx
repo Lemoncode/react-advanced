@@ -8,10 +8,7 @@ import {
 export interface KanbanContextModel {
   kanbanContent: KanbanContent;
   setKanbanContent: (kanbanContent: KanbanContent) => void;
-  moveCard: (
-    moveInfo: DragItemInfo,
-    kanbanContent: KanbanContent
-  ) => KanbanContent;
+  moveCard: (columnDestinationId: number, dragItemInfo: DragItemInfo) => void;
 }
 
 export const KanbanContext = React.createContext<KanbanContextModel>({
