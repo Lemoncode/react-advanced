@@ -7,15 +7,16 @@ import { Card } from "./card.component";
 interface Props {
   name: string;
   content: CardContent[];
+  onAddCard: (card: CardContent) => void;
 }
 
 export const Column: React.FC<Props> = (props) => {
-  const { name, content } = props;
+  const { name, content, onAddCard } = props;
 
   const [collectedProps, drop] = useDrop(() => ({
     accept: ItemTypes.CARD,
     drop: (item: CardContent, monitor) => {
-      console.log("Drop", item);
+      onAddCard(item);
 
       return {
         name: `DropColumn`,

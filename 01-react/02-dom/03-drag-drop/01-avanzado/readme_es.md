@@ -952,6 +952,156 @@ export const Column: React.FC<Props> = (props) => {
 };
 ```
 
-- Si 
+- Si probamos y vemos la consola vemos que se ejecuta tanto el drop como el drag... seguimos en racha :),
+  ahora toca que se realiza la operación "de verdad".
+
+- En teoría añadir la card a la columna destino es sencillo, en el drop tenemos el punto de entrada y el
+  item, que vamos a hacer:
+
+  - El componente column no tiene el estado de las listas, sólo ve el contenido de su card.
+  - Creamos una prop de tipo callback para informar al componente de tipo kanba container.
+  - El kanban container se encarga de actualizar la lista y ya la información fluye hacia abajo.
+
+Varios detalles aquí:
+
+- Empezamos a sufrir de "drill prop" subiendo y bajando datos y callbacks por las props, empieza a
+  oler a que usar un contexto podría ser de ayuda (otro TODO para la lista de "martillo fino") y este
+  es el momento en que te pueden preguntar _¿Pero si funciona para que lo vas a tocar? tampoco está tan mal..._ ese es el problema que si empezamos así y sumamos un montón de _tampoco está tan mal_ acabamos con un _esto está muy mal y no hay quien lo mantenga_, así que más adelante evaluaremos si centralizar en un contexto a aporta o no.
+
+- De momento vamos a añadir la card al final de la lista, si has usado herramientas como trello te habrás
+  dado cuenta de que cuando haces drop te inserta la tarjeta entre las tarjetas en las que lo hayas soltado,
+  esto, apuntado para el TODO de "martillo fino", y lo resolveremos más adelante (este es de los "detalles"
+  que nos va a llevar bastante trabajo de arreglar).
+
+  Empezamos por el componente column (zona de drop), añadimos una propiedad de tipo callback para informar al componente padre que se ha producido el drop, y la ejecutamos en el _useDrop_.
+
+_./src/kanban/components/column.component.tsx_
+
+```diff
+interface Props {
+  name: string;
+  content: CardContent[];
++  onAddCard: (card: CardContent) => void;
+}
+
+```
+
+_./src/kanban/components/column.component.tsx_
+
+```diff
+export const Column: React.FC<Props> = (props) => {
+-  const { name, content } = props;
++  const { name, content, onAddCard } = props;
+
+
+  const [collectedProps, drop] = useDrop(() => ({
+    accept: ItemTypes.CARD,
+    drop: (item: CardContent, monitor) => {
+-      console.log("Drop", item);
++      onAddCard(item);
+
+      return {
+        name: `DropColumn`,
+      };
+    },
+```
+
+- Vamos a implementar el handler en el kanban container.
+
+En esta caso tenemos que insertar un card en la lista que toque, tenemos que hacerlo de forma
+inmutable para asegurarnos que todo se actualiza correctamente, no nos vale un _push_, podemos
+por ejemplo usar el spread operator para crear una nueva lista con el nuevo card, pero como vamos
+a tener que manejar inmutabilidad en varios sitios, vamos a hacer uso de _immer_ una librería que
+nos permita trabajar de manera mutable en una _caja de arena_ y después lo convierte todo a inmutable.
+
+- Instalamos la librería:
+
+```bash
+npm install immer --save
+```
+
+_./src/kanban/kanban.container.tsx_
+
+```diff
+import React from "react";
+import {
+  KanbanContent,
+  createDefaultKanbanContent,
++  CardContent,
+} from "./model";
+import { loadKanbanContent } from "./api";
+import { Column } from "./components";
+import classes from "./kanban.container.css";
++ import produce from "immer";
+```
+
+_./src/kanban/kanban.container.tsx_
+
+```diff
+  React.useEffect(() => {
+    loadKanbanContent().then((content) => setKanbanContent(content));
+  }, []);
+
++ const handleAddCard = (card: CardContent) => {
++  // Me hace falta saber a que columna tengo que hacer el drop :)
++ }
+```
+
+_./src/kanban/kanban.container.tsx_
+
+```diff
+    <div className={classes.container}>
+      {kanbanContent.columns.map((column) => (
+        <Column key={column.id}
+                name={column.name}
+                content={column.content}
++               onAddCard={handleAddCard} />
+        />
+      ))}
+    </div>
+```
+
+Hasta aquí bien, nos hace falta saber la columna en la que tenemos que hacer el drop, aquí podíamos ver
+si el card le informa de la columna, peeerooo... esa información ya la tenemos, si te fijas en el propio
+kanban container cuando le pasamos las card en el map del componente _column_ ya sabemos a que columna
+pertenece, ¿Qué podemos hacer? utilizar curry.
+
+_./src/kanban/kanban.container.tsx_
+
+```diff
+- const handleAddCard = (card: CardContent) => {
++ const handleAddCard = (columnId : number) => (card: CardContent) => {
+-  // Me hace falta saber a que columna tengo que hacer el drop :)
++  setKanbanContent(produce(kanbanContent, draft => {
++    const column = draft.columns.find(c => c.id === columnId);
++    if (column) {
++      column.content.push(card);
++    }
++  }));
+  }
+
+```
+
+_./src/kanban/kanban.container.tsx_
+
+```diff
+    <div className={classes.container}>
+      {kanbanContent.columns.map((column) => (
+        <Column
+          key={column.id}
+          name={column.name}
+          content={column.content}
+-          onAddCard={handleAddCard}
++          onAddCard={handleAddCard(column.id)}
+        />
+      ))}
+    </div>
+```
+
+- Vamos a probar si esto funciona.
+
+```bash
+npm start
+```
 
 ** No olvidar intercalar y comentar drop cards o columns y comentar **
