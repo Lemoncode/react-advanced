@@ -889,3 +889,69 @@ _./src/kanban/components/card.component.css_
 ```bash
 npm start
 ```
+
+- De momento parece que todo va genial :), ahora toca el drop, de primeras podría parece algo fácil,
+  vamos a partir por la opción más lógica definir las diferentes columnas (backlog, doing, done) cómo áreas de drop
+  (después volveremos sobre esto), de primeras sólo ponemos un console.log para ver que llega el evento de drop.
+
+Cómo funciona este _useDrop_:
+
+- Nos devuelve un array con dos entradas:
+  - Item 0: aquí recibimos una serie de propiedades que nos ayudan a definir el comportamiento del drop.
+  - Item 1: un ref del objeto que queremos que sea el área de drop (en este caso la columna)
+- Las ref las tenemos que asociar:
+  - Al componente que queremos que sea el área de drop.
+
+Dentro del _useDrop_ definimos un objeto con las siguientes entradas:
+
+- accept: aquí definimos que tipo de items vamos a aceptar, en este caso sólo las cards.
+- drop: aquí definimos la acción que vamos a realizar cuando se produzca el drop, en este caso sólo
+  vamos a mostrar un mensaje, fijate que en esta funcion devolvemos información acerca de donde se
+  ha soltado el item, esta info la recibe el EndDrag.
+
+_./src/kanban/components/column.component.css_
+
+```diff
+import React from "react";
++ import { useDrop } from "react-dnd";
+import classes from "./column.component.css";
+- import { CardContent } from "../model";
++ import { CardContent, ItemTypes } from "../model";
+```
+
+_./src/kanban/components/column.component.css_
+
+```diff
+export const Column: React.FC<Props> = (props) => {
+  const { name, content } = props;
+
++  const [collectedProps, drop] = useDrop(() => ({
++    accept: ItemTypes.CARD,
++    drop: (item: CardContent, monitor) => {
++      console.log("Drop", item);
++
++      return {
++        name: `DropColumn`,
++      };
++    },
++    collect: (monitor: any) => ({
++      isOver: monitor.isOver(),
++      canDrop: monitor.canDrop(),
++    }),
++  }));
+
+  return (
+-    <div className={classes.container}>
++    <div ref={drop} className={classes.container}>
+      <h4>{name}</h4>
+      {content.map((card) => (
+        <Card key={card.id} content={card} />
+      ))}
+    </div>
+  );
+};
+```
+
+- Si 
+
+** No olvidar intercalar y comentar drop cards o columns y comentar **

@@ -1,6 +1,7 @@
 import React from "react";
+import { useDrop } from "react-dnd";
 import classes from "./column.component.css";
-import { CardContent } from "../model";
+import { CardContent, ItemTypes } from "../model";
 import { Card } from "./card.component";
 
 interface Props {
@@ -11,8 +12,23 @@ interface Props {
 export const Column: React.FC<Props> = (props) => {
   const { name, content } = props;
 
+  const [collectedProps, drop] = useDrop(() => ({
+    accept: ItemTypes.CARD,
+    drop: (item: CardContent, monitor) => {
+      console.log("Drop", item);
+
+      return {
+        name: `DropColumn`,
+      };
+    },
+    collect: (monitor: any) => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop(),
+    }),
+  }));
+
   return (
-    <div className={classes.container}>
+    <div ref={drop} className={classes.container}>
       <h4>{name}</h4>
       {content.map((card) => (
         <Card key={card.id} content={card} />
