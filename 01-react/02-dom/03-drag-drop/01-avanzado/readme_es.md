@@ -2276,8 +2276,8 @@ export const KanbanContainer: React.FC = () => {
 ```
 
 - Primer paso del refactor dado, ahora vamos a quitar drill prop de la column
-y la card (podríamos eliminar más propiedades y añadir helpers en el contexto,
-¿Merece la pena? ¿Qué opinas?).
+  y la card (podríamos eliminar más propiedades y añadir helpers en el contexto,
+  ¿Merece la pena? ¿Qué opinas?).
 
 _./src/kanban/kanban.container.tsx_
 
@@ -2351,14 +2351,620 @@ export const Column: React.FC<Props> = (props) => {
 De momento nos quedamos así con el refactor, vamos a hacer una prueba
 rápida y ver que todo sigue funcionando.
 
-¿Qué hemos ganado? 
-  - Simplificado drill prop.
-  - Separador contenedor de estado.
-  - Eliminado curry al asignar el callback de move column.
+¿Qué hemos ganado?
 
- 
+- Simplificado drill prop.
+- Separador contenedor de estado.
+- Eliminado curry al asignar el callback de move column.
+
+### Insertar cards
+
+Hasta ahora hemos estado haciendo drops de las cartas al final de la columna,
+pero cuando yo arrastro y suelto normalmente quiero intercalar la card en una
+posición determinada.
+
+Para esto podemos optar por dos aproximaciones:
+
+- Cuando hago drop, itero por los _divs_ de cada card y veo donde cae el
+  la coordenada drop con respecto a mi card y con eso calculo el indice para
+  insertar.
+
+- Otra opción es que las cards se conviertan en areas de drop y añada una card vacía
+  oculta que ocupe el resto de la columna.
+
+La segunda opción parece un poco "hack", pero en teoría podría ser la que menos
+quebraderos de cabeza podría dar (te animo a que pruebes a implementarla).
+
+Pero... ¿Por qué la primera opción nos va a dar guerra?
+
+- Nuestra area de drop es la columna.
+- A priori ReactDnd no sabe que coordenada tiene cada card en esa columna destino.
+- Tenemos que buscar una forma de calcularla... aquí podríamos pensar: usamos ref :)... bien pero no tenemos un card, tenemos un array de cards, nos haría falta un
+  ref por cada card, es decir un array de refs, y además estas ref son dinámicas,
+  puedo añadir y quitar cards de una columna.
+
+¿Cómo podemos hacer esto?
+
+- Vamos a crear un registro de refs (uno por cada card de la columna), usamos
+  este registro en vez de un array para evitar problemas si se borran keys etc.
+
+- Este registro de refs lo vamos a recalcular si cambia el array de cards de la columna, para esto usamos useMemo (si el layout de las columnas fuera flexible y
+  pudiera redimensionarse tendríamos que o bien quitar el useMemo o bien combinarlo
+  con los saltos de las media queries).
+
+- El registro de refs lo enlazo con el listado de Cards.
+
+- Vamos a empezar por definir el tipo de registro de refs.
+
+_./src/kanban/components/column.component.tsx_
+
+```diff
+interface Props {
+  name: string;
+  content: CardContent[];
+  onAddCard: (card: CardContent, index: number) => void;
+  onRemoveCard: (cardContent: CardContent) => void;
+}
+
++ type CardDivKeyValue = {
++  [key: string]: React.MutableRefObject<HTMLDivElement>;
++ };
+```
+
+Vamos a crear la lista de refs que se asociaran al repintar el componente.
+
+_./src/kanban/components/column.tsx_
+
+```diff
++  const itemsRef = React.useMemo(() => {
++    const newItemsRef = content.reduce<CardDivKeyValue>(
++      (cardRefs, item) => ({
++        ...cardRefs,
++        [item.id]: React.createRef(),
++      }),
++      {}
++    );
++    return newItemsRef;
++  }, [props.content]);
+
+  return (
+```
+
+- Y ahora vamos a asociar cada ref a cada card (para el nombre de la propiedad
+  accedo por el operador de array).
+
+_./src/kanban/components/column.tsx_
+
+```diff
+  return (
+    <div ref={drop} className={classes.container}>
+      <h4>{name}</h4>
+      {content.map((card) => (
+        <Card
+          key={card.id}
++         ref={itemsRef[card.id]}
+          columnId={columnId}
+          content={card} />
+      ))}
+    </div>
+  );
+```
+
+Esto nos falla, ¿Por qué? Los ref de primeras sólo los podemos usar
+en componentes primitivos, ¿Qué tenemos que hacer para usar un ref en
+un componente custom? Los _forwardRef_, vamos a definirlo en el card
+(añadimos un div más para nuevo ref, podríamos estudiar si podemos asignar
+más de un ref... martillo fino :))):
+
+_./src/kanban/components/card.component.tsx_
+
+```diff
+- export const Card: React.FC<Props> = (props) => {
++ export const Card = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
+  const { content, columnId } = props;
+
+  const [{ opacity }, drag, preview] = useDrag(() => ({
+    type: ItemTypes.CARD, // Definimos que es de tipo CARD esto lo usaremos en el drop
+    item: createDragItemInfo(columnId, content),
+    collect: (monitor) => ({
+      // En esta función monitorizamos el estado del drag y cambiamos la opacidad del
+      // card que está fijo (el elegido para el drag, para que el usuario se de cuenta)
+      // de que item está arrastrando
+      opacity: monitor.isDragging() ? 0.4 : 1,
+    }),
+  }));
+
+  return (
++   <div ref={ref}>
+      <div ref={preview} className={classes.card}>
+        <div ref={drag} className={classes.dragHandle} style={{ opacity }} />
+        {content.title}
+      </div>
++  </div>
+
+  );
+- };
++ });
+```
+
+Ya parece que lo tengo, vamos a implementar un método que teniendo en cuenta
+la coordenada X,Y del drop, me lo compare con las X,Y de las card y si encuentra
+una que este en esa zona me devuelva el indice en el array de cards (se podría
+hacer algo más fino y si cae en la mitad superior que de el indice anterior y si
+es la mitad inferior que de el indice siguiente... esto para la lista de martillo fino :)).
+
+Este método esta propio para añadirle pruebas unitarias y ver que funciona
+como esperamos y en diferentes casos arista...
+
+_./src/kanban/components/column.business.ts_
+
+```ts
+import { XYCoord } from "react-dnd";
+
+// Movemos el type tb
+export type CardDivKeyValue = {
+  [key: string]: React.MutableRefObject<HTMLDivElement>;
+};
+
+export const getArrayPositionBasedOnCoordinates = (
+  cardDivElements: CardDivKeyValue,
+  offset: XYCoord
+) => {
+  // Por defecto añadimos en la última
+  let position = Object.keys(cardDivElements).length;
+
+  // Iteramos por el objeto de refs
+  Object.keys(cardDivElements).forEach((key, index) => {
+    const cardDiv = cardDivElements[key];
+    const cardDivPosition = cardDiv.current.getBoundingClientRect();
+
+    // Si una card está en la zona de drop le decimos que coloque la
+    // nueva justo debajo
+    // Esto se podría optimizar y para el bucle aquí
+    if (offset.y > cardDivPosition.top && offset.y < cardDivPosition.bottom) {
+      position = index + 1; // NextPosition
+    }
+  });
+
+  return position;
+};
+```
+
+Vamos ahora a por el componente:
+
+_./src/kanban/components/column.tsx_
+
+```diff
+import React from "react";
+import { useDrop } from "react-dnd";
+import classes from "./column.component.css";
+import { CardContent, ItemTypes, DragItemInfo } from "../model";
+import { Card } from "./card.component";
+import { KanbanContext } from "../providers/kanban.context";
++ import {CardDivKeyValue, getArrayPositionBasedOnCoordinates} from "./column.business";
+```
+
+Y vamos a sacar un console.log con la posición a ver que tal funciona:
+
+_./src/kanban/components/column.tsx_
+
+```diff
+- type CardDivKeyValue = {
+-  [key: string]: React.MutableRefObject<HTMLDivElement>;
+- };
+
+export const Column: React.FC<Props> = (props) => {
+  const { columnId, name, content } = props;
+  const { moveCard } = React.useContext(KanbanContext);
+
+  const [collectedProps, drop] = useDrop(() => ({
+    accept: ItemTypes.CARD,
+    drop: (item: DragItemInfo, monitor) => {
++     console.log("** Card Index:",getArrayPositionBasedOnCoordinates(itemsRef, monitor.getClientOffset()));
+      moveCard(columnId, item);
+
+      return {
+        name: `DropColumn`,
+      };
+    },
+```
+
+Vamos a probarlo:
+
+```bash
+npm start
+```
+
+- Parece que va bien pero conforme vamos añadiendo y soltando elementos
+  de repente pega un castañazo la aplicación, tenemos:
+
+```
+Uncaught TypeError: Cannot read properties of null (reading 'getBoundingClientRect')
+```
+
+- En este caso si nos ponemos a depurar (para que fuera más fácil podríamos
+  poner un console.log con los elementos de la lista de cards en cada drop y ver
+  que se quedan los antiguos), ¿Qué podemos hacer? Crearnos un _useRef_ raíz
+  para que no se quede el closure con los elementos antiguos cuando se llama
+  desde el callback del drop:
+
+_./src/kanban/components/column.tsx_
+
+```diff
++  const rootRef = React.useRef<CardDivKeyValue>(null);
+
+  const [collectedProps, drop] = useDrop(() => ({
+    accept: ItemTypes.CARD,
+    drop: (item: DragItemInfo, monitor) => {
+      console.log(
+        "** Card Index:",
+-        getArrayPositionBasedOnCoordinates(itemsRef, monitor.getClientOffset())
++        getArrayPositionBasedOnCoordinates(rootRef.current, monitor.getClientOffset())
+
+      );
+
+      moveCard(columnId, item);
+
+      return {
+        name: `DropColumn`,
+      };
+    },
+    collect: (monitor: any) => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop(),
+    }),
+  }));
+
+  const itemsRef = React.useMemo(() => {
+    const newItemsRef = content.reduce<CardDivKeyValue>(
+      (cardRefs, item) => ({
+        ...cardRefs,
+        [item.id]: React.createRef(),
+      }),
+      {}
+    );
+
++    rootRef.current = newItemsRef;
+
+    return newItemsRef;
+  }, [props.content]);
+```
+
+- Ahora que parece que se porta vamos a aplicar esto a los cards
+  y eliminar el console.log, para ello vamos a añadir un parámetro
+  más a moveCard.
+
+_./src/kanban/components/column.tsx_
+
+```diff
+  const [collectedProps, drop] = useDrop(() => ({
+    accept: ItemTypes.CARD,
+    drop: (item: DragItemInfo, monitor) => {
+-      console.log(
+-        "** Card Index:",
+-        getArrayPositionBasedOnCoordinates(
+-          rootRef.current,
+-          monitor.getClientOffset()
+-        )
+-      );
+
++      const index = getArrayPositionBasedOnCoordinates(rootRef.current, monitor.getClientOffset());
+-      moveCard(columnId, item);
++      moveCard(columnId, index, item);
+
+      return {
+        name: `DropColumn`,
+      };
+```
+
+Vamos a actualizar el _moveCard_ del context:
+
+_./src/kanban/providers/kanban.context.ts_
+
+```diff
+export interface KanbanContextModel {
+  kanbanContent: KanbanContent;
+  setKanbanContent: (kanbanContent: KanbanContent) => void;
+-  moveCard: (columnDestinationId: number, dragItemInfo: DragItemInfo) => void;
++  moveCard: (columnDestinationId: number, index : number, dragItemInfo: DragItemInfo) => void;
+
+}
+```
+
+_./src/kanban/providers/kanban.provider.ts_
+
+```diff
+  const moveCard =
+-    (columnDestinationId: number, dragItemInfo: DragItemInfo) => {
++    (columnDestinationId: number, index: number, dragItemInfo: DragItemInfo) => {
+
+      const { columnId: columnOriginId, content } = dragItemInfo;
+
+      setKanbanContent((kanbanContentLatest) =>
+        moveCardColumn(
+          {
+            columnOriginId,
+            columnDestinationId,
++           cardIndex: index,
+            content,
+          },
+          kanbanContentLatest
+        )
+      );
+    };
+```
+
+_./src/kanban/kanban.business.ts_
+
+```diff
+interface MoveInfo {
+  columnOriginId : number;
+  columnDestinationId: number;
++ cardIndex : number;
+  content: CardContent;
+}
+
+export const moveCardColumn = (moveInfo : MoveInfo, kanbanContent : KanbanContent) : KanbanContent => {
+
+```
+
+_./src/kanban/kanban.business.ts_
+
+```diff
+-  const {columnOriginId, columnDestinationId, content} = moveInfo;
++  const {columnOriginId, columnDestinationId, content, cardIndex} = moveInfo;
+//(...)
+  if (columnIndexOrigin !== -1 && columnIndexDestination !== -1) {
+      newKanbanContent = produce(kanbanContent, (draft) => {
+        // remove
+        draft.columns[columnIndexOrigin].content =
+        kanbanContent.columns[columnIndexOrigin].content.filter(
+            (c) => c.id !== content.id
+          );
+-        // add
+-        draft.columns[columnIndexDestination].content.push(content);
++       // add at index
++       draft.columns[columnIndexDestination].content.splice(cardIndex, 0, content);
+      });
+  }
+```
+
+Vamos a arreglar las pruebas que se han roto (añadimos el parametro
+para que pase e inserte al final, tendríamos que añadir más
+casos y probar inserciones):
+
+_./src/kanban/kanban.business.spec.ts_
+
+```diff
+import { moveCardColumn } from "./kanban.business";
+import { KanbanContent } from "./model";
+
+describe("Kanban business", () => {
+  it("should move card from one column to another", () => {
+    const kanbanContent: KanbanContent = {
+      columns: [
+        {
+          id: 1,
+          name: "Column A",
+          content: [
+            {
+              id: 1,
+              title: "Card 1",
+            },
+            {
+              id: 2,
+              title: "Card 2",
+            },
+          ],
+        },
+        {
+          id: 2,
+          name: "Column B",
+          content: [
+            {
+              id: 3,
+              title: "Card 3",
+            },
+          ],
+        },
+      ],
+    };
+
+    const moveInfo = {
+      columnOriginId: 1,
+      columnDestinationId: 2,
++       cardIndex: 1,
+      content: {
+        id: 1,
+        title: "Card 1",
+      },
+    };
+
+    const newKanbanContent = moveCardColumn(moveInfo, kanbanContent);
+
+    expect(newKanbanContent).toEqual({
+      columns: [
+        {
+          id: 1,
+          name: "Column A",
+          content: [
+            {
+              id: 2,
+              title: "Card 2",
+            },
+          ],
+        },
+        {
+          id: 2,
+          name: "Column B",
+          content: [
+            {
+              id: 3,
+              title: "Card 3",
+            },
+            {
+              id: 1,
+              title: "Card 1",
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  it("should move card from first column to third column", () => {
+    const kanbanContent: KanbanContent = {
+      columns: [
+        {
+          id: 1,
+          name: "Column A",
+          content: [
+            {
+              id: 1,
+              title: "Card 1",
+            },
+            {
+              id: 2,
+              title: "Card 2",
+            },
+          ],
+        },
+        {
+          id: 2,
+          name: "Column B",
+          content: [
+            {
+              id: 3,
+              title: "Card 3",
+            },
+          ],
+        },
+        {
+          id: 3,
+          name: "Column C",
+          content: [
+          ],
+        },
+      ],
+    };
+
+    const moveInfo = {
+      columnOriginId: 1,
+      columnDestinationId: 3,
+      content: {
+        id: 1,
++       cardIndex: 0,
+        title: "Card 1",
+      },
+    };
+
+    const newKanbanContent = moveCardColumn(moveInfo, kanbanContent);
+
+    expect(newKanbanContent).toEqual({
+      columns: [
+        {
+          id: 1,
+          name: "Column A",
+          content: [
+            {
+              id: 2,
+              title: "Card 2",
+            },
+          ],
+        },
+        {
+          id: 2,
+          name: "Column B",
+          content: [
+            {
+              id: 3,
+              title: "Card 3",
+            },
+          ],
+        },
+        {
+          id: 3,
+          name: "Column C",
+          content: [
+            {
+              id: 1,
+              title: "Card 1",
+            },
+          ],
+        },
+      ],
+    });
+  });
 
 
+  it("should return same state if destination does not exists", () => {
+    const kanbanContent: KanbanContent = {
+      columns: [
+        {
+          id: 1,
+          name: "Column A",
+          content: [
+            {
+              id: 1,
+              title: "Card 1",
+            },
+            {
+              id: 2,
+              title: "Card 2",
+            },
+          ],
+        },
+      ],
+    };
 
+    const moveInfo = {
+      columnOriginId: 1,
+      columnDestinationId: 2,
++     cardIndex: 0,
+      content: {
+        id: 1,
+        title: "Card 1",
+      },
+    };
 
-** No olvidar intercalar y comentar drop cards o columns y comentar **
+    const newKanbanContent = moveCardColumn(moveInfo, kanbanContent);
+
+    expect(newKanbanContent).toEqual(kanbanContent);
+  });
+
+  it("should return same state if origin does not exists", () => {
+    const kanbanContent: KanbanContent = {
+      columns: [
+        {
+          id: 1,
+          name: "Column A",
+          content: [
+            {
+              id: 1,
+              title: "Card 1",
+            },
+            {
+              id: 2,
+              title: "Card 2",
+            },
+          ],
+        },
+      ],
+    };
+
+    const moveInfo = {
+      columnOriginId: 2,
+      columnDestinationId: 1,
++     cardIndex: 0,
+      content: {
+        id: 1,
+        title: "Card 1",
+      },
+    };
+
+    const newKanbanContent = moveCardColumn(moveInfo, kanbanContent);
+
+    expect(newKanbanContent).toEqual(kanbanContent);
+  });
+});
+```

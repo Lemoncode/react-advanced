@@ -35,6 +35,7 @@ describe("Kanban business", () => {
     const moveInfo = {
       columnOriginId: 1,
       columnDestinationId: 2,
+      cardIndex: 1,
       content: {
         id: 1,
         title: "Card 1",
@@ -103,8 +104,7 @@ describe("Kanban business", () => {
         {
           id: 3,
           name: "Column C",
-          content: [
-          ],
+          content: [],
         },
       ],
     };
@@ -112,6 +112,7 @@ describe("Kanban business", () => {
     const moveInfo = {
       columnOriginId: 1,
       columnDestinationId: 3,
+      cardIndex: 1,
       content: {
         id: 1,
         title: "Card 1",
@@ -156,7 +157,6 @@ describe("Kanban business", () => {
     });
   });
 
-
   it("should return same state if destination does not exists", () => {
     const kanbanContent: KanbanContent = {
       columns: [
@@ -180,6 +180,7 @@ describe("Kanban business", () => {
     const moveInfo = {
       columnOriginId: 1,
       columnDestinationId: 2,
+      cardIndex: 0,
       content: {
         id: 1,
         title: "Card 1",
@@ -214,6 +215,7 @@ describe("Kanban business", () => {
     const moveInfo = {
       columnOriginId: 2,
       columnDestinationId: 1,
+      cardIndex: 0,
       content: {
         id: 1,
         title: "Card 1",
@@ -224,7 +226,4 @@ describe("Kanban business", () => {
 
     expect(newKanbanContent).toEqual(kanbanContent);
   });
-
-
-
 });
