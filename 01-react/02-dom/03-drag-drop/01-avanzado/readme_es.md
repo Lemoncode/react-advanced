@@ -1639,4 +1639,536 @@ _./src/kanban/kanban.container.tsx_
   );
 ```
 
+- Bueno ya lo tenemos algo más estable, nos queda un último escollo que es en vez de añadir la carta al final
+  siempre que hacemos drop, que la inserte en medio si la soltamos en mitad de la columna, esto no va a ser fácil
+  ya que tenemos que calcular la posición en la que cae la card y ver sobre que card destino se ha posado y calcular el indice del array...
+
+Antes de empezar con esto vamos a hacer limpia de código, que pasos vamos a tomar:
+
+- Simplificar los componentes (_vaciar el cangrejo_).
+- Evitar el prop drill hell usando Contexto useReducer.
+
+### Simplificar los componentes
+
+Lo primero, vamos a _vaciar el cangrejo_ tenemos componentes con mucho código, podemos:
+
+- Extraer parte del código a lógica de negocios (le podemos añadir tests).
+- Podemos sacarlo a custom hooks (aquí le podríamos añadir tests, o esperar a ver si el tema
+  de insertar en medio impacta mucho en el código).
+
+Vamos a ir evaluando componentes, empezamos por el kanban container:
+
+- La parte en la que creamos el kanbanContent y hacemos la carga inicial la podíamos envolver
+  en un custom hook.
+
+- El HandleMoveCard tiene logica que se puede pasar a funciones de negocio sin estado que sean
+  fácilmente testeables.
+
+- Creamos el custom hook (lo vamos a dejar dentro del fichero del container, pero lo podríamos sacar a un fichero aparte):
+
+_./src/kanban/kanban.container.tsx_
+
+```diff
+import produce from "immer";
+
++ const useKanbanState = () : [
++  KanbanContent,
++  React.Dispatch<React.SetStateAction<KanbanContent>>
++ ] => {
++  const [kanbanContent, setKanbanContent] = React.useState<KanbanContent>(
++    createDefaultKanbanContent()
++  );
++
++  React.useEffect(() => {
++    loadKanbanContent().then((content) => setKanbanContent(content));
++  }, []);
++
++  return [kanbanContent, setKanbanContent];
++ }
+
+export const KanbanContainer: React.FC = () => {
+-  const [kanbanContent, setKanbanContent] = React.useState<KanbanContent>(
+-    createDefaultKanbanContent()
+-  );
+-
+-  React.useEffect(() => {
+-    loadKanbanContent().then((content) => setKanbanContent(content));
+-  }, []);
+```
+
+- Vamos a extraer la lógica de búsqueda de columna, añadir y eliminar card a un método de negocio, de primeras
+  en bruto (aquí sería buena idea añadir tests para ver que funciona como esperamos), vamos a ponerlo tal cual
+  y después lo optimizamos.
+
+_./src/kanban.business.ts_
+
+```ts
+// TODO this can be additionally refactored (apply clean code)
+export const moveCardColumn = (
+  moveInfo: MoveInfo,
+  kanbanContent: KanbanContent
+): KanbanContent => {
+  const { columnOriginId, columnDestinationId, content } = moveInfo;
+  let newKanbanContent = kanbanContent;
+
+  const columnIndexOrigin = kanbanContent.columns.findIndex(
+    (c) => c.id === columnOriginId
+  );
+
+  const columnIndexDestination = kanbanContent.columns.findIndex(
+    (c) => c.id === columnDestinationId
+  );
+
+  if (columnIndexOrigin !== -1 && columnIndexDestination !== -1) {
+    newKanbanContent = produce(kanbanContent, (draft) => {
+      // remove
+      draft.columns[columnIndexOrigin].content = kanbanContent.columns[
+        columnIndexOrigin
+      ].content.filter((c) => c.id !== content.id);
+      // add
+      draft.columns[columnIndexDestination].content.push(content);
+    });
+  }
+
+  return newKanbanContent;
+};
+```
+
+- Antes de seguir refactorizando vamos a añadir unas pruebas para ver si esto pinta bien
+  (podíamos haberlo hecho siguiendo TDD)
+
+Arrancamos en modo test en otro terminal:
+
+```bash
+npm run test:watch
+```
+
+_./src/kanban.business.spec.ts_
+
+```ts
+import { moveCardColumn } from "./kanban.business";
+import { KanbanContent } from "./model";
+
+describe("Kanban business", () => {
+  it("should move card from one column to another", () => {
+    const kanbanContent: KanbanContent = {
+      columns: [
+        {
+          id: 1,
+          name: "Column A",
+          content: [
+            {
+              id: 1,
+              title: "Card 1",
+            },
+            {
+              id: 2,
+              title: "Card 2",
+            },
+          ],
+        },
+        {
+          id: 2,
+          name: "Column B",
+          content: [
+            {
+              id: 3,
+              title: "Card 3",
+            },
+          ],
+        },
+      ],
+    };
+
+    const moveInfo = {
+      columnOriginId: 1,
+      columnDestinationId: 2,
+      content: {
+        id: 1,
+        title: "Card 1",
+      },
+    };
+
+    const newKanbanContent = moveCardColumn(moveInfo, kanbanContent);
+
+    expect(newKanbanContent).toEqual({
+      columns: [
+        {
+          id: 1,
+          name: "Column A",
+          content: [
+            {
+              id: 2,
+              title: "Card 2",
+            },
+          ],
+        },
+        {
+          id: 2,
+          name: "Column B",
+          content: [
+            {
+              id: 3,
+              title: "Card 3",
+            },
+            {
+              id: 1,
+              title: "Card 1",
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  it("should move card from first column to third column", () => {
+    const kanbanContent: KanbanContent = {
+      columns: [
+        {
+          id: 1,
+          name: "Column A",
+          content: [
+            {
+              id: 1,
+              title: "Card 1",
+            },
+            {
+              id: 2,
+              title: "Card 2",
+            },
+          ],
+        },
+        {
+          id: 2,
+          name: "Column B",
+          content: [
+            {
+              id: 3,
+              title: "Card 3",
+            },
+          ],
+        },
+        {
+          id: 3,
+          name: "Column C",
+          content: [],
+        },
+      ],
+    };
+
+    const moveInfo = {
+      columnOriginId: 1,
+      columnDestinationId: 3,
+      content: {
+        id: 1,
+        title: "Card 1",
+      },
+    };
+
+    const newKanbanContent = moveCardColumn(moveInfo, kanbanContent);
+
+    expect(newKanbanContent).toEqual({
+      columns: [
+        {
+          id: 1,
+          name: "Column A",
+          content: [
+            {
+              id: 2,
+              title: "Card 2",
+            },
+          ],
+        },
+        {
+          id: 2,
+          name: "Column B",
+          content: [
+            {
+              id: 3,
+              title: "Card 3",
+            },
+          ],
+        },
+        {
+          id: 3,
+          name: "Column C",
+          content: [
+            {
+              id: 1,
+              title: "Card 1",
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  it("should return same state if destination does not exists", () => {
+    const kanbanContent: KanbanContent = {
+      columns: [
+        {
+          id: 1,
+          name: "Column A",
+          content: [
+            {
+              id: 1,
+              title: "Card 1",
+            },
+            {
+              id: 2,
+              title: "Card 2",
+            },
+          ],
+        },
+      ],
+    };
+
+    const moveInfo = {
+      columnOriginId: 1,
+      columnDestinationId: 2,
+      content: {
+        id: 1,
+        title: "Card 1",
+      },
+    };
+
+    const newKanbanContent = moveCardColumn(moveInfo, kanbanContent);
+
+    expect(newKanbanContent).toEqual(kanbanContent);
+  });
+
+  it("should return same state if origin does not exists", () => {
+    const kanbanContent: KanbanContent = {
+      columns: [
+        {
+          id: 1,
+          name: "Column A",
+          content: [
+            {
+              id: 1,
+              title: "Card 1",
+            },
+            {
+              id: 2,
+              title: "Card 2",
+            },
+          ],
+        },
+      ],
+    };
+
+    const moveInfo = {
+      columnOriginId: 2,
+      columnDestinationId: 1,
+      content: {
+        id: 1,
+        title: "Card 1",
+      },
+    };
+
+    const newKanbanContent = moveCardColumn(moveInfo, kanbanContent);
+
+    expect(newKanbanContent).toEqual(kanbanContent);
+  });
+});
+```
+
+> Podríamos haber usado jest.each: https://www.npmjs.com/package/jest-each
+
+El fichero business podríamos dejarlo más simple, iremos a por él más tarde (otro item para la lista de
+_martillo fino_)
+
+Ahora que funciona vamos a hacer el refactor en el container:
+
+_./src/kanban/kanban.container.tsx_
+
+```diff
+import React from "react";
+import {
+  KanbanContent,
+  createDefaultKanbanContent,
+  CardContent,
+  DragItemInfo,
+} from "./model";
+import { loadKanbanContent } from "./api";
+import { Column } from "./components";
+import classes from "./kanban.container.css";
+import produce from "immer";
++ import { moveCardColumn } from "./kanban.business";
+```
+
+_./src/kanban/kanban.container.tsx_
+
+```diff
+export const KanbanContainer: React.FC = () => {
+  const [kanbanContent, setKanbanContent] = useKanbanState();
+
+  const handleMoveCard =
+    (columnDestinationId: number) => (dragItemInfo: DragItemInfo) => {
+      const { columnId: columnOriginId, content } = dragItemInfo;
+
+-      const columnIndexOrigin = kanbanContent.columns.findIndex(
+-        (c) => c.id === columnOriginId
+-      );
+-
+-      const columnIndexDestination = kanbanContent.columns.findIndex(
+-        (c) => c.id === columnDestinationId
+-      );
+-
+-      if (columnIndexOrigin !== -1 && columnIndexDestination !== -1) {
+-        setKanbanContent((kanbanContentLatest) =>
+-          produce(kanbanContentLatest, (draft) => {
+-            // remove
+-            draft.columns[columnIndexOrigin].content =
+-              kanbanContentLatest.columns[columnIndexOrigin].content.filter(
+-                (c) => c.id !== content.id
+-              );
+-            // add
+-            draft.columns[columnIndexDestination].content.push(content);
+-          })
+-        );
+-      }
++      setKanbanContent((kanbanContentLatest) => moveCardColumn({
++         columnOriginId,
++         columnDestinationId,
++         content,
++         },
++         kanbanContentLatest));
+    };
+
+    };
+
+  return (
+```
+
+- No está mal como se ha quedado, a futuro si el tema de drag & drop crece (se añade más funcionalidad),
+  podríamos plantearnos encapsularla todo en un hook.
+
+- Vamos ahora a por la columna:
+  - Este componente tal y como esta no haría falta refactorizarlo.
+  - Si empieza a llenarse de código, podríamos plantearnos sacar la funcionalidad de drop a u custom
+    hook que podría llamarse _useCardDrop_ y le pasamos por parametro el callback de onMoveCard y pasamos
+    como return del hook el ref que hay que poner en el elemento que queremos que sea dropable.
+
+De momento no lo vamos a hacer, aquí tenemos una regla y es la de "recojo carrete":
+
+- Vamos haciendo refactors hasta que el código se vea limpio y entendible.
+- Esperamos que hayan cambios a futuro que puede que hagan más complejo ese código, entonces refactorizamos.
+- A veces me puedo pasar refactorizando, en ese caso hago como alguien que practica la pesca "recojo carrete"
+  y tiro a la versión anterior.
+
+Vamos a por la card:
+
+- En card pasa algo parecido, podríamos extraer el drag en un hook, pero en principio no lo vamos a hacer
+  ya que el componente de momento es simple.
+- Podría ser buena idea extraerlo para implementar pruebas unitarias del hook en concreto.
+
+### Pasar a contexto o useReducer
+
+Aunque hemos hecho limpia, seguimos teniendo un código un poco lioso:
+
+- Hay propiedades que viajan de container a card.
+- Hay callbacks que viajan de card a container.
+
+Esto es complicado de seguir, además que en el container tenemos mucho estado metido y lógica
+de actualización metida, podríamos plantear:
+
+- Almacenar en un contexto el estado de las columnas/cards y exponerlo a nivel de container con un provider.
+- Utilizar useReducer a nivel de container y pasar el dispatch, creando una acción para la carga inicial
+  y otra para la actualización de la posición de la card.
+
+Ambas opciones tienen sus pros y su contras:
+
+- El contexto es interesante, pero metemos getContext por mitad de la jerarquía.
+- El Reducer añade mucho orden pero tenemos que ir pasando dispatch de padre a hijo aunque un
+  componente de la jerarquía no lo use.
+
+En este caso nos vamos a quedar con la solución del contexto:
+
+- Vamos a definir el contexto del kanban:
+
+_./src/kanban/provider/kanban.context.tsx_
+
+```tsx
+import React from "react";
+import {
+  createDefaultKanbanContent,
+  DragItemInfo,
+  KanbanContent,
+} from "../model";
+
+export interface KanbanContextModel {
+  kanbanContent: KanbanContent;
+  setKanbanContent: (kanbanContent: KanbanContent) => void;
+  moveCard: (
+    moveInfo: DragItemInfo,
+    kanbanContent: KanbanContent
+  ) => KanbanContent;
+}
+
+export const KanbanContext = React.createContext<KanbanContextModel>({
+  kanbanContent: createDefaultKanbanContent(),
+  setKanbanContent: () =>
+    console.warn(
+      "** If you area reading this, likely you have forgotten to add the provider on top of your app"
+    ),
+  moveCard: () => null,
+});
+```
+
+_./src/kanban/provider/kanban.provider.tsx_
+
+```tsx
+import React from "react";
+import { moveCardColumn } from "../kanban.business";
+import {
+  KanbanContent,
+  createDefaultKanbanContent,
+  DragItemInfo,
+} from "../model";
+import { KanbanContext } from "./kanban.context";
+
+interface Props {
+  children: React.ReactNode;
+}
+
+export const KanbanProvider: React.FC<Props> = ({ children }) => {
+  const [kanbanContent, setKanbanContent] = React.useState<KanbanContent>(
+    createDefaultKanbanContent()
+  );
+
+  const moveCard = (
+    columnDestinationId: number,
+    dragItemInfo: DragItemInfo
+  ) => {
+    const { columnId: columnOriginId, content } = dragItemInfo;
+
+    setKanbanContent((kanbanContentLatest) =>
+      moveCardColumn(
+        {
+          columnOriginId,
+          columnDestinationId,
+          content,
+        },
+        kanbanContentLatest
+      )
+    );
+  };
+
+  return (
+    <KanbanContext.Provider
+      value={{
+        kanbanContent,
+        setKanbanContent,
+        moveCard,
+      }}
+    >
+      {children}
+    </KanbanContext.Provider>
+  );
+};
+```
+
+- Ahora podríamos colocar el context a nive
+
 ** No olvidar intercalar y comentar drop cards o columns y comentar **

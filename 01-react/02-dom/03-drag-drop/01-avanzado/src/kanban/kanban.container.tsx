@@ -9,8 +9,12 @@ import { loadKanbanContent } from "./api";
 import { Column } from "./components";
 import classes from "./kanban.container.css";
 import produce from "immer";
+import { moveCardColumn } from "./kanban.business";
 
-export const KanbanContainer: React.FC = () => {
+const useKanbanState = (): [
+  KanbanContent,
+  React.Dispatch<React.SetStateAction<KanbanContent>>
+] => {
   const [kanbanContent, setKanbanContent] = React.useState<KanbanContent>(
     createDefaultKanbanContent()
   );
@@ -19,31 +23,26 @@ export const KanbanContainer: React.FC = () => {
     loadKanbanContent().then((content) => setKanbanContent(content));
   }, []);
 
+  return [kanbanContent, setKanbanContent];
+};
+
+export const KanbanContainer: React.FC = () => {
+  const [kanbanContent, setKanbanContent] = useKanbanState();
+
   const handleMoveCard =
     (columnDestinationId: number) => (dragItemInfo: DragItemInfo) => {
       const { columnId: columnOriginId, content } = dragItemInfo;
 
-      const columnIndexOrigin = kanbanContent.columns.findIndex(
-        (c) => c.id === columnOriginId
+      setKanbanContent((kanbanContentLatest) =>
+        moveCardColumn(
+          {
+            columnOriginId,
+            columnDestinationId,
+            content,
+          },
+          kanbanContentLatest
+        )
       );
-
-      const columnIndexDestination = kanbanContent.columns.findIndex(
-        (c) => c.id === columnDestinationId
-      );
-
-      if (columnIndexOrigin !== -1 && columnIndexDestination !== -1) {
-        setKanbanContent((kanbanContentLatest) =>
-          produce(kanbanContentLatest, (draft) => {
-            // remove
-            draft.columns[columnIndexOrigin].content =
-              kanbanContentLatest.columns[columnIndexOrigin].content.filter(
-                (c) => c.id !== content.id
-              );
-            // add
-            draft.columns[columnIndexDestination].content.push(content);
-          })
-        );
-      }
     };
 
   return (

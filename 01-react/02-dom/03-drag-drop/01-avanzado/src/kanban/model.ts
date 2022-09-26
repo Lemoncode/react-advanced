@@ -26,10 +26,7 @@ export interface DragItemInfo {
   content: CardContent;
 }
 
-export const createDragItemInfo = (
-  columnId: number,
-  content: CardContent
-): DragItemInfo => ({
+export const createDragItemInfo = (columnId: number, content: CardContent): DragItemInfo => ({
   columnId,
   content: content,
 });
