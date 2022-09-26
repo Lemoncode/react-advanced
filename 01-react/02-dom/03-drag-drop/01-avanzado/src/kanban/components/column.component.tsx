@@ -59,7 +59,7 @@ export const Column: React.FC<Props> = (props) => {
       <h4>{name}</h4>
       {content.map((card) => (
         <Card
-          ref={itemsRef[card.id]}
+          ref={rootRef.current[card.id]}
           key={card.id}
           columnId={columnId}
           content={card}

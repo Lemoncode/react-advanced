@@ -2630,6 +2630,28 @@ _./src/kanban/components/column.tsx_
   }, [props.content]);
 ```
 
+y en el render
+
+_./src/kanban/components/column.tsx_
+
+```diff
+  return (
+    <div ref={drop} className={classes.container}>
+      <h4>{name}</h4>
+      {content.map((card) => (
+        <Card
+-          ref={itemsRef[card.id]}
++          ref={rootRef.current[card.id]}
+          key={card.id}
+          columnId={columnId}
+          content={card}
+        />
+      ))}
+    </div>
+  );
+};
+```
+
 - Ahora que parece que se porta vamos a aplicar esto a los cards
   y eliminar el console.log, para ello vamos a añadir un parámetro
   más a moveCard.
