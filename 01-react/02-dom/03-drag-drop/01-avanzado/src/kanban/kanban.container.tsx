@@ -3,6 +3,7 @@ import {
   KanbanContent,
   createDefaultKanbanContent,
   CardContent,
+  DragItemInfo,
 } from "./model";
 import { loadKanbanContent } from "./api";
 import { Column } from "./components";
@@ -18,42 +19,42 @@ export const KanbanContainer: React.FC = () => {
     loadKanbanContent().then((content) => setKanbanContent(content));
   }, []);
 
-  const handleAddCard = (columnId: number) => (card: CardContent) => {
-    setKanbanContent(
-      produce(kanbanContent, (draft) => {
-        const column = draft.columns.find((c) => c.id === columnId);
-        if (column) {
-          column.content.push(card);
-        }
-      })
-    );
-  };
+  const handleMoveCard =
+    (columnDestinationId: number) => (dragItemInfo: DragItemInfo) => {
+      const { columnId: columnOriginId, content } = dragItemInfo;
 
-  const handleRemoveCard = (columnId: number) => (card: CardContent) => {
-    const columnIndex = kanbanContent.columns.findIndex(
-      (c) => c.id === columnId
-    );
-
-    if (columnIndex !== -1) {
-      setKanbanContent((kanbanContentLatest) =>
-        produce(kanbanContentLatest, (draft) => {
-          draft.columns[columnIndex].content = kanbanContentLatest.columns[
-            columnIndex
-          ].content.filter((c) => c.id !== card.id);
-        })
+      const columnIndexOrigin = kanbanContent.columns.findIndex(
+        (c) => c.id === columnOriginId
       );
-    }
-  };
+
+      const columnIndexDestination = kanbanContent.columns.findIndex(
+        (c) => c.id === columnDestinationId
+      );
+
+      if (columnIndexOrigin !== -1 && columnIndexDestination !== -1) {
+        setKanbanContent((kanbanContentLatest) =>
+          produce(kanbanContentLatest, (draft) => {
+            // remove
+            draft.columns[columnIndexOrigin].content =
+              kanbanContentLatest.columns[columnIndexOrigin].content.filter(
+                (c) => c.id !== content.id
+              );
+            // add
+            draft.columns[columnIndexDestination].content.push(content);
+          })
+        );
+      }
+    };
 
   return (
     <div className={classes.container}>
       {kanbanContent.columns.map((column) => (
         <Column
           key={column.id}
+          columnId={column.id}
           name={column.name}
           content={column.content}
-          onAddCard={handleAddCard(column.id)}
-          onRemoveCard={handleRemoveCard(column.id)}
+          onMoveCard={handleMoveCard(column.id)}
         />
       ))}
     </div>

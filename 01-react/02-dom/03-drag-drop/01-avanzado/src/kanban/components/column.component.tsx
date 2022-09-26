@@ -1,23 +1,23 @@
 import React from "react";
 import { useDrop } from "react-dnd";
 import classes from "./column.component.css";
-import { CardContent, ItemTypes } from "../model";
+import { CardContent, ItemTypes, DragItemInfo } from "../model";
 import { Card } from "./card.component";
 
 interface Props {
+  columnId: number;
   name: string;
   content: CardContent[];
-  onAddCard: (card: CardContent) => void;
-  onRemoveCard: (cardContent: CardContent) => void;
+  onMoveCard: (card: DragItemInfo) => void;
 }
 
 export const Column: React.FC<Props> = (props) => {
-  const { name, content, onAddCard, onRemoveCard } = props;
+  const { columnId, name, content, onMoveCard } = props;
 
   const [collectedProps, drop] = useDrop(() => ({
     accept: ItemTypes.CARD,
-    drop: (item: CardContent, monitor) => {
-      onAddCard(item);
+    drop: (item: DragItemInfo, monitor) => {
+      onMoveCard(item);
 
       return {
         name: `DropColumn`,
@@ -33,7 +33,7 @@ export const Column: React.FC<Props> = (props) => {
     <div ref={drop} className={classes.container}>
       <h4>{name}</h4>
       {content.map((card) => (
-        <Card key={card.id} content={card} onRemoveCard={onRemoveCard} />
+        <Card key={card.id} columnId={columnId} content={card} />
       ))}
     </div>
   );

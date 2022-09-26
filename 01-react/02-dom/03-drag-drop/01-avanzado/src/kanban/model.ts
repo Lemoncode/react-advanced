@@ -20,3 +20,16 @@ export interface KanbanContent {
 export const createDefaultKanbanContent = (): KanbanContent => ({
   columns: [],
 });
+
+export interface DragItemInfo {
+  columnId: number;
+  content: CardContent;
+}
+
+export const createDragItemInfo = (
+  columnId: number,
+  content: CardContent
+): DragItemInfo => ({
+  columnId,
+  content: content,
+});

@@ -1285,7 +1285,7 @@ closure:
 ```diff
     if (columnIndex !== -1) {
 -      setKanbanContent(
-+      setKanbanContent((kanbanContentLatest) => 
++      setKanbanContent((kanbanContentLatest) =>
 -        produce(kanbanContentLatest, (draft) => {
 +        produce(kanbanContentLatest, (draft) => {
 -          draft.columns[columnIndex].content = kanbanContent.columns[
@@ -1300,26 +1300,343 @@ closure:
 - Vale con esto las cosas vuelven a funcionar, pero nos deja mal sabor de boca:
   - El código que se ha quedado es un galimatias.
   - Partimos de que controlamos el orden, primero drop después end drag (tendríamos que añadir lo mismo
-  en el EndDrag).
+    en el EndDrag).
   - Tenemos riesgo de introducir más condiciones de carrera.
-  - Todavía no hemos empezado a _rascar casos arista_, por ejemplo: 
+  - Todavía no hemos empezado a _rascar casos arista_, por ejemplo:
     - Que pasa si arrastro y suelto una card en la misma columna.
     - Que pasa si quiero insertar una card siguiendo un orden.
     - ...
 
 Ahora mismo toca parar y refactorizar, que un código funcione no quiere decir que sea una solución aceptable,
 vamos a plantear este escenario, podemos pensar en varias aproximaciones:
-  - Una podría ser utilizar useReducer, tener el estado en el reducer y las acciones ADDCard y RemoveCard,
+
+- Una podría ser utilizar useReducer, tener el estado en el reducer y las acciones ADDCard y RemoveCard,
   de esta manera sacamos estado fuera y nos quitamos el problema del closure hell. Este caso podría ser útil si
   la zona de drag y la de drop no se hablaran, pero en este caso tenemos un container comun.
 
-  - La segunda es dejar que el drop se encarga de todo, de esta manera:
-    - Tenemos un único punto de entrada (no hay condiciones de carrera).
-    - Simplificamos código (al menos la parte de drag y el burbujeo hacia arriba).
+- La segunda es dejar que el drop se encarga de todo, de esta manera:
+  - Tenemos un único punto de entrada (no hay condiciones de carrera).
+  - Simplificamos código (al menos la parte de drag y el burbujeo hacia arriba).
 
 De momento vamos a por la segunda opción, dejando al puerta a utilizar useReducer a futuro (por ejemplo
 se complica la cosa y ahora queremos distinguir entre drag y eliminar y drag y copiar, etc...)
 
+Qué solución podemos darle:
 
+- En vez de AddCard vamos a llamar a este evento MoveCard (tienen más sentido, a futuro seguramente pongamos
+  un AddCard para crear una tarjeta en blanco).
+
+- Se va originar en el columnDrop, y la información que va a tener va a ser:
+
+  - Columna Origen.
+  - Item.
+
+- La columna destino la podemos seguir sacando con el curry (también podríamos plantearnos pasarla para abajo).
+
+Esto origina un evento en el que se burbujea al contenedor esta información y se hace todo de una tacada,
+eliminar el elemento y añadir el nuevo.
+
+Que es lo positivo de esto... que además de quedarnos el código más claro, resolvemos el caso arista de arrastro
+y suelto en la misma columna.
+
+¡ Manos a la obra !
+
+- Lo primero vamos a añadir a la estructura del drag el column Id al que pertenece la tarjeta (podríamos
+  iterar por las mismas, pero si ya sabemos de partida la columna origen, nos ahorramos ese paso)
+
+_./src/kanban/model.ts_
+
+```diff
+export const createDefaultKanbanContent = (): KanbanContent => ({
+  columns: [],
+});
+
++ interface DragItemInfo {
++   columnId: number;
++   content: CardContent;
++ }
+
++ export const createDragItemInfo = (columnId: number, content: CardContent): DragItemInfo => ({
++  columnId,
++  content,
++ });
+```
+
+- En el container vamos a pasar el columnId para que lo recoja la card:
+
+_./src/kanban/kanbanContainer.tsx_
+
+```diff
+  return (
+    <div className={classes.container}>
+      {kanbanContent.columns.map((column) => (
+        <Column
+          key={column.id}
++         columnId={column.id}
+          name={column.name}
+          content={column.content}
+          onAddCard={handleAddCard(column.id)}
+          onRemoveCard={handleRemoveCard(column.id)}
+        />
+      ))}
+    </div>
+  );
+```
+
+_./src/kanban/components/column.components.tsx_
+
+```diff
+interface Props {
++ columnId : number;
+  name: string;
+  content: CardContent[];
+  onAddCard: (card: CardContent) => void;
+  onRemoveCard: (cardContent: CardContent) => void;
+}
+
+export const Column: React.FC<Props> = (props) => {
+  const {
++         columnId,
+          name,
+          content,
+          onAddCard,
+          onRemoveCard,  } = props;
+```
+
+_./src/kanban/components/column.components.tsx_
+
+```diff
+    <div ref={drop} className={classes.container}>
+      <h4>{name}</h4>
+      {content.map((card) => (
+        <Card
+          key={card.id}
++         columnId={columnId}
+          content={card}
+          onRemoveCard={onRemoveCard} />
+      ))}
+    </div>
+```
+
+> ¿Es buena idea pasar el columnId de forma separada? ¿ Deberíamos pasar el card? ¿Y si creamos
+> una entidad VM para pasar el card con el valor del columnId (de hecho seguramente en servidor
+> tendríamos el id de la columna a la que pertenece cada card)? Si almacenamos el columnId en el card
+> también podríamos tener un sólo array de cards... todas estas opciones tienen sus pros y sus contras,
+> en este caso vamos a pasar el columnId de forma separada.
+
+_./src/kanban/components/card.components.tsx_
+
+```diff
+import React from "react";
+import { useDrag } from "react-dnd";
+- import { CardContent, ItemTypes } from "../model";
++ import { CardContent, ItemTypes, createDragItemInfo } from "../model";
+import classes from "./card.component.css";
+
+interface Props {
+  content: CardContent;
+-  onRemoveCard: (cardContent: CardContent) => void;
++ columnId: number;
+}
+
+export const Card: React.FC<Props> = (props) => {
+-  const { content, onRemoveCard } = props;
++  const { content, columnId } = props;
+```
+
+_./src/kanban/components/card.components.tsx_
+
+```diff
+-  const [{ opacity }, drag, preview] = useDrag(() => ({
++  const [{ opacity }, drag, preview] = useDrag(() => ({
+    type: ItemTypes.CARD, // Definimos que es de tipo CARD esto lo usaremos en el drop
+-    item: content,
++    item: createDragItemInfo(columnId,content),
+```
+
+Eliminamos la parte del drop:
+
+```diff
+  const [{ opacity }, drag, preview] = useDrag(() => ({
+    type: ItemTypes.CARD, // Definimos que es de tipo CARD esto lo usaremos en el drop
+    item: createDragItemInfo(columnId,content),
+    collect: (monitor) => ({
+      // En esta función monitorizamos el estado del drag y cambiamos la opacidad del
+      // card que está fijo (el elegido para el drag, para que el usuario se de cuenta)
+      // de que item está arrastrando
+      opacity: monitor.isDragging() ? 0.4 : 1,
+    }),
+-    end: (item, monitor) => {
+-      // Una vez que ha concluido el drag, si el drop ha sido exitoso, mostramos un mensaje
+-      if (monitor.didDrop) {
+-        onRemoveCard(content);
+-      }
+-    },
+  }));
+```
+
+Y vamos a gestionar el bubble up desde la columna:
+
+_./src/kanban/components/column.component.tsx_
+
+```diff
+import React from "react";
+import { useDrop } from "react-dnd";
+import classes from "./column.component.css";
+- import { CardContent, ItemTypes } from "../model";
++ import { CardContent, ItemTypes, DragItemInfo } from "../model";
+import { Card } from "./card.component";
+```
+
+_./src/kanban/components/column.component.tsx_
+
+```diff
+interface Props {
+  columnId: number;
+  name: string;
+  content: CardContent[];
+-  onAddCard: (card: CardContent) => void;
++  onMoveCard: (card: DragItemInfo) => void;
+-  onRemoveCard: (cardContent: CardContent) => void;
+}
+
+export const Column: React.FC<Props> = (props) => {
+-  const { columnId, name, content, onAddCard, onRemoveCard } = props;
++  const { columnId, name, content, onMoveCard } = props;
+
+
+  const [collectedProps, drop] = useDrop(() => ({
+    accept: ItemTypes.CARD,
+-    drop: (item: CardContent, monitor) => {
++    drop: (item: DragItemInfo, monitor) => {
+-      onAddCard(item);
++      onMoveCard(item);
+
+      return {
+        name: `DropColumn`,
+      };
+    },
+    collect: (monitor: any) => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop(),
+    }),
+  }));
+```
+
+_./src/kanban/components/column.component.tsx_
+
+```diff
+  return (
+    <div ref={drop} className={classes.container}>
+      <h4>{name}</h4>
+      {content.map((card) => (
+        <Card
+          key={card.id}
+          columnId={columnId}
+          content={card}
+-          onRemoveCard={onRemoveCard}
++          onMoveCard={onMoveCard}
+        />
+      ))}
+    </div>
+  );
+```
+
+Y vamos a realizar los cambios en el container:
+
+_./src/kanban/kanban.container.tsx_
+
+```diff
+
+```
+
+_./src/kanban/kanban.container.tsx_
+
+```diff
+import React from "react";
+import {
+  KanbanContent,
+  createDefaultKanbanContent,
+  CardContent,
++ DragItemInfo
+} from "./model";
+import { loadKanbanContent } from "./api";
+```
+
+_./src/kanban/kanban.container.tsx_
+
+```diff
+-  const handleAddCard = (columnId: number) => (card: CardContent) => {
+-    setKanbanContent(
+-      produce(kanbanContent, (draft) => {
+-        const column = draft.columns.find((c) => c.id === columnId);
+-        if (column) {
+-          column.content.push(card);
+-        }
+-      })
+-    );
+-  };
+-
+-  const handleRemoveCard = (columnId: number) => (card: CardContent) => {
+-    const columnIndex = kanbanContent.columns.findIndex(
+-      (c) => c.id === columnId
+-    );
+-
+-    if (columnIndex !== -1) {
+-      setKanbanContent((kanbanContentLatest) =>
+-        produce(kanbanContentLatest, (draft) => {
+-          draft.columns[columnIndex].content = kanbanContentLatest.columns[
+-            columnIndex
+-          ].content.filter((c) => c.id !== card.id);
+-        })
+-      );
+-    }
+-  };
++
++  const handleMoveCard = (columnDestinationId : number) => (dragItemInfo: DragItemInfo) => {
++    const { columnId : columnOriginId, content } = dragItemInfo;
+
++    const columnIndexOrigin = kanbanContent.columns.findIndex(
++      (c) => c.id === columnOriginId
++    );
++
++    const columnIndexDestination = kanbanContent.columns.findIndex(
++      (c) => c.id === columnDestinationId
++    );
++
++   if (columnIndexOrigin !== -1 && columnIndexDestination !== -1) {
++      setKanbanContent((kanbanContentLatest) =>
++        produce(kanbanContentLatest, (draft) => {
++          // remove
++          draft.columns[columnIndexOrigin].content = kanbanContentLatest.columns[
++            columnIndexOrigin
++          ].content.filter((c) => c.id !== content.id);
++          // add
++          draft.columns[columnIndexDestination].content.push(content);
++        })
++      );
++    }
++  }
+```
+
+_./src/kanban/kanban.container.tsx_
+
+```diff
+  return (
+    <div className={classes.container}>
+      {kanbanContent.columns.map((column) => (
+        <Column
+          key={column.id}
+          columnId={column.id}
+          name={column.name}
+          content={column.content}
+-          onAddCard={handleAddCard(column.id)}
+-          onRemoveCard={handleRemoveCard(column.id)}
++          onMoveCard={handleMoveCard(column.id)}
+        />
+      ))}
+    </div>
+  );
+```
 
 ** No olvidar intercalar y comentar drop cards o columns y comentar **
