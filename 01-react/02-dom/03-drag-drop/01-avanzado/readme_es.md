@@ -2275,5 +2275,90 @@ export const KanbanContainer: React.FC = () => {
 };
 ```
 
+- Primer paso del refactor dado, ahora vamos a quitar drill prop de la column
+y la card (podríamos eliminar más propiedades y añadir helpers en el contexto,
+¿Merece la pena? ¿Qué opinas?).
+
+_./src/kanban/kanban.container.tsx_
+
+```diff
+-  const handleMoveCard =
+-    (columnDestinationId: number) => (dragItemInfo: DragItemInfo) => {
+-      const { columnId: columnOriginId, content } = dragItemInfo;
+-
+-      moveCard(columnDestinationId, dragItemInfo);
+-    };
+
+  return (
+    <div className={classes.container}>
+      {kanbanContent.columns.map((column) => (
+        <Column
+          key={column.id}
+          columnId={column.id}
+          name={column.name}
+          content={column.content}
+-          onMoveCard={handleMoveCard(column.id)}
+        />
+      ))}
+    </div>
+  );
+```
+
+_./src/kanban/components/column.component.tsx_
+
+```diff
+interface Props {
+  columnId: number;
+  name: string;
+  content: CardContent[];
+-  onMoveCard: (card: DragItemInfo) => void;
+}
+```
+
+_./src/kanban/components/column.component.tsx_
+
+```diff
+import React from "react";
+import { useDrop } from "react-dnd";
+import classes from "./column.component.css";
+import { CardContent, ItemTypes, DragItemInfo } from "../model";
+import { Card } from "./card.component";
++ import { KanbanContext } from "../providers/kanban.context";
+
+export const Column: React.FC<Props> = (props) => {
+-  const { columnId, name, content, onMoveCard } = props;
++  const { columnId, name, content } = props;
++  const { moveCard } = React.useContext(KanbanContext);
+
+  const [collectedProps, drop] = useDrop(() => ({
+    accept: ItemTypes.CARD,
+    drop: (item: DragItemInfo, monitor) => {
+-      onMoveCard(item);
++      moveCard(columnId, item);
+      return {
+        name: `DropColumn`,
+      };
+    },
+    collect: (monitor: any) => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop(),
+    }),
+  }));
+```
+
+- En la card no tenemos callback drill props.
+
+De momento nos quedamos así con el refactor, vamos a hacer una prueba
+rápida y ver que todo sigue funcionando.
+
+¿Qué hemos ganado? 
+  - Simplificado drill prop.
+  - Separador contenedor de estado.
+  - Eliminado curry al asignar el callback de move column.
+
+ 
+
+
+
 
 ** No olvidar intercalar y comentar drop cards o columns y comentar **
