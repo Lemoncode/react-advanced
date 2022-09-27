@@ -159,7 +159,7 @@ npm install
   - Nos encontramos con un montón de casos arista, que iremos resolviendo
     (algunos con dolor y tirando de stackoverflow :))
   - Mientras implementamos detectamos ciertos métodos que son pura lógica
-    de negocios (algortimos / funciones de ayuda que no tienen que ver con React),
+    de negocios (algoritmos / funciones de ayuda que no tienen que ver con React),
     si las tenemos claramente definidas las sacamos de los componentes e implementamos
     pruebas unitarias (incluso podemos seguir TDD).
   - ¿Y en los componentes seguimos TDD o metemos prueba? Ahora mismo tenemos un
