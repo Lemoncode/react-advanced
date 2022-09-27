@@ -126,7 +126,8 @@ export const Card = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
 +      isOver: monitor.isOver(),
 +      canDrop: monitor.canDrop(),
 +    }),
-+  }));
++  }),
+    [kanbanContent]);
 
   return (
 +   <div ref={drop}>
@@ -187,12 +188,13 @@ _./src/providers/kanban.provider.ts_
 +      (column) => column.id === columnDestinationId
 +    );
 +
-+    const cardOrigin = columnDestination?.content.find(
++    let cardIndex = columnDestination?.content.findIndex(
 +      (card) => card.id === dropCardId
 +    );
 +
-+    const cardIndex = cardOrigin?.id;
-
++    cardIndex =
++      cardIndex === -1 ? columnDestination.content.length : cardIndex + 1;
++
     setKanbanContent((kanbanContentLatest) =>
       moveCardColumn(
         {
@@ -209,5 +211,97 @@ _./src/providers/kanban.provider.ts_
 ```
 
 - Vamos a probar a ver que tal funciona :)... pues va bien siempre y cuando
-soltemos encima de una carta.... Pero que pasa el trozo de columna que sale
-en blanco? Vamos a hacer un truco
+  soltemos encima de una carta.... Pero que pasa el trozo de columna que sale
+  en blanco? Vamos a hacer un truco, en el column aprovechamos que tenemos un
+  container flexbox y vamos a añadir un elemento que ocupa todo el espacio
+  restante y que sea area de drop, en cuanto se suelte algo allí le pasamos
+  como id -1 y en movecard añadimos el elemento al final del array
+  (lo marcamos en azul para ternelo localizado :), despues lo eliminaremos).
+
+- Creamos un elemento que llamaremos _EmptySpaceDropZone_
+
+_./src/kanban/components/empty-space-drop-zone.component.tsx_
+
+```tsx
+import React from "react";
+import { useDrop } from "react-dnd";
+import { DragItemInfo, ItemTypes } from "../model";
+import { KanbanContext } from "../providers/kanban.context";
+
+interface Props {
+  columnId: number;
+}
+
+export const EmptySpaceDropZone: React.FC<Props> = (props) => {
+  const { columnId } = props;
+  const { moveCard } = React.useContext(KanbanContext);
+
+  const [collectedProps, drop] = useDrop(
+    () => ({
+      accept: ItemTypes.CARD,
+      drop: (item: DragItemInfo, monitor) => {
+        moveCard(columnId, -1, item);
+
+        return {
+          name: `DropColumn`,
+        };
+      },
+      collect: (monitor: any) => ({
+        isOver: monitor.isOver(),
+        canDrop: monitor.canDrop(),
+      }),
+    }),
+    [kanbanContent]
+  );
+
+  return (
+    <div
+      ref={drop}
+      style={{ flexGrow: 1, width: "100%", background: "blue" }}
+    />
+  );
+};
+```
+
+_./src/kanban/components/column.tsx_
+
+```diff
++ import { EmptySpaceDropZone } from "./empty-space-drop-zone.component";
+// (...)
+  return (
+    <div className={classes.container}>
+      <h4>{name}</h4>
+      {content.map((card, idx) => (
+        <Card
+          key={card.id}
+          columnId={columnId}
+          content={card}
+        />
+      ))}
++     <EmptySpaceDropZone columnId={columnId}/>
+```
+
+- Vamos ahora a modificar el moveCard para tratar el caso en que cardId
+  es -1
+
+- Vamos a añadir el useDrop
+
+_./src/kanban/components/column.tsx_
+
+```diff
+export const Column: React.FC<Props> = (props) => {
+
+
+  const { columnId, name, content } = props;
+  return (
+```
+
+Ahora tocaría refactorizar y hacer limpia.
+
+# Y...
+
+Después de este dolor, toca ver esta demo de React Beatiful Dnd
+
+https://react-beautiful-dnd.netlify.app/
+
+;)

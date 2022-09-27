@@ -28,11 +28,12 @@ export const KanbanProvider: React.FC<Props> = ({ children }) => {
       (column) => column.id === columnDestinationId
     );
 
-    const cardOrigin = columnDestination?.content.find(
+    let cardIndex = columnDestination?.content.findIndex(
       (card) => card.id === dropCardId
     );
 
-    const cardIndex = cardOrigin?.id;
+    cardIndex =
+      cardIndex === -1 ? columnDestination.content.length : cardIndex + 1;
 
     setKanbanContent((kanbanContentLatest) =>
       moveCardColumn(

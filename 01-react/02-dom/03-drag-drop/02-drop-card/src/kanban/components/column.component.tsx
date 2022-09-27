@@ -2,6 +2,7 @@ import React from "react";
 import classes from "./column.component.css";
 import { CardContent, ItemTypes, DragItemInfo } from "../model";
 import { Card } from "./card.component";
+import { EmptySpaceDropZone } from "./empty-space-drop-zone.component";
 
 interface Props {
   columnId: number;
@@ -17,6 +18,7 @@ export const Column: React.FC<Props> = (props) => {
       {content.map((card, idx) => (
         <Card key={card.id} columnId={columnId} content={card} />
       ))}
+      <EmptySpaceDropZone columnId={columnId} />
     </div>
   );
 };

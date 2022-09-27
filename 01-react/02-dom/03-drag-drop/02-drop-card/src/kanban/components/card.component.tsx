@@ -16,7 +16,7 @@ interface Props {
 
 export const Card = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
   const { content, columnId } = props;
-  const { moveCard } = React.useContext(KanbanContext);
+  const { moveCard, kanbanContent } = React.useContext(KanbanContext);
 
   const [{ opacity }, drag, preview] = useDrag(() => ({
     type: ItemTypes.CARD, // Definimos que es de tipo CARD esto lo usaremos en el drop
@@ -29,20 +29,23 @@ export const Card = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
     }),
   }));
 
-  const [collectedProps, drop] = useDrop(() => ({
-    accept: ItemTypes.CARD,
-    drop: (item: DragItemInfo, monitor) => {
-      moveCard(columnId, content.id, item);
+  const [collectedProps, drop] = useDrop(
+    () => ({
+      accept: ItemTypes.CARD,
+      drop: (item: DragItemInfo, monitor) => {
+        moveCard(columnId, content.id, item);
 
-      return {
-        name: `DropColumn`,
-      };
-    },
-    collect: (monitor: any) => ({
-      isOver: monitor.isOver(),
-      canDrop: monitor.canDrop(),
+        return {
+          name: `DropColumn`,
+        };
+      },
+      collect: (monitor: any) => ({
+        isOver: monitor.isOver(),
+        canDrop: monitor.canDrop(),
+      }),
     }),
-  }));
+    [kanbanContent]
+  );
 
   return (
     <div ref={drop}>
