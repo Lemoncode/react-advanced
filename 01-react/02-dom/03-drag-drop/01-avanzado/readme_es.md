@@ -2385,47 +2385,24 @@ Pero... ¿Por qué la primera opción nos va a dar guerra?
 
 ¿Cómo podemos hacer esto?
 
-- Vamos a crear un registro de refs (uno por cada card de la columna), usamos
-  este registro en vez de un array para evitar problemas si se borran keys etc.
+- Vamos a crear un registro de refs (uno por cada card de la columna), usaremos un array (se pueden mirar [optimizaciones](https://stackoverflow.com/questions/54633690/how-can-i-use-multiple-refs-for-an-array-of-elements-with-hooks)).
 
-- Este registro de refs lo vamos a recalcular si cambia el array de cards de la columna, para esto usamos useMemo (si el layout de las columnas fuera flexible y
-  pudiera redimensionarse tendríamos que o bien quitar el useMemo o bien combinarlo
-  con los saltos de las media queries).
+- Este registro de refs lo vamos a recalcular en cada render
+  (los elementos han podido cambiar), se podía optimizar para recalcular
+  sólo si han cambiado ciertas props.
 
 - El registro de refs lo enlazo con el listado de Cards.
 
 - Vamos a empezar por definir el tipo de registro de refs.
-
-_./src/kanban/components/column.component.tsx_
-
-```diff
-interface Props {
-  name: string;
-  content: CardContent[];
-  onAddCard: (card: CardContent, index: number) => void;
-  onRemoveCard: (cardContent: CardContent) => void;
-}
-
-+ type CardDivKeyValue = {
-+  [key: string]: React.MutableRefObject<HTMLDivElement>;
-+ };
-```
 
 Vamos a crear la lista de refs que se asociaran al repintar el componente.
 
 _./src/kanban/components/column.tsx_
 
 ```diff
-+  const itemsRef = React.useMemo(() => {
-+    const newItemsRef = content.reduce<CardDivKeyValue>(
-+      (cardRefs, item) => ({
-+        ...cardRefs,
-+        [item.id]: React.createRef(),
-+      }),
-+      {}
-+    );
-+    return newItemsRef;
-+  }, [props.content]);
++  const itemsRef = React.useRef<HTMLDivElement[]>([]);
+
++  itemsRef.current = [];
 
   return (
 ```
@@ -2439,10 +2416,12 @@ _./src/kanban/components/column.tsx_
   return (
     <div ref={drop} className={classes.container}>
       <h4>{name}</h4>
-      {content.map((card) => (
+-      {content.map((card) => (
++      {content.map((card, idx) => (
+
         <Card
           key={card.id}
-+         ref={itemsRef[card.id]}
++         ref={(ref) => (itemsRef.current[idx] = ref)}
           columnId={columnId}
           content={card} />
       ))}
@@ -2487,11 +2466,7 @@ _./src/kanban/components/card.component.tsx_
 + });
 ```
 
-Ya parece que lo tengo, vamos a implementar un método que teniendo en cuenta
-la coordenada X,Y del drop, me lo compare con las X,Y de las card y si encuentra
-una que este en esa zona me devuelva el indice en el array de cards (se podría
-hacer algo más fino y si cae en la mitad superior que de el indice anterior y si
-es la mitad inferior que de el indice siguiente... esto para la lista de martillo fino :)).
+Ya parece que lo tengo, vamos a implementar un método que teniendo en cuenta la coordenada X,Y del drop, me lo compare con las X,Y de las card y si encuentra una que este en esa zona me devuelva el indice en el array de cards (se podría hacer algo más fino y si cae en la mitad superior que de el indice anterior y si es la mitad inferior que de el indice siguiente... esto para la lista de martillo fino :)).
 
 Este método esta propio para añadirle pruebas unitarias y ver que funciona
 como esperamos y en diferentes casos arista...
@@ -2501,22 +2476,17 @@ _./src/kanban/components/column.business.ts_
 ```ts
 import { XYCoord } from "react-dnd";
 
-// Movemos el type tb
-export type CardDivKeyValue = {
-  [key: string]: React.MutableRefObject<HTMLDivElement>;
-};
-
 export const getArrayPositionBasedOnCoordinates = (
-  cardDivElements: CardDivKeyValue,
+  cardDivElements: HTMLDivElement[],
   offset: XYCoord
 ) => {
   // Por defecto añadimos en la última
-  let position = Object.keys(cardDivElements).length;
+  let position = cardDivElements.length;
 
   // Iteramos por el objeto de refs
-  Object.keys(cardDivElements).forEach((key, index) => {
-    const cardDiv = cardDivElements[key];
-    const cardDivPosition = cardDiv.current.getBoundingClientRect();
+  cardDivElements.forEach((item, index) => {
+    const cardDiv = item;
+    const cardDivPosition = cardDiv.getBoundingClientRect();
 
     // Si una card está en la zona de drop le decimos que coloque la
     // nueva justo debajo
@@ -2549,10 +2519,6 @@ Y vamos a sacar un console.log con la posición a ver que tal funciona:
 _./src/kanban/components/column.tsx_
 
 ```diff
-- type CardDivKeyValue = {
--  [key: string]: React.MutableRefObject<HTMLDivElement>;
-- };
-
 export const Column: React.FC<Props> = (props) => {
   const { columnId, name, content } = props;
   const { moveCard } = React.useContext(KanbanContext);
@@ -2575,85 +2541,7 @@ Vamos a probarlo:
 npm start
 ```
 
-- Parece que va bien pero conforme vamos añadiendo y soltando elementos
-  de repente pega un castañazo la aplicación, tenemos:
-
-```
-Uncaught TypeError: Cannot read properties of null (reading 'getBoundingClientRect')
-```
-
-- En este caso si nos ponemos a depurar (para que fuera más fácil podríamos
-  poner un console.log con los elementos de la lista de cards en cada drop y ver
-  que se quedan los antiguos), ¿Qué podemos hacer? Crearnos un _useRef_ raíz
-  para que no se quede el closure con los elementos antiguos cuando se llama
-  desde el callback del drop:
-
-_./src/kanban/components/column.tsx_
-
-```diff
-+  const rootRef = React.useRef<CardDivKeyValue>(null);
-
-  const [collectedProps, drop] = useDrop(() => ({
-    accept: ItemTypes.CARD,
-    drop: (item: DragItemInfo, monitor) => {
-      console.log(
-        "** Card Index:",
--        getArrayPositionBasedOnCoordinates(itemsRef, monitor.getClientOffset())
-+        getArrayPositionBasedOnCoordinates(rootRef.current, monitor.getClientOffset())
-
-      );
-
-      moveCard(columnId, item);
-
-      return {
-        name: `DropColumn`,
-      };
-    },
-    collect: (monitor: any) => ({
-      isOver: monitor.isOver(),
-      canDrop: monitor.canDrop(),
-    }),
-  }));
-
-  const itemsRef = React.useMemo(() => {
-    const newItemsRef = content.reduce<CardDivKeyValue>(
-      (cardRefs, item) => ({
-        ...cardRefs,
-        [item.id]: React.createRef(),
-      }),
-      {}
-    );
-
-+    rootRef.current = newItemsRef;
-
-    return newItemsRef;
-  }, [props.content]);
-```
-
-y en el render
-
-_./src/kanban/components/column.tsx_
-
-```diff
-  return (
-    <div ref={drop} className={classes.container}>
-      <h4>{name}</h4>
-      {content.map((card) => (
-        <Card
--          ref={itemsRef[card.id]}
-+          ref={rootRef.current[card.id]}
-          key={card.id}
-          columnId={columnId}
-          content={card}
-        />
-      ))}
-    </div>
-  );
-};
-```
-
-- Ahora que parece que se porta vamos a aplicar esto a los cards
-  y eliminar el console.log, para ello vamos a añadir un parámetro
+- Vamos a eliminar el console.log, para ello vamos a añadir un parámetro
   más a moveCard.
 
 _./src/kanban/components/column.tsx_
@@ -2670,7 +2558,10 @@ _./src/kanban/components/column.tsx_
 -        )
 -      );
 
-+      const index = getArrayPositionBasedOnCoordinates(rootRef.current, monitor.getClientOffset());
++      const index = getArrayPositionBasedOnCoordinates(
++        itemsRef.current,
++        monitor.getClientOffset()
++      );
 -      moveCard(columnId, item);
 +      moveCard(columnId, index, item);
 
@@ -2751,7 +2642,7 @@ _./src/kanban/kanban.business.ts_
   }
 ```
 
-Vamos a arreglar las pruebas que se han roto (añadimos el parametro
+Vamos a arreglar las pruebas que se han roto (añadimos el parámetro
 para que pase e inserte al final, tendríamos que añadir más
 casos y probar inserciones):
 
@@ -2990,3 +2881,4 @@ describe("Kanban business", () => {
   });
 });
 ```
+

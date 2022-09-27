@@ -1,12 +1,7 @@
 import { XYCoord } from "react-dnd";
 
-export type CardDivInfo = {
-  id: number;
-  ref: React.RefObject<HTMLDivElement>;
-};
-
 export const getArrayPositionBasedOnCoordinates = (
-  cardDivElements: CardDivInfo[],
+  cardDivElements: HTMLDivElement[],
   offset: XYCoord
 ) => {
   // Por defecto añadimos en la última
@@ -15,7 +10,7 @@ export const getArrayPositionBasedOnCoordinates = (
   // Iteramos por el objeto de refs
   cardDivElements.forEach((item, index) => {
     const cardDiv = item;
-    const cardDivPosition = cardDiv.ref.current.getBoundingClientRect();
+    const cardDivPosition = cardDiv.getBoundingClientRect();
 
     // Si una card está en la zona de drop le decimos que coloque la
     // nueva justo debajo

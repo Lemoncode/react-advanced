@@ -4,10 +4,7 @@ import classes from "./column.component.css";
 import { CardContent, ItemTypes, DragItemInfo } from "../model";
 import { Card } from "./card.component";
 import { KanbanContext } from "../providers/kanban.context";
-import {
-  CardDivInfo,
-  getArrayPositionBasedOnCoordinates,
-} from "./column.business";
+import { getArrayPositionBasedOnCoordinates } from "./column.business";
 
 interface Props {
   columnId: number;
@@ -23,7 +20,7 @@ export const Column: React.FC<Props> = (props) => {
     accept: ItemTypes.CARD,
     drop: (item: DragItemInfo, monitor) => {
       const index = getArrayPositionBasedOnCoordinates(
-        rootRef.current,
+        itemsRef.current,
         monitor.getClientOffset()
       );
 
@@ -39,27 +36,16 @@ export const Column: React.FC<Props> = (props) => {
     }),
   }));
 
-  const rootRef = React.useRef<CardDivInfo[]>(null);
+  const itemsRef = React.useRef<HTMLDivElement[]>([]);
 
-  const itemsRef = React.useMemo(() => {
-    const newItemsRef = content.map(
-      (item: CardContent): CardDivInfo => ({
-        id: item.id,
-        ref: React.createRef<HTMLDivElement>(),
-      })
-    );
-
-    rootRef.current = newItemsRef;
-
-    return newItemsRef;
-  }, [props.content]);
+  itemsRef.current = [];
 
   return (
     <div ref={drop} className={classes.container}>
       <h4>{name}</h4>
       {content.map((card, idx) => (
         <Card
-          ref={rootRef.current[idx].ref}
+          ref={(ref) => (itemsRef.current[idx] = ref)}
           key={card.id}
           columnId={columnId}
           content={card}
