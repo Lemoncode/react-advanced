@@ -10,7 +10,7 @@ export interface KanbanContextModel {
   setKanbanContent: (kanbanContent: KanbanContent) => void;
   moveCard: (
     columnDestinationId: number,
-    index: number,
+    dropCardId: number,
     dragItemInfo: DragItemInfo
   ) => void;
 }
