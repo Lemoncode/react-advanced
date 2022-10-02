@@ -305,6 +305,14 @@ Ahora tocaría refactorizar y hacer limpia.
 El componente _Card_ se ha quedado muy cargado, ¿Y si refactorizamos y creamos un hooks que englobe el useDrag y el useDrop?
 ¿Lo sacamos a un fichero que se llama card-dnd.hook.tsx?
 
+## Borrar card
+
+¿Cómo implementarias el borrad una card?
+
+- Podemos añadir icono (o boton sin diseño) en cada card.
+- Podemos implementar borrar ¿Pasamos a context la operación?
+- Jugamos con immer y borramos.
+
 ## Mover columnas
 
 Otra opción interesante sería poder mover columnas de sitio, que podrías hacer:
@@ -313,6 +321,20 @@ Otra opción interesante sería poder mover columnas de sitio, que podrías hace
 - Podríamos añadir un handler de drag en el título de la columna.
 - Podemos definir la columna o una cabecera como zona de drop de columnas.
 - En cuanto se haga el drop calcular la posición y recolocar la columna usando immer.
+
+## Diseñar... como hacerlo más genérico.
+
+¿Hasta donde interesa hacer este control más genérico? Vamos a pensar en retos y soluciones:
+
+- Ahora mismos tenemos la carga dentro del componente, ¿Como podríamos sacarlo? Y que pasa con las entidades que
+  no encajan con la card.
+
+- ¿Y si queremos poner un contenido custom en la card?
+  - Podríamos jugar con la propiedad children o pasarle un React Element como prop.
+  - Podríamos mirar de usarlo dentro de un map.
+  - Tendríamos que ver si usar any para los datos o si se pueden usar genéricos para pasar el tipo de datos.
+  - Si te fijas este caso es en el que empieza a subir la complejidad de forma exponencial a medida que hacemos
+    esto más genérico.
 
 # Y...
 
