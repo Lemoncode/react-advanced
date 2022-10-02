@@ -298,6 +298,22 @@ export const Column: React.FC<Props> = (props) => {
 
 Ahora tocaría refactorizar y hacer limpia.
 
+# Laboratorios:
+
+## Refactor Card
+
+El componente _Card_ se ha quedado muy cargado, ¿Y si refactorizamos y creamos un hooks que englobe el useDrag y el useDrop?
+¿Lo sacamos a un fichero que se llama card-dnd.hook.tsx?
+
+## Mover columnas
+
+Otra opción interesante sería poder mover columnas de sitio, que podrías hacer:
+
+- Podríamos definir un tipo de item droppable columna.
+- Podríamos añadir un handler de drag en el título de la columna.
+- Podemos definir la columna o una cabecera como zona de drop de columnas.
+- En cuanto se haga el drop calcular la posición y recolocar la columna usando immer.
+
 # Y...
 
 Después de este dolor, toca ver esta demo de React Beatiful Dnd

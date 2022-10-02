@@ -253,6 +253,8 @@ Vamos ahora a por la columna:
 - Tiene un título.
 - Tiene una lista de cartas.
 
+_./src/kanban/model.ts_
+
 ```diff
 export interface CardContent {
   id: number;
@@ -479,7 +481,7 @@ import {
   CardContent,
 } from "./model";
 import { loadKanbanContent } from "./kanban.api";
-import classes from "./container.css";
+import classes from "./kanban.container.css";
 
 export const KanbanContainer: React.FC = () => {
   const [kanbanContent, setKanbanContent] = React.useState<KanbanContent>(
@@ -507,7 +509,7 @@ Es decir acabamos de hacer la prueba más tonta para ver si el contenedor:
 
 En este momento podemos elegir entre dos aproximaciones:
 
-- Nos ponemos a crear el componente columna y despues el card y integreamos
+- Nos ponemos a crear el componente columna y después el card y integramos
   en la aplicación principal a ver si se monta todo.
 - Integramos cuanto antes en el contenedor principal y empezamos a tener
   feedback visual de que todo va conectando.
@@ -582,7 +584,7 @@ _./src/kanban/column/column.component.css_
 }
 ```
 
-- Hora de tocar el código, como en el contenedor, montamos el minimo, y
+- Hora de tocar el código, como en el contenedor, montamos el mínimo, y
   simplemente mostramos el nombre de cada card para probar que tenemos
   un mínimo.
 
@@ -650,6 +652,8 @@ import classes from "./container.css";
 ```bash
 npm start
 ```
+
+✅ Somos capaces de mostrar las columnas del kanban...
 
 Esto empieza a tener buena pinta, ahora vamos a por el componente de card:
 
@@ -741,6 +745,8 @@ _./src/kanban/column/column.component.tsx_
 npm start
 ```
 
+✅ Somos capaces de mostrar las cards...
+
 - Ya tenemos nuestro tablero montado, es hora de ver como va quedando
   nuestra carpeta _kanban_ parece que hay muchos ficheros, sería buena idea
   organizar un poco, vamos a crear dos carpetas:
@@ -804,10 +810,7 @@ export const App = () => {
 
 - Siguiente paso, tenemos que definir que tipos de items vamos a habilitar para arrastrar:
   - En este caso añadimos sólo las cards (a futuro podríamos también dar la opción de arrastrar columnas).
-  - La definición de _itemTypes_ la vamos a colocar debajo de _kanban_, si fueramos a usarlo a nivel de
-    aplicación global y kanban estuviera dentro de un panel de la ventana podríamos pensar en promocionar
-    _ItemTypes_ a un nivel superior (de nuevo, martillo fino, igual con el drag and drop, ¿Lo dejamos
-    a nivel de contenedor de kanban?).
+  - La definición de _itemTypes_ la vamos a colocar debajo de _kanban_, si fuéramos a usarlo a nivel de aplicación global y kanban estuviera dentro de un panel de la ventana podríamos pensar en promocionar _ItemTypes_ a un nivel superior (de nuevo, martillo fino, igual con el drag and drop, ¿Lo dejamos a nivel de contenedor de kanban?).
 
 _./src/kanban/model.ts_
 
@@ -873,8 +876,7 @@ export const Card: React.FC<Props> = (props) => {
 };
 ```
 
-- Nos queda sólo un detalle, vamos a mostrar el card con una opacidad para marcar que es el elemento que se
-  está arrastrando.
+- Nos queda sólo un detalle, vamos a mostrar el card con una opacidad para marcar que es el elemento que se está arrastrando.
 
 _./src/kanban/components/card.component.css_
 
@@ -890,9 +892,9 @@ _./src/kanban/components/card.component.css_
 npm start
 ```
 
-- De momento parece que todo va genial :), ahora toca el drop, de primeras podría parece algo fácil,
-  vamos a partir por la opción más lógica definir las diferentes columnas (backlog, doing, done) cómo áreas de drop
-  (después volveremos sobre esto), de primeras sólo ponemos un console.log para ver que llega el evento de drop.
+- De momento parece que todo va genial :), ahora toca el drop, de primeras podría parece algo fácil,vamos a partir por la opción más lógica definir las diferentes columnas (backlog, doing, done) cómo áreas de drop (después volveremos sobre esto), de primeras sólo ponemos un console.log para ver que llega el evento de drop.
+
+✅ Somos capaces de hacer drag (bueno no va fino del todo peeerooo)...
 
 Cómo funciona este _useDrop_:
 
@@ -905,9 +907,7 @@ Cómo funciona este _useDrop_:
 Dentro del _useDrop_ definimos un objeto con las siguientes entradas:
 
 - accept: aquí definimos que tipo de items vamos a aceptar, en este caso sólo las cards.
-- drop: aquí definimos la acción que vamos a realizar cuando se produzca el drop, en este caso sólo
-  vamos a mostrar un mensaje, fijate que en esta funcion devolvemos información acerca de donde se
-  ha soltado el item, esta info la recibe el EndDrag.
+- drop: aquí definimos la acción que vamos a realizar cuando se produzca el drop, en este caso sólo vamos a mostrar un mensaje, fijate que en esta funcion devolvemos información acerca de donde se ha soltado el item, esta info la recibe el EndDrag.
 
 _./src/kanban/components/column.component.css_
 
@@ -938,7 +938,7 @@ export const Column: React.FC<Props> = (props) => {
 +      isOver: monitor.isOver(),
 +      canDrop: monitor.canDrop(),
 +    }),
-+  }));
++  }), [content]);
 
   return (
 -    <div className={classes.container}>
@@ -952,11 +952,9 @@ export const Column: React.FC<Props> = (props) => {
 };
 ```
 
-- Si probamos y vemos la consola vemos que se ejecuta tanto el drop como el drag... seguimos en racha :),
-  ahora toca que se realiza la operación "de verdad".
+- Si probamos y vemos la consola vemos que se ejecuta tanto el drop como el drag... seguimos en racha :), ahora toca que se realiza la operación "de verdad".
 
-- En teoría añadir la card a la columna destino es sencillo, en el drop tenemos el punto de entrada y el
-  item, que vamos a hacer:
+- En teoría añadir la card a la columna destino es sencillo, en el drop tenemos el punto de entrada y el item, que vamos a hacer:
 
   - El componente column no tiene el estado de las listas, sólo ve el contenido de su card.
   - Creamos una prop de tipo callback para informar al componente de tipo kanba container.
@@ -964,16 +962,11 @@ export const Column: React.FC<Props> = (props) => {
 
 Varios detalles aquí:
 
-- Empezamos a sufrir de "drill prop" subiendo y bajando datos y callbacks por las props, empieza a
-  oler a que usar un contexto podría ser de ayuda (otro TODO para la lista de "martillo fino") y este
-  es el momento en que te pueden preguntar _¿Pero si funciona para que lo vas a tocar? tampoco está tan mal..._ ese es el problema que si empezamos así y sumamos un montón de _tampoco está tan mal_ acabamos con un _esto está muy mal y no hay quien lo mantenga_, así que más adelante evaluaremos si centralizar en un contexto a aporta o no.
+- Empezamos a sufrir de "drill prop" subiendo y bajando datos y callbacks por las props, empieza a oler a que usar un contexto podría ser de ayuda (otro TODO para la lista de "martillo fino") y este es el momento en que te pueden preguntar _¿Pero si funciona para que lo vas a tocar? tampoco está tan mal..._ ese es el problema que si empezamos así y sumamos un montón de _tampoco está tan mal_ acabamos con un _esto está muy mal y no hay quien lo mantenga_, así que más adelante evaluaremos si centralizar en un contexto a aporta o no.
 
-- De momento vamos a añadir la card al final de la lista, si has usado herramientas como trello te habrás
-  dado cuenta de que cuando haces drop te inserta la tarjeta entre las tarjetas en las que lo hayas soltado,
-  esto, apuntado para el TODO de "martillo fino", y lo resolveremos más adelante (este es de los "detalles"
-  que nos va a llevar bastante trabajo de arreglar).
+- De momento vamos a añadir la card al final de la lista, si has usado herramientas como trello te habrás dado cuenta de que cuando haces drop te inserta la tarjeta entre las tarjetas en las que lo hayas soltado, esto, apuntado para el TODO de "martillo fino", y lo resolveremos más adelante (este es de los "detalles" que nos va a llevar bastante trabajo de arreglar).
 
-  Empezamos por el componente column (zona de drop), añadimos una propiedad de tipo callback para informar al componente padre que se ha producido el drop, y la ejecutamos en el _useDrop_.
+Empezamos por el componente column (zona de drop), añadimos una propiedad de tipo callback para informar al componente padre que se ha producido el drop, y la ejecutamos en el _useDrop_.
 
 _./src/kanban/components/column.component.tsx_
 
@@ -1008,11 +1001,7 @@ export const Column: React.FC<Props> = (props) => {
 
 - Vamos a implementar el handler en el kanban container.
 
-En esta caso tenemos que insertar un card en la lista que toque, tenemos que hacerlo de forma
-inmutable para asegurarnos que todo se actualiza correctamente, no nos vale un _push_, podemos
-por ejemplo usar el spread operator para crear una nueva lista con el nuevo card, pero como vamos
-a tener que manejar inmutabilidad en varios sitios, vamos a hacer uso de _immer_ una librería que
-nos permita trabajar de manera mutable en una _caja de arena_ y después lo convierte todo a inmutable.
+En esta caso tenemos que insertar un card en la lista que toque, tenemos que hacerlo de forma inmutable para asegurarnos que todo se actualiza correctamente, no nos vale un _push_, podemos por ejemplo usar el spread operator para crear una nueva lista con el nuevo card, pero como vamos a tener que manejar inmutabilidad en varios sitios, vamos a hacer uso de _immer_ una librería que nos permita trabajar de manera mutable en una _caja de arena_ y después lo convierte todo a inmutable.
 
 - Instalamos la librería:
 
@@ -1024,6 +1013,7 @@ _./src/kanban/kanban.container.tsx_
 
 ```diff
 import React from "react";
++ import produce from "immer";
 import {
   KanbanContent,
   createDefaultKanbanContent,
@@ -1032,7 +1022,7 @@ import {
 import { loadKanbanContent } from "./api";
 import { Column } from "./components";
 import classes from "./kanban.container.css";
-+ import produce from "immer";
+
 ```
 
 _./src/kanban/kanban.container.tsx_
@@ -1061,9 +1051,7 @@ _./src/kanban/kanban.container.tsx_
     </div>
 ```
 
-Hasta aquí bien, nos hace falta saber la columna en la que tenemos que hacer el drop, aquí podíamos ver
-si el card le informa de la columna, peeerooo... esa información ya la tenemos, si te fijas en el propio
-kanban container cuando le pasamos las card en el map del componente _column_ ya sabemos a que columna
+Hasta aquí bien, nos hace falta saber la columna en la que tenemos que hacer el drop, aquí podíamos ver si añadir esa información al card, peeerooo... esa información ya la tenemos, si te fijas en el propio kanban container cuando le pasamos las card en el map del componente _column_ ya sabemos a que columna
 pertenece, ¿Qué podemos hacer? utilizar curry.
 
 _./src/kanban/kanban.container.tsx_
@@ -1104,27 +1092,22 @@ _./src/kanban/kanban.container.tsx_
 npm start
 ```
 
-- ¡ Bueeeenoooo ! Este es el momento en el que te vienes arriba y piensas que esto de drag & drop
-  es pan comido... vamos a empezar a meternos en el fango.
+- ¡ Bueeeenoooo ! Este es el momento en el que te vienes arriba y piensas que esto de drag & drop es pan comido... vamos a empezar a meternos en el fango, primero completemos el drop...
 
-- Añadimos una tarjeta a la columna destino, pero necesitamos eliminarla de la columna origen,
-  Podemos seguir dos aproximaciones:
+- Añadimos una tarjeta a la columna destino, pero necesitamos eliminarla de la columna origen, podemos seguir dos aproximaciones:
 
-  - En la card tenemos un evento "end" del drag en el que podemos comprobar que todo ha ido bien
-    y eliminar la tarjeta de la columna origen.
+  - En la card tenemos un evento "end" del drag en el que podemos comprobar que todo ha ido bien y eliminar la tarjeta de la columna origen.
 
-  - En la columna destino podríamos en el AddCard del container hacer las dos operaciones: borrar la
-    antigua de la columna que toque y añadir la nueva.
+  - En la columna destino podríamos en el AddCard del container hacer las dos operaciones: borrar la antigua de la columna que toque y añadir la nueva.
 
-¿Qué opcíon tomarías? ... esta decisión tan inocente vamos a ver que nos va a llevar a más de un quebradero
-de cabeza :).
+¿Qué opcíon tomarías? ... esta decisión tan inocente vamos a ver que nos va a llevar a más de un quebradero de cabeza :).
 
 Vamos a arrancar por la primera, tenemos dos puntos de entrada:
 
 - El evento "end" del drag, donde eliminamos la card antigua.
 - El evento "drop" del drop, donde la añadimos a la columna que toque.
 
-El drop ya lo tenemos implementados, vamos a por el end drag, en principio podría ser algo así como
+El drop ya lo tenemos implementado, vamos a por el end drag, en principio podría ser algo así como
 
 _./src/kanban/components/card.component.tsx_
 
@@ -1186,8 +1169,7 @@ _./src/kanban/components/column.component.tsx_
   );
 ```
 
-Vámonos al kanban container y vamos a implementar el remove card, vamos a currificar el id de la columna
-¿Me decís vosotros como funcionaría?
+Vámonos al kanban container y vamos a implementar el remove card, vamos a currificar el id de la columna ¿Me decís vosotros como funcionaría?
 
 _./src/kanban/kanban.container.tsx_
 
@@ -1241,46 +1223,43 @@ _./src/kanban/kanban.container.tsx_
   );
 ```
 
-- Si nos paramos este código empieza a oler a que hace falta un refactor, empezamos a tener un _bombazo_
-  de código en el componente, pero bueno vamos a probar y ver nuestro drag & drop en acción:
+- Si nos paramos este código empieza a oler a que hace falta un refactor, empezamos a tener un _bombazo_ de código en el componente, pero bueno vamos a probar y ver nuestro drag & drop en acción:
 
 ```bash
 npm start
 ```
 
-En este momento nos entra el modo pánico... ¡ Esto ha dejado de funcionar y tiene un comportamiento caotico !
+En este momento nos entra el modo pánico... ¡ Esto ha dejado de funcionar y tiene un comportamiento caótico !
+
+✅ La hemos cagado...
+
 Prueba a arrastrar y soltar tarjetas y ver que pasa:
 
 - La primera vez que arrastras una tarjeta, desaparece de la columna origen y no aparece en la destino.
 - La segunda vez que arrastras una tarjeta, aparece la anterior en la columna origen y no aparece en la
   de destino :).
 
-Esto es un indicador de que nuestro código se está convirtiendo en una _castaña_ empieza a alcanzar
-el status de _spaghetti code_ y que es hora de refactorizar.
+Esto es un indicador de que nuestro código se está convirtiendo en una _castaña_,empieza a alcanzar el status de _spaghetti code_ y que es hora de refactorizar.
 
-Lo primero vamos a investigar porque pasa esto, os dejo un tiempo para que lo investiguéis, y me digáis
-que puede ser (iré dando pistas).
+Lo primero vamos a investigar porque pasa esto, os dejo un tiempo para que lo investiguéis, y me digáis que puede ser (iré dando pistas).
 
 **_ESPERA 10/15 MINUTOS INVESTIGACION_**
 
 Pistas:
 
-- Estamos tratando con un callback, que puede pasar con el estado si no tenemos cuidado.
-- Comenta la linea en la que se borra.
+- Estamos tratando con un callback, ¿que puede pasar con el estado si no tenemos cuidado?.
+- Comenta la linea en la que se borra el card.
 
 **_SOLUCION_**
 
-Lo que está pasando aquí es que al hacer un setState en el callback estamos tirando del valor antiguo
-que tenía la función (¿os acordáis del ejemplo de async closure?), entonces cuando hacemos un setState
-lo estamos haciendo con los valores de la columna antigua antes de hacer el drop (primero se ejecuta el
+Lo que está pasando aquí es que al hacer un setState en el callback estamos tirando del valor antiguo que tenía la función (¿os acordáis del ejemplo de async closure?), entonces cuando hacemos un setState lo estamos haciendo con los valores de la columna antigua antes de hacer el drop (primero se ejecuta el
 drop después el end drag), de ahí el glitch que tenemos.
 
-Vamos primero a poner un parche para que funcione, y luego toca pararse y refactorizar antes de que
-esto se nos vaya de las manos.
+Vamos primero a poner un parche para que funcione, y luego toca pararse y refactorizar antes de que esto se nos vaya de las manos.
 
-La solución es tocar en una sola línea de código, en el setState del callback, vamos a pasarle una función
-en vez del nuevo valor, en está función se nos alimenta el último estado, no el que se quedó colgado en el
-closure:
+La solución es tocar en una sola línea de código, en el setState del callback, vamos a pasarle una función en vez del nuevo valor, en está función se nos alimenta el último estado, no el que se quedó colgado en el closure:
+
+_./src/kanban/kanban.container.ts_
 
 ```diff
     if (columnIndex !== -1) {
@@ -1297,34 +1276,30 @@ closure:
     }
 ```
 
+✅ Funciona, volvemos a sentirnos dios peeeroooo...
+
 - Vale con esto las cosas vuelven a funcionar, pero nos deja mal sabor de boca:
   - El código que se ha quedado es un galimatias.
-  - Partimos de que controlamos el orden, primero drop después end drag (tendríamos que añadir lo mismo
-    en el EndDrag).
+  - Partimos de que controlamos el orden, primero drop después end drag (tendríamos que añadir lo mismo en el EndDrag).
   - Tenemos riesgo de introducir más condiciones de carrera.
   - Todavía no hemos empezado a _rascar casos arista_, por ejemplo:
     - Que pasa si arrastro y suelto una card en la misma columna.
     - Que pasa si quiero insertar una card siguiendo un orden.
     - ...
 
-Ahora mismo toca parar y refactorizar, que un código funcione no quiere decir que sea una solución aceptable,
-vamos a plantear este escenario, podemos pensar en varias aproximaciones:
+Ahora mismo toca parar y refactorizar, que un código funcione no quiere decir que sea una solución aceptable, vamos a plantear este escenario, podemos pensar en varias aproximaciones:
 
-- Una podría ser utilizar useReducer, tener el estado en el reducer y las acciones ADDCard y RemoveCard,
-  de esta manera sacamos estado fuera y nos quitamos el problema del closure hell. Este caso podría ser útil si
-  la zona de drag y la de drop no se hablaran, pero en este caso tenemos un container comun.
+- Una podría ser utilizar useReducer, tener el estado en el reducer y las acciones AddCard y RemoveCard,de esta manera sacamos estado fuera y nos quitamos el problema del closure hell. Este caso podría ser útil si la zona de drag y la de drop no se hablaran, pero en este caso tenemos un container comun.
 
 - La segunda es dejar que el drop se encarga de todo, de esta manera:
   - Tenemos un único punto de entrada (no hay condiciones de carrera).
   - Simplificamos código (al menos la parte de drag y el burbujeo hacia arriba).
 
-De momento vamos a por la segunda opción, dejando al puerta a utilizar useReducer a futuro (por ejemplo
-se complica la cosa y ahora queremos distinguir entre drag y eliminar y drag y copiar, etc...)
+De momento vamos a por la segunda opción, dejando al puerta a utilizar useReducer a futuro (por ejemplo se complica la cosa y ahora queremos distinguir entre drag y eliminar y drag y copiar, etc...)
 
 Qué solución podemos darle:
 
-- En vez de AddCard vamos a llamar a este evento MoveCard (tienen más sentido, a futuro seguramente pongamos
-  un AddCard para crear una tarjeta en blanco).
+- En vez de AddCard vamos a llamar a este evento MoveCard (tienen más sentido, a futuro seguramente pongamos un AddCard para crear una tarjeta en blanco).
 
 - Se va originar en el columnDrop, y la información que va a tener va a ser:
 
@@ -1333,8 +1308,7 @@ Qué solución podemos darle:
 
 - La columna destino la podemos seguir sacando con el curry (también podríamos plantearnos pasarla para abajo).
 
-Esto origina un evento en el que se burbujea al contenedor esta información y se hace todo de una tacada,
-eliminar el elemento y añadir el nuevo.
+Esto origina un evento en el que se burbujea al contenedor esta información y se hace todo de una tacada, eliminar el elemento y añadir el nuevo.
 
 Que es lo positivo de esto... que además de quedarnos el código más claro, resolvemos el caso arista de arrastro
 y suelto en la misma columna.
@@ -1351,7 +1325,7 @@ export const createDefaultKanbanContent = (): KanbanContent => ({
   columns: [],
 });
 
-+ interface DragItemInfo {
++ export interface DragItemInfo {
 +   columnId: number;
 +   content: CardContent;
 + }
@@ -1418,11 +1392,7 @@ _./src/kanban/components/column.components.tsx_
     </div>
 ```
 
-> ¿Es buena idea pasar el columnId de forma separada? ¿ Deberíamos pasar el card? ¿Y si creamos
-> una entidad VM para pasar el card con el valor del columnId (de hecho seguramente en servidor
-> tendríamos el id de la columna a la que pertenece cada card)? Si almacenamos el columnId en el card
-> también podríamos tener un sólo array de cards... todas estas opciones tienen sus pros y sus contras,
-> en este caso vamos a pasar el columnId de forma separada.
+> ¿Es buena idea pasar el columnId de forma separada? ¿ Deberíamos pasar el card? ¿Y si creamos una entidad VM para pasar el card con el valor del columnId (de hecho seguramente en servidor tendríamos el id de la columna a la que pertenece cada card)? Si almacenamos el columnId en el card también podríamos tener un sólo array de cards... todas estas opciones tienen sus pros y sus contras, en este caso vamos a pasar el columnId de forma separada.
 
 _./src/kanban/components/card.components.tsx_
 
@@ -1447,8 +1417,7 @@ export const Card: React.FC<Props> = (props) => {
 _./src/kanban/components/card.components.tsx_
 
 ```diff
--  const [{ opacity }, drag, preview] = useDrag(() => ({
-+  const [{ opacity }, drag, preview] = useDrag(() => ({
+  const [{ opacity }, drag, preview] = useDrag(() => ({
     type: ItemTypes.CARD, // Definimos que es de tipo CARD esto lo usaremos en el drop
 -    item: content,
 +    item: createDragItemInfo(columnId,content),
@@ -1535,7 +1504,6 @@ _./src/kanban/components/column.component.tsx_
           columnId={columnId}
           content={card}
 -          onRemoveCard={onRemoveCard}
-+          onMoveCard={onMoveCard}
         />
       ))}
     </div>
@@ -1639,30 +1607,27 @@ _./src/kanban/kanban.container.tsx_
   );
 ```
 
-- Bueno ya lo tenemos algo más estable, nos queda un último escollo que es en vez de añadir la carta al final
-  siempre que hacemos drop, que la inserte en medio si la soltamos en mitad de la columna, esto no va a ser fácil
-  ya que tenemos que calcular la posición en la que cae la card y ver sobre que card destino se ha posado y calcular el indice del array...
+✅ Codigo un poquito más claro, sigamos...
+
+- Bueno ya lo tenemos algo más estable, nos queda un último escollo que es en vez de añadir la carta al final siempre que hacemos drop, que la inserte en medio si la soltamos en mitad de la columna, esto no va a ser fácil ya que tenemos que calcular la posición en la que cae la card y ver sobre que card destino se ha posado y calcular el indice del array...
 
 Antes de empezar con esto vamos a hacer limpia de código, que pasos vamos a tomar:
 
 - Simplificar los componentes (_vaciar el cangrejo_).
-- Evitar el prop drill hell usando Contexto useReducer.
+- Evitar el prop drill hell usando Contexto o useReducer.
 
 ### Simplificar los componentes
 
 Lo primero, vamos a _vaciar el cangrejo_ tenemos componentes con mucho código, podemos:
 
 - Extraer parte del código a lógica de negocios (le podemos añadir tests).
-- Podemos sacarlo a custom hooks (aquí le podríamos añadir tests, o esperar a ver si el tema
-  de insertar en medio impacta mucho en el código).
+- Podemos sacarlo a custom hooks (aquí le podríamos añadir tests, o esperar a ver si el tema de insertar en medio impacta mucho en el código).
 
 Vamos a ir evaluando componentes, empezamos por el kanban container:
 
-- La parte en la que creamos el kanbanContent y hacemos la carga inicial la podíamos envolver
-  en un custom hook.
+- La parte en la que creamos el kanbanContent y hacemos la carga inicial la podíamos envolver en un custom hook.
 
-- El HandleMoveCard tiene logica que se puede pasar a funciones de negocio sin estado que sean
-  fácilmente testeables.
+- El HandleMoveCard tiene logica que se puede pasar a funciones de negocio sin estado que sean fácilmente testeables.
 
 - Creamos el custom hook (lo vamos a dejar dentro del fichero del container, pero lo podríamos sacar a un fichero aparte):
 
@@ -1687,6 +1652,7 @@ import produce from "immer";
 + }
 
 export const KanbanContainer: React.FC = () => {
++  const [kanbanContent, setKanbanContent] = useKanbanState();
 -  const [kanbanContent, setKanbanContent] = React.useState<KanbanContent>(
 -    createDefaultKanbanContent()
 -  );
@@ -1696,13 +1662,20 @@ export const KanbanContainer: React.FC = () => {
 -  }, []);
 ```
 
-- Vamos a extraer la lógica de búsqueda de columna, añadir y eliminar card a un método de negocio, de primeras
-  en bruto (aquí sería buena idea añadir tests para ver que funciona como esperamos), vamos a ponerlo tal cual
-  y después lo optimizamos.
+- Vamos a extraer la lógica de búsqueda de columna, añadir y eliminar card a un método de negocio, de primeras en bruto (aquí sería buena idea añadir tests para ver que funciona como esperamos), vamos a ponerlo tal cual y después lo optimizamos.
 
 _./src/kanban.business.ts_
 
 ```ts
+import { CardContent, KanbanContent } from "./model";
+import produce from "immer";
+
+interface MoveInfo {
+  columnOriginId: number;
+  columnDestinationId: number;
+  content: CardContent;
+}
+
 // TODO this can be additionally refactored (apply clean code)
 export const moveCardColumn = (
   moveInfo: MoveInfo,
@@ -1734,8 +1707,7 @@ export const moveCardColumn = (
 };
 ```
 
-- Antes de seguir refactorizando vamos a añadir unas pruebas para ver si esto pinta bien
-  (podíamos haberlo hecho siguiendo TDD)
+- Antes de seguir refactorizando vamos a añadir unas pruebas para ver si esto pinta bien (podíamos haberlo hecho siguiendo TDD)
 
 Arrancamos en modo test en otro terminal:
 
@@ -1975,8 +1947,7 @@ describe("Kanban business", () => {
 
 > Podríamos haber usado jest.each: https://www.npmjs.com/package/jest-each
 
-El fichero business podríamos dejarlo más simple, iremos a por él más tarde (otro item para la lista de
-_martillo fino_)
+El fichero business podríamos dejarlo más simple, iremos a por él más tarde (otro item para la lista de _martillo fino_)
 
 Ahora que funciona vamos a hacer el refactor en el container:
 
@@ -1984,6 +1955,7 @@ _./src/kanban/kanban.container.tsx_
 
 ```diff
 import React from "react";
+import produce from "immer";
 import {
   KanbanContent,
   createDefaultKanbanContent,
@@ -1993,7 +1965,6 @@ import {
 import { loadKanbanContent } from "./api";
 import { Column } from "./components";
 import classes from "./kanban.container.css";
-import produce from "immer";
 + import { moveCardColumn } from "./kanban.business";
 ```
 
@@ -2041,26 +2012,23 @@ export const KanbanContainer: React.FC = () => {
   return (
 ```
 
-- No está mal como se ha quedado, a futuro si el tema de drag & drop crece (se añade más funcionalidad),
-  podríamos plantearnos encapsularla todo en un hook.
+✅ Nos sentimos un poco más limpios :)...
+
+- No está mal como se ha quedado, a futuro si el tema de drag & drop crece (se añade más funcionalidad), podríamos plantearnos encapsularla todo en un hook.
 
 - Vamos ahora a por la columna:
   - Este componente tal y como esta no haría falta refactorizarlo.
-  - Si empieza a llenarse de código, podríamos plantearnos sacar la funcionalidad de drop a u custom
-    hook que podría llamarse _useCardDrop_ y le pasamos por parametro el callback de onMoveCard y pasamos
-    como return del hook el ref que hay que poner en el elemento que queremos que sea dropable.
+  - Si empieza a llenarse de código, podríamos plantearnos sacar la funcionalidad de drop a u custom hook que podría llamarse _useCardDrop_ y le pasamos por parametro el callback de onMoveCard y pasamos como return del hook el ref que hay que poner en el elemento que queremos que sea dropable.
 
 De momento no lo vamos a hacer, aquí tenemos una regla y es la de "recojo carrete":
 
 - Vamos haciendo refactors hasta que el código se vea limpio y entendible.
 - Esperamos que hayan cambios a futuro que puede que hagan más complejo ese código, entonces refactorizamos.
-- A veces me puedo pasar refactorizando, en ese caso hago como alguien que practica la pesca "recojo carrete"
-  y tiro a la versión anterior.
+- A veces me puedo pasar refactorizando, en ese caso hago como alguien que practica la pesca "recojo carrete" y tiro a la versión anterior.
 
 Vamos a por la card:
 
-- En card pasa algo parecido, podríamos extraer el drag en un hook, pero en principio no lo vamos a hacer
-  ya que el componente de momento es simple.
+- En card pasa algo parecido, podríamos extraer el drag en un hook, pero en principio no lo vamos a hacer ya que el componente de momento es simple.
 - Podría ser buena idea extraerlo para implementar pruebas unitarias del hook en concreto.
 
 ### Pasar a contexto o useReducer
@@ -2070,18 +2038,15 @@ Aunque hemos hecho limpia, seguimos teniendo un código un poco lioso:
 - Hay propiedades que viajan de container a card.
 - Hay callbacks que viajan de card a container.
 
-Esto es complicado de seguir, además que en el container tenemos mucho estado metido y lógica
-de actualización metida, podríamos plantear:
+Esto es complicado de seguir, además que en el container tenemos mucho estado metido y lógica de actualización metida, podríamos plantear:
 
 - Almacenar en un contexto el estado de las columnas/cards y exponerlo a nivel de container con un provider.
-- Utilizar useReducer a nivel de container y pasar el dispatch, creando una acción para la carga inicial
-  y otra para la actualización de la posición de la card.
+- Utilizar useReducer a nivel de container y pasar el dispatch, creando una acción para la carga inicial y otra para la actualización de la posición de la card.
 
 Ambas opciones tienen sus pros y su contras:
 
 - El contexto es interesante, pero metemos getContext por mitad de la jerarquía.
-- El Reducer añade mucho orden pero tenemos que ir pasando dispatch de padre a hijo aunque un
-  componente de la jerarquía no lo use.
+- El Reducer añade mucho orden pero tenemos que ir pasando dispatch de padre a hijo aunque un componente de la jerarquía no lo use.
 
 En este caso nos vamos a quedar con la solución del contexto:
 
@@ -2167,7 +2132,7 @@ export const KanbanProvider: React.FC<Props> = ({ children }) => {
 ```
 
 - Vamos a colocar el context en el app donde se instancia el kanban, así
-  cuando si creamos más de un kanban no compartiran estado (también, podríamos
+  si creamos más de un kanban no compartirán estado (también, podríamos
   haber creado un componente wrapper dentro de la carpeta kanban).
 
 _./src/kanban/index.ts_
@@ -2206,6 +2171,7 @@ _./src/kanban/kanban.container.tsx_
 
 ```diff
 import React from "react";
+- import produce from "immer";
 import {
   KanbanContent,
 -  createDefaultKanbanContent,
@@ -2215,7 +2181,7 @@ import {
 import { loadKanbanContent } from "./api";
 import { Column } from "./components";
 import classes from "./kanban.container.css";
-- import produce from "immer";
+
 - import { moveCardColumn } from "./kanban.business";
 + import { KanbanContext } from "./providers/kanban.context";
 
@@ -2502,7 +2468,7 @@ export const getArrayPositionBasedOnCoordinates = (
 
 Vamos ahora a por el componente:
 
-_./src/kanban/components/column.tsx_
+_./src/kanban/components/column.component.tsx_
 
 ```diff
 import React from "react";
@@ -2511,7 +2477,7 @@ import classes from "./column.component.css";
 import { CardContent, ItemTypes, DragItemInfo } from "../model";
 import { Card } from "./card.component";
 import { KanbanContext } from "../providers/kanban.context";
-+ import {CardDivKeyValue, getArrayPositionBasedOnCoordinates} from "./column.business";
++ import {getArrayPositionBasedOnCoordinates} from "./column.business";
 ```
 
 Y vamos a sacar un console.log con la posición a ver que tal funciona:
@@ -2526,7 +2492,7 @@ export const Column: React.FC<Props> = (props) => {
   const [collectedProps, drop] = useDrop(() => ({
     accept: ItemTypes.CARD,
     drop: (item: DragItemInfo, monitor) => {
-+     console.log("** Card Index:",getArrayPositionBasedOnCoordinates(itemsRef, monitor.getClientOffset()));
++     console.log("** Card Index:",getArrayPositionBasedOnCoordinates(itemsRef.current, monitor.getClientOffset()));
       moveCard(columnId, item);
 
       return {
@@ -2882,3 +2848,4 @@ describe("Kanban business", () => {
 });
 ```
 
+✅ Pheeeew hemos sudado ¿Podemos hacer esto mejor?
