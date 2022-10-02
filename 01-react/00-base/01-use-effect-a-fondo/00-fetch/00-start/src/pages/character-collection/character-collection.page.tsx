@@ -1,15 +1,15 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { getCharacterCollection } from "./character-collection.api";
+import { Character } from "./character-collection.model";
 
 export const CharacterCollectionPage = () => {
   const [filter, setFilter] = React.useState("");
-  const [characters, setCharacters] = React.useState([]);
+  const [characters, setCharacters] = React.useState<Character[]>([]);
 
   React.useEffect(() => {
-    fetch(`https://rickandmortyapi.com/api/character/?name=${filter}`)
-      .then((response) => response.json())
-      .then((json) => setCharacters(json.results));
-  });
+    getCharacterCollection().then((characters) => setCharacters(characters));
+  }, []);
 
   return (
     <>

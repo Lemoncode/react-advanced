@@ -4,11 +4,13 @@ import { CharacterCollectionPage, CharacterDetailPage } from "./pages";
 
 export const App = () => {
   return (
-    <HashRouter>
-      <Routes>
-        <Route path="/" element={<CharacterCollectionPage />} />
-        <Route path="/:characterId" element={<CharacterDetailPage />} />
-      </Routes>
-    </HashRouter>
+    <React.StrictMode>
+      <HashRouter>
+        <Routes>
+          <Route path="/" element={<CharacterCollectionPage />} />
+          <Route path="/:characterId" element={<CharacterDetailPage />} />
+        </Routes>
+      </HashRouter>
+    </React.StrictMode>
   );
 };
