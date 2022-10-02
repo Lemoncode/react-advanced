@@ -8,23 +8,20 @@ export const CharacterCollectionPage = () => {
   const [characters, setCharacters] = React.useState<Character[]>([]);
 
   React.useEffect(() => {
-    let ignore = false;
-
-    getCharacterCollection().then((characters) => {
-      if (!ignore) {
-        setCharacters(characters);
-      }
+    getCharacterCollection(filter).then((characters) => {
+      setCharacters(characters);
     });
-
-    return () => {
-      ignore = true;
-    };
-  }, []);
+  }, [filter]);
 
   return (
     <>
       <h1>Character Collection</h1>
-      <Link to="/1">Character 1</Link>
+      <label htmlFor="filter">filter </label>
+      <input
+        id="filter"
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+      />
       <ul>
         {characters.map((character) => (
           <li key={character.id}>
