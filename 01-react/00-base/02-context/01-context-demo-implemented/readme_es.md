@@ -4,9 +4,9 @@
 
 Que vamos a implementar:
 
-- En el contexto de login vamos a hacer una separación de lo que es el contexto del provider.
-- Vamos a implementar un helper para traernos el contexto, y vamos a dejar interno el contexto en si.
-- Vamos a llevarnos la lista de usuarios de github a un contexto y veremos como podemos navegar y mostrar datos.
+- En el contexto de *login* vamos a hacer una separación de lo que es el contexto del *provider*.
+- Vamos a implementar un *helper* para traernos el contexto, y vamos a dejar interno el contexto en sí.
+- Vamos a llevarnos la lista de usuarios de *github* a un contexto y veremos cómo podemos navegar y mostrar datos.
 
 ## Pasos
 
@@ -57,7 +57,7 @@ export const ProfileContext = React.createContext<ProfileContextVm>({
 - };
 ```
 
-- Vamos a llevar el contenido al provider:
+- Vamos a llevar el contenido al *provider*:
 
 _./src/core/providers/profile/profile.provider.tsx_
 
@@ -120,7 +120,7 @@ import { UserProfile, createEmptyUserProfile } from "./profile.vm";
 + import { ProfileContext, ProfileContextVm } from "./profile.context";
 ```
 
-Ahora en el index sólo tenemos que exponer la parte del provider:
+Ahora en el *index* sólo tenemos que exponer la parte del *provider*:
 
 _./src/core/providers/profile/index.ts_
 
@@ -130,7 +130,7 @@ _./src/core/providers/profile/index.ts_
 + export * from './profile.provider';
 ```
 
-- Vamos a utilizar el nuevo helper en _loginContainer_ y _appLayout_
+- Vamos a utilizar el nuevo *helper* en _loginContainer_ y _appLayout_
 
 _./src/pods/login/login.container.tsx_
 
@@ -179,9 +179,9 @@ export const AppLayout: React.FC<Props> = ({ children }) => {
 - Ahora vamos a llevar la lista de usuarios de *github* a un contexto, ¿Por qué? Porque queremos
   mejorar la usabilidad de nuestra página:
   - Si navegamos a otra página, cuando volvemos queremos mostrar datos.
-  - Mientras en background la consulta se vuelve a ejecutar.
+  - Mientras en *background* la consulta se vuelve a ejecutar.
   
-- Para ver que problema resolvemos vamos a meterle un retraso de 3 segundos a la api que nos pide
+- Para ver qué problema resolvemos vamos a meterle un retraso de 3 segundos a la *api* que nos pide
   datos de *github*.
 
 _./src/pods/list/list.api.ts_
@@ -273,7 +273,7 @@ export const useMemberListContext = () => {
 };
 ```
 
-Vamos a exponer el provider en el _index_
+Vamos a exponer el *provider* en el *index*:
 
 _./src/pods/list/index.ts_
 
@@ -282,7 +282,7 @@ export * from "./list.container";
 + export * from "./list.provider";
 ```
 
-Vamos a definirlo por encima del router:
+Vamos a definirlo por encima del *router*:
 
 _./src/app.tsx_
 
@@ -346,12 +346,11 @@ Username: admin;
 Password: test;
 ```
 
-Podemos ver que la segunda vez que navegamos a la página, mostramos la lista que se cargo anteriormente mientras se carga la nueva, ofreciendo una mejor experiencia de usuario.
+Podemos ver que la segunda vez que navegamos a la página, mostramos la lista que se cargó anteriormente mientras se carga la nueva, ofreciendo una mejor experiencia de usuario.
 
 Nos puede surgir una duda aquí y es ¿Y qué hacemos con la primera carga? Sería buena idea mostrar un indicador de que la página está cargando.
 
-Ahora seguro que se nos ha quedado una espinita clavada y eso ¿Cómo reporto al usuario de que estoy cargando datos y tiene que esperar un poco? Aquí podemos ver de jugar con flags, con react suspense... pero si podemos lanzar las consultas desde cualquier parte de la aplicación
-es algo que se nos puede terminar haciendo cuesta arriba, una microlibrería que nos puede ser de ayuda es React Promise Tracker:
+Ahora seguro que se nos ha quedado una espinita clavada y eso ¿Cómo reporto al usuario de que estoy cargando datos y tiene que esperar un poco? Aquí podemos ver de jugar con *flags*, con *react suspense*... pero si podemos lanzar las consultas desde cualquier parte de la aplicación es algo que se nos puede terminar haciendo cuesta arriba, una microlibrería que nos puede ser de ayuda es *React Promise Tracker*:
 
 Vamos a instalar la librería:
 
@@ -390,7 +389,7 @@ export const LoadingIndicator = (props) => {
 
 > Una opción más mantenible sería separar esto del loading indicator para poder aprovecharlo en otros proyectos.
 
-Añadimos un barrel bajo components
+Añadimos un *barrel* bajo *components*
 
 _./src/common/components/index.ts_
 
@@ -422,7 +421,7 @@ export const App = () => {
 ```
 
 Ahora vamos al contexto donde lanzamos la llamada asíncrona, en este caso sólo queremos mostrar
-el spinner si es la primera vez que hacemos la petición.
+el *spinner* si es la primera vez que hacemos la petición.
 
 _./src/pods/list/list.provider.tsx_
 
@@ -474,7 +473,7 @@ import { usePromiseTracker } from "react-promise-tracker";
 export const LoadingIndicator = (props) => {
 ```
 
-Y vamos a darle uso (añadimos un estilado temporal en un proyecto real, extraeríamos a un fichero css el estilado):
+Y vamos a darle uso (añadimos un estilado temporal en un proyecto real, extraeríamos a un fichero *css* el estilado):
 
 _./src/common/components/loading-indicator.tsx_
 
@@ -510,6 +509,14 @@ npm start
 
 Extras que tienes con esta librería:
 
-- Puedes definir el tracker por areas de tu UI.
-- Puedes añadir un delay para que se muestra el indicador de carga, así en conexiones rápidas
+- Puedes definir el *tracker* por áreas de tu *UI*.
+- Puedes añadir un *delay* para que se muestra el indicador de carga, así en conexiones rápidas
   evitas parpadeos innecesarios.
+
+# ¿Te apuntas a nuestro máster?
+
+Si te ha gustado este ejemplo y tienes ganas de aprender Front End
+guiado por un grupo de profesionales ¿Por qué no te apuntas a
+nuestro [Máster Front End Online Lemoncode](https://lemoncode.net/master-frontend#inicio-banner)? Tenemos tanto edición de convocatoria
+con clases en vivo, como edición continua con mentorización, para
+que puedas ir a tu ritmo y aprender mucho.
