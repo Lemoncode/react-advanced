@@ -709,9 +709,8 @@ export const CharacterDetailPage = () => {
   );
 ```
 
----
-
-la API loca... con el interval.
+Esto pinta bien, vamos a por un ejemplo en el que también hagamos actualizaciones e
+inserciones (siguiente ejemplo TODO list).
 
 # Referencias
 
