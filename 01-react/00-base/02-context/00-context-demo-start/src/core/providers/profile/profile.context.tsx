@@ -1,13 +1,13 @@
 import React from "react";
 import { UserProfile, createEmptyUserProfile } from "./profile.vm";
 
-interface ProfileContext extends UserProfile {
+export interface ProfileContextVm extends UserProfile {
   setUserProfile: (userProfile: UserProfile) => void;
 }
 
 const noUserLogin = "no user login";
 
-export const ProfileContext = React.createContext<ProfileContext>({
+export const ProfileContext = React.createContext<ProfileContextVm>({
   userName: noUserLogin,
   setUserProfile: () =>
     console.warn(

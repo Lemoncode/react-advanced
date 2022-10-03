@@ -12,13 +12,14 @@ Que vamos a implementar:
 
 - Lo primero separamos contexto de proveedor:
 
-_./profile.context.ts_
+_./src/core/providers/profile.context.ts_
 
 _Renombramos a ts_
 
 ```diff
 import React from "react";
-import { UserProfile, createEmptyUserProfile } from "./profile.vm";
+- import { UserProfile, createEmptyUserProfile } from "./profile.vm";
++ import { UserProfile } from "./profile.vm";
 
 export interface ProfileContextVm extends UserProfile {
   setUserProfile: (userProfile: UserProfile) => void;
@@ -58,10 +59,10 @@ export const ProfileContext = React.createContext<ProfileContextVm>({
 
 - Vamos a llevar el contenido al provider:
 
-_./profile.provider.tsx_
+_./src/core/providers/profile/profile.provider.tsx_
 
 ```tsx
-import React fro m "react";
+import React from "react";
 import { UserProfile, createEmptyUserProfile } from "./profile.vm";
 import { ProfileContext } from "./profile.context";
 
@@ -92,7 +93,7 @@ export const ProfileProvider: React.FC<Props> = ({ children }) => {
 - Además de esto nos podemos hacer un helper para no tener que usar _useContext_ a
   secas y controlar errores.
 
-_profile.provider.tsx_
+_./src/core/providers/profile/profile.provider.tsx_
 
 ```diff
     </ProfileContext.Provider>
@@ -106,6 +107,17 @@ _profile.provider.tsx_
 +  }
 +  return context;
 + };
+```
+
+Importamos _ProfileContextVm_ desde el contexto.
+
+_./src/core/providers/profile/profile.provider.tsx_
+
+```diff
+import React from "react";
+import { UserProfile, createEmptyUserProfile } from "./profile.vm";
+- import { ProfileContext } from "./profile.context";
++ import { ProfileContext, ProfileContextVm } from "./profile.context";
 ```
 
 Ahora en el index sólo tenemos que exponer la parte del provider:
@@ -124,11 +136,12 @@ _./src/pods/login/login.container.tsx_
 
 ```diff
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { routes } from "core";
+- import { ProfileContext } from "@/core/providers";
++ import { useProfileContext } from "core/providers";
 import { LoginComponent } from "./login.component";
 import { doLogin } from "./login.api";
-+ import { useProfileContext } from "core/providers";
 
 const useLoginHook = () => {
   const navigate = useNavigate();
@@ -176,7 +189,6 @@ _./src/pods/list/list.api.ts_
 
 ```diff
 import { MemberEntityApi } from "./list.api-model";
-import { MemberEntity } from "./list.vm";
 
 - export const getMemberCollection = (): Promise<MemberEntityApi[]> =>
 -  fetch(`https://api.github.com/orgs/lemoncode/members`).then((response) =>
@@ -221,7 +233,7 @@ export const MemberListContext = React.createContext<MemberListContextVm>({
 });
 ```
 
-_./src/pods/list/list.provider.ts_
+_./src/pods/list/list.provider.tsx_
 
 ```ts
 import React from "react";
@@ -264,6 +276,8 @@ export const useMemberListContext = () => {
 
 Vamos a exponer el provider en el _index_
 
+_./src/pods/list/list.context.ts_
+
 ```diff
 export * from "./list.container";
 + export * from "./list.provider";
@@ -275,7 +289,6 @@ _./src/app.tsx_
 
 ```diff
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { RouterComponent } from "@/core";
 import { ProfileProvider } from "@/core/providers";
 + import { MemberListProvider } from "@/pods/list";
@@ -298,10 +311,8 @@ _./src/pods/list/list.container.tsx_
 ```diff
 import React from "react";
 import { ListComponent } from "./list.component";
-import { MemberEntity } from "./list.vm";
-import { getMemberCollection } from "./list.repository";
-import { mapMemberCollectionFromApiToVm } from "./list.mapper";
-import { MemberEntityApi } from "./list.api-model";
+- import { MemberEntity } from "./list.vm";
+- import { getMemberCollection } from "./list.repository";
 + import { useMemberListContext } from "./list.provider";
 
 export const ListContainer: React.FC = () => {
@@ -323,17 +334,25 @@ export const ListContainer: React.FC = () => {
 
 ```
 
-Si ahora ejecutamos podemos ver que la segunda vez que navegamos a la página, mostramos la lista
-que se cargo anteriormente mientras se carga la nueva, ofreciendo una mejor experiencia de usuario.
+Si ahora ejecutamos,
 
-Nos puede surgir una duda aquí y es ¿Y que hacemos con la primera carga? Sería buena idea mostrar
-un indicador de que la página está cargando.
+```bash
+npm start
+```
 
-Ahora seguro que se nos ha quedado una espinita clavada y eso ¿Como reporto al usuario de que
-estoy cargando datos y tiene que esperar un poco? Aquí podemos ver de jugar con flags, con
-react suspense... pero si podemos lanzar las consultas desde cualquier parte de la aplicación
-es algo que se nos puede terminar haciendo cuesta arriba, una microlibrería que nos puede ser
-de ayuda es React Promise Tracker:
+y nos logamos,
+
+```ts
+Username: admin;
+Password: test;
+```
+
+Podemos ver que la segunda vez que navegamos a la página, mostramos la lista que se cargo anteriormente mientras se carga la nueva, ofreciendo una mejor experiencia de usuario.
+
+Nos puede surgir una duda aquí y es ¿Y qué hacemos con la primera carga? Sería buena idea mostrar un indicador de que la página está cargando.
+
+Ahora seguro que se nos ha quedado una espinita clavada y eso ¿Cómo reporto al usuario de que estoy cargando datos y tiene que esperar un poco? Aquí podemos ver de jugar con flags, con react suspense... pero si podemos lanzar las consultas desde cualquier parte de la aplicación
+es algo que se nos puede terminar haciendo cuesta arriba, una microlibrería que nos puede ser de ayuda es React Promise Tracker:
 
 Vamos a instalar la librería:
 
@@ -348,7 +367,7 @@ _./src/common/components/loading-indicator.tsx_
 ```tsx
 import React from "react";
 
-export const LoadingIndicator = (props) => {
+export const LoadingIndicator = () => {
   return <h1>Hey some async call in progress ! </h1>;
 };
 ```
@@ -365,7 +384,7 @@ export const LoadingIndicator = (props) => {
 +  const {promiseInProgress} = usePromiseTracker();
 
 -  return <h1>Hey some async call in progress ! </h1>;
-+   promiseInProgress &&
++   return promiseInProgress &&
 +    <h1>Hey some async call in progress ! </h1>
 };
 ```
@@ -422,16 +441,18 @@ interface Props {
 export const MemberListProvider: React.FC<Props> = ({ children }) => {
   const [memberList, setMemberList] = React.useState<MemberEntity[]>([]);
 
-  const loadMemberList = () =>
+-  const loadMemberList = () =>
++  const loadMemberList = () => {
 -    getMemberCollection().then((memberCollection) =>
 +    const promise = getMemberCollection().then((memberCollection) => {
 
       setMemberList(memberCollection)
-    );
+-    );
++    });
 +   if(memberList.length === 0) {
 +     trackPromise(promise);
 +   }
-+ }
++ };
 ```
 
 Vamos a darle un poco de estilo al componente de indicador de carga en progreso.
@@ -449,7 +470,7 @@ _./src/common/components/loading-indicator.tsx_
 ```diff
 import React from "react";
 import { usePromiseTracker } from "react-promise-tracker";
-+ import Loader from "react-loader-spinner";
++ import { ThreeDots } from "react-loader-spinner";
 
 export const LoadingIndicator = (props) => {
 ```
