@@ -1,16 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { getCharacter } from "./character-detail.api";
 import { Character } from "./character-detail.model";
 
 export const CharacterDetailPage = () => {
-  const [character, setCharacter] = React.useState<Character>(null);
   const { characterId } = useParams();
 
-  React.useEffect(() => {
-    getCharacter(characterId).then((character) => setCharacter(character));
-  }, []);
+  const { data: character } = useQuery(["character", characterId], () =>
+    getCharacter(characterId)
+  );
 
   return (
     <>

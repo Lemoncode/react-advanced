@@ -288,6 +288,224 @@ de gestionar esto por mi.
 
 Vamos a remangarnos y ponernos con React Query a ver como nos resuelve esto
 
+Vamos a instalar la dependencia:
+
+```bash
+npm i @tanstack/react-query
+```
+
+Vamos a añadir un _provider_ para las queries.
+
+_./src/core/query-client.ts_
+
+```ts
+import { QueryClient } from "@tanstack/react-query";
+
+export const queryClient = new QueryClient();
+```
+
+_./src/core/index.ts_
+
+```ts
+export * from "./query-client";
+```
+
+Vamos a inicializarlo en nuestra app:
+
+_./src/App.tsx_
+
+```diff
+import React from "react";
+import { HashRouter, Routes, Route } from "react-router-dom";
++ import { QueryClientProvider } from "@tanstack/react-query";
++ import { queryClient } from "./core";
+import { CharacterCollectionPage, CharacterDetailPage } from "./pages";
+
+export const App = () => {
+  return (
++    <QueryClientProvider client={queryClient}>
+    <HashRouter>
+      <Routes>
+        <Route path="/" element={<CharacterCollectionPage />} />
+        <Route path="/:characterId" element={<CharacterDetailPage />} />
+      </Routes>
+    </HashRouter>
++   </QueryClientProvider>
+  );
+  );
+};
+```
+
+Y ahora vamos a darle uso en nuestra página de characterCollection
+
+- Nos traemos el hook de useQuery.
+- Wrapeamos la llamada a la API que ya teníamos en un useQuery y en el
+  el primer parámetro de tipo array:
+  - Le damos un nombre a la query (aquí sería buena idea usar constantes, y
+    prefijos, ya que esa query la podemos reusar).
+  - Le pasamos el filtro de texto, fijate que esto ya se queda como reactivo, si cambia el filtro se volverá a lanzar la consulta.
+
+_./src/pages/character-collection/character-collection.page.tsx_
+
+```diff
+import React from "react";
+import { Link } from "react-router-dom";
+import { getCharacterCollection } from "./character-collection.api";
++ import { useQuery } from "@tanstack/react-query";
+import { Character } from "./character-collection.model";
+```
+
+_./src/pages/character-collection/character-collection.page.tsx_
+
+```diff
+export const CharacterCollectionPage = () => {
+  const [filter, setFilter] = React.useState("");
+-  const [characters, setCharacters] = React.useState<Character[]>([]);
+
++ const query = useQuery(["character-collection", filter], () => getCharacterCollection(filter));
+
+-  React.useEffect(() => {
+-    getCharacterCollection(filter).then((characters) => {
+-      setCharacters(characters);
+-    });
+-  }, [filter]);
+```
+
+_./src/pages/character-collection/character-collection.page.tsx_
+
+```diff
+      <ul>
+-        {characters.map((character) => (
++        {query.data?.map((character) => (
+
+          <li key={character.id}>
+            <Link to={`/${character.id}`}>{character.name}</Link>
+          </li>
+        ))}
+      </ul>
+```
+
+Vamos a probar esto (ojo recuerda que hay un delay random en la api)
+
+- Fíjate que ya si podemos teclear "alien" y se quedará con la última.
+- Si vamos a la página de detalle y volvemos a la colección, nos muestra
+  el resultado de filtro vacío mientras ejecuta la consultan en background
+  para traerse los datos actualizados.
+
+¿Qué podíamos hacer para almacenar los datos del filtro más allá de la
+muerte de la página? Con lo que ya sabemos una opción podría ser almacenarlo
+en el contexto de React, OPCIONAL ejercicio guardar el filtro en contexto.
+
+EJERCICIO
+
+Vamos a hacer lo mismo con character detail:
+
+**Solución**
+
+Y en el de CharacterDetail
+
+_./src/pages/character-collection/character-detail.page.tsx_
+
+```diff
+import React from "react";
+import { Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
++ import { useQuery } from "@tanstack/react-query";
+import { getCharacter } from "./character-detail.api";
+import { Character } from "./character-detail.model";
+```
+
+_./src/pages/character-collection/character-detail.page.tsx_
+
+```diff
+export const CharacterDetailPage = () => {
+-  const [character, setCharacter] = React.useState<Character>(null);
+  const { characterId } = useParams();
+
++ const { data : character } = useQuery(["character", characterId], () => getCharacter(characterId));
+
+-  React.useEffect(() => {
+-    getCharacter(characterId).then((character) => setCharacter(character));
+-  }, []);
+
+  return (
+```
+
+> Sobre optimizaciones y render: https://tkdodo.eu/blog/react-query-render-optimizations
+
+- Vamos a hacer una prueba, creamos una tercera página que va a mostrar la 
+lista de personajes, pero sin filtrar..., en el fondo va a usar la misma query
+que en la página de colección, así que vamos a refactorizar a _core_ varias cosas.
+
+> Ojo, si trabajamos con ViewModels tendríamos que crear una API intermedia y 
+mappers.
+
+_./src/core/queries/model.ts_
+
+```ts
+export interface Character {
+  id: number;
+  name: string;
+  type: string;
+  status: string;
+  gender: string;
+  image: string;
+}
+```
+
+_./src/core/queries/character-collection.api.ts_
+
+```ts
+import { Character } from "./character-collection.model";
+
+// add random value to simulate network latency (bad connection), between 1 and 5 seconds
+const randomLatency = () => Math.floor(Math.random() * 5 + 1) * 1000;
+
+export const getCharacterCollection = async (
+  filter: string
+): Promise<Character[]> => {
+  const response = await fetch(
+    `https://rickandmortyapi.com/api/character/?name=${filter}`
+  );
+  const data = await response.json();
+  await new Promise((resolve) => setTimeout(resolve, randomLatency()));
+  console.log(data.results);
+  return data.results;
+};
+```
+
+- Ya que estamos vamos a crear un custom hook para wrapear el useQuery
+
+_./src/core/queries/character-collection.query.ts_
+
+```ts
+const useCharacterCollectionQuery = (filter: string) => {
+  return useQuery(["character-collection", filter], () =>
+    getCharacterCollection(filter)
+  );
+};
+```
+
+- Ahora nos vamos a la página de characterCollection, hacemos limpia y usamos
+nuestro custom hook.
+
+- Borramos model.ts (aquí podríamos discutir si tener un VM y mapeador dentro o si
+considerar que el model de core se considera ya un modelo de cliente común).
+
+
+- Borramos el 
+
+
+
+
+Y una definición de constantes para las consultas
+(aquí podríamos estructurar algo si quisieramos encapsularlo en
+pods, por ejemplo prefijo del pod)
+
 ---
 
 la API loca... con el interval.
+
+# Referencias
+
+- Cleaner data fetching with React Query: https://dev.to/siddharthvenkatesh/cleaner-data-fetching-with-react-query-4klg
