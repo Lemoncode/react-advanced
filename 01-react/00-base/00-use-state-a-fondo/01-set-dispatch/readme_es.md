@@ -10,7 +10,7 @@ Veamos el problema que se puede generar partiendo de un ejemplo, para ello utili
 
 En el código que vamos a introducir, estamos incrementado el valor de la variable _contador_ y un segundo después volvemos a incrementarlo.
 
-_,/src/app.tsx_
+_./src/app.tsx_
 
 ```diff
 import React from "react";
@@ -43,6 +43,7 @@ export const App = () => {
 
 ¿Qué podemos hacer para asegurarnos que estamos manejando el valor más actual de este estado? Podemos usar una función dentro del *set* del *hook*:
 
+_./src/app.tsx_
 ```diff
 import "./styles.css";
 import React from "react";
