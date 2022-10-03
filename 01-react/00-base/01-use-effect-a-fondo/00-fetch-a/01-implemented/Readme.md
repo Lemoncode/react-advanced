@@ -709,8 +709,7 @@ export const CharacterDetailPage = () => {
   );
 ```
 
-Esto pinta bien, vamos a por un ejemplo en el que también hagamos actualizaciones e
-inserciones (siguiente ejemplo TODO list).
+Esto pinta bien, vamos a por un ejemplo en el que también hagamos actualizaciones e inserciones (siguiente ejemplo TODO list).
 
 # Referencias
 

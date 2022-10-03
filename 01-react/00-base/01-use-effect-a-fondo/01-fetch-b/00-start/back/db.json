@@ -1,0 +1,95 @@
+{
+  "lists": [
+    {
+      "id": 1,
+      "name": "test list"
+    },
+    {
+      "id": 2,
+      "name": "groceries"
+    },
+    {
+      "id": 3,
+      "name": "tasks"
+    }
+  ],
+  "todos": [
+    {
+      "id": 1,
+      "description": "my first todo",
+      "isImportant": false,
+      "isDone": false,
+      "listId": 1
+    },
+    {
+      "id": 2,
+      "description": "second todo",
+      "isImportant": false,
+      "isDone": true,
+      "listId": 1
+    },
+    {
+      "id": 3,
+      "description": "third todo",
+      "isImportant": true,
+      "isDone": false,
+      "listId": 1
+    },
+    {
+      "id": 4,
+      "description": "oranges",
+      "isImportant": false,
+      "isDone": false,
+      "listId": 2
+    },
+    {
+      "id": 5,
+      "description": "apples",
+      "isImportant": false,
+      "isDone": false,
+      "listId": 2
+    },
+    {
+      "id": 6,
+      "description": "eggs",
+      "isImportant": false,
+      "isDone": false,
+      "listId": 2
+    },
+    {
+      "id": 7,
+      "description": "oil",
+      "isImportant": true,
+      "isDone": false,
+      "listId": 2
+    },
+    {
+      "id": 8,
+      "description": "tuna",
+      "isImportant": true,
+      "isDone": false,
+      "listId": 2
+    },
+    {
+      "id": 9,
+      "description": "sugar",
+      "isImportant": false,
+      "isDone": true,
+      "listId": 2
+    },
+    {
+      "id": 10,
+      "description": "rice",
+      "isImportant": false,
+      "isDone": false,
+      "listId": 2
+    },
+    {
+      "id": 11,
+      "description": "ice-cream",
+      "isImportant": false,
+      "isDone": false,
+      "listId": 2
+    }
+  ]
+}
