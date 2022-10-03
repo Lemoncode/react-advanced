@@ -12,7 +12,7 @@ Que vamos a implementar:
 
 - Lo primero separamos contexto de proveedor:
 
-_./src/core/providers/profile.context.ts_
+_./src/core/providers/profile/profile.context.ts_
 
 _Renombramos a ts_
 
@@ -90,7 +90,7 @@ export const ProfileProvider: React.FC<Props> = ({ children }) => {
 
 - Esta separación hace que sea más clara la separación entre contexto y proveedor.
 
-- Además de esto nos podemos hacer un helper para no tener que usar _useContext_ a
+- Además de esto nos podemos hacer un *helper* para no tener que usar _useContext_ a
   secas y controlar errores.
 
 _./src/core/providers/profile/profile.provider.tsx_
@@ -139,7 +139,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { routes } from "core";
 - import { ProfileContext } from "@/core/providers";
-+ import { useProfileContext } from "core/providers";
++ import { useProfileContext } from "@/core/providers";
 import { LoginComponent } from "./login.component";
 import { doLogin } from "./login.api";
 
@@ -154,7 +154,7 @@ _./src/layouts/appLayout.component.tsx_
 ```diff
 import React from "react";
 - import { ProfileContextVm } from "@/core/providers";
-+ import { useProfileContext } from "core/providers";
++ import { useProfileContext } from "@/core/providers";
 
 interface Props {
   children: React.ReactNode;
@@ -173,17 +173,16 @@ export const AppLayout: React.FC<Props> = ({ children }) => {
 };
 ```
 
-- Asi tenemos una clara separación entre contexto y provider y por otro lado, con la función
-  helper podemos controlar errores, y simplificar el uso del context.
+- Así tenemos una clara separación entre contexto y *provider* y por otro lado, con la función
+  *helper* podemos controlar errores, y simplificar el uso del *context*.
 
-- Ahora vamos a llevar la lista de usuarios de github a un contexto, ¿Por qué? Porque queremos
+- Ahora vamos a llevar la lista de usuarios de *github* a un contexto, ¿Por qué? Porque queremos
   mejorar la usabilidad de nuestra página:
-
   - Si navegamos a otra página, cuando volvemos queremos mostrar datos.
   - Mientras en background la consulta se vuelve a ejecutar.
-
+  
 - Para ver que problema resolvemos vamos a meterle un retraso de 3 segundos a la api que nos pide
-  datos de github
+  datos de *github*.
 
 _./src/pods/list/list.api.ts_
 
@@ -196,7 +195,7 @@ import { MemberEntityApi } from "./list.api-model";
 -  );
 
 + export const getMemberCollection = (): Promise<MemberEntityApi[]> => {
-+  const promise = new Promise<MemberEntityApi[]>((resolve, reject) => {
++  const promise = new Promise<MemberEntityApi[]>((resolve) => {
 +    setTimeout(() => {
 +      fetch(`https://api.github.com/orgs/lemoncode/members`).then((response) =>
 +        resolve(response.json()));
@@ -207,10 +206,10 @@ import { MemberEntityApi } from "./list.api-model";
 + }
 ```
 
-- En este caso podríamos plantear si poner el context y provider dentro de correo o dentro del pod en
-  el que se usa, en este caso lo vamos a poner dentro del pod ya que sólo lo usaremos allí, si más
-  adelante lo usáramos en más de una ventana podríamos plantear moverlo a creo (a nivel de imports
-  es más correcto tenerlo allí, a nivel de código es más correcto tenerlo en el pod).
+- En este caso podríamos plantear si poner el *context* y *provider* dentro de *core* o dentro del *pod* en
+  el que se usa, en este caso lo vamos a poner dentro del *pod* ya que sólo lo usaremos allí, si más
+  adelante lo usáramos en más de una ventana podríamos plantear moverlo a *core*(a nivel de *imports*
+  es más correcto tenerlo allí, a nivel de código es más correcto tenerlo en el *pod*).
 
 _./src/pods/list/list.context.ts_
 
@@ -276,7 +275,7 @@ export const useMemberListContext = () => {
 
 Vamos a exponer el provider en el _index_
 
-_./src/pods/list/list.context.ts_
+_./src/pods/list/index.ts_
 
 ```diff
 export * from "./list.container";
@@ -507,7 +506,7 @@ export const LoadingIndicator = (props) => {
 npm start
 ```
 
-React Promise Tracker se encarga de llevar un contador interno con todas las promesas que se hayan lanzado.
+*React Promise Tracker* se encarga de llevar un contador interno con todas las promesas que se hayan lanzado.
 
 Extras que tienes con esta librería:
 
