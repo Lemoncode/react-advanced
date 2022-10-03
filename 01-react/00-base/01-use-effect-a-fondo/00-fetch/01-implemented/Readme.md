@@ -631,17 +631,90 @@ Probamos y vemos que tenemos carga instantánea de la página.
 Para terminar, vamos a resolver el tema de los _magic string_ para los nombres de las
 consultas, aquí podemos añadir un fichero de constantes:
 
-Otra opción sería usar un UUID para cada query y si queremos un prefijo en cada una
-para evitar colisiones.
+Aquí hay un tema interesante:
 
-Y una definición de constantes para las consultas
-(aquí podríamos estructurar algo si quisiéramos encapsularlo en
-pods, por ejemplo prefijo del pod)
+- En estos ejemplos sencillos hemos añadido una key, y en el caso de pasar un parámetro,
+  dos (la key y el parámetro en si).
+- Es interesante añadir una tercera key para agrupar por areas, de esta forma podemos
+  hacer cosas interesantes tales como invalidar todas las consultas de un área dada
+  (por ejemplo todas las globales, o todas las de un pod dado).
+
+Aunque, va a ser un overkill montar un sistema de este tipo para este proyecto, vamos
+a por ello sobre todo con el objetivo de aprender.
+
+_./src/core/queries/key-queries.ts_
+
+```ts
+export const coreKeys = {
+  all: ["core"] as const,
+  characterCollection: (filter: string) =>
+    [...coreKeys.all, "core", "character-collection", filter] as const,
+};
+```
+
+Y vamos a usarlo:
+
+_./src/core/queries/character-collection.query.ts_
+
+```diff
+import { useQuery } from "@tanstack/react-query";
+import { getCharacterCollection } from "./character-collection.api";
+import { Character } from "./model";
++ import { coreKeys } from './key-queries';
+
+export const useCharacterCollectionQuery = (filter: string) => {
+-  return useQuery(["character-collection", filter], () =>
++  return useQuery(coreKeys.characterCollection(filter), () =>
+    getCharacterCollection(filter)
+  );
+};
+```
+
+> ¿Por qué lo del spread operator? La gracia de esto es encadenar, por ejemplo
+> podrías tener todas las consulta de ese area identificada con _core_, pero a su
+> vez crear una subcategoría de _listing_ y así podríamos de una tacada invalidar,
+> por ejemplo todos los listados de ese area\_
+
+Vamos a hacer lo mismo con el area de _character-detail_:
+
+EJERCICIO
+
+Solución
+
+_./src/pages/character-detail/key-queries.ts_
+
+```ts
+export const characterDetailKeys = {
+  all: ["character-detail"] as const,
+  characterDetail: (id: string) =>
+    [...characterDetailKeys.all, "character-profile", id] as const,
+};
+```
+
+Y en la página:
+
+_./src/pages/character-detail/character-detail.page.tsx_
+
+```diff
+import { getCharacter } from "./character-detail.api";
+import { Character } from "./character-detail.model";
++ import { characterDetailKeys } from './key-queries';
+
+export const CharacterDetailPage = () => {
+  const { characterId } = useParams();
+
+-  const { data: character } = useQuery(["character", characterId], () =>
++  const { data: character } = useQuery(characterDetailKeys.characterDetail(characterId), () =>
+    getCharacter(characterId)
+  );
+```
 
 ---
 
 la API loca... con el interval.
 
 # Referencias
+
+- Manejo de queries: https://tkdodo.eu/blog/effective-react-query-keys
 
 - Cleaner data fetching with React Query: https://dev.to/siddharthvenkatesh/cleaner-data-fetching-with-react-query-4klg

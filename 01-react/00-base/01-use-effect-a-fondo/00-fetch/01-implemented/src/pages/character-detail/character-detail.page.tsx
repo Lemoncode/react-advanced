@@ -4,12 +4,14 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getCharacter } from "./character-detail.api";
 import { Character } from "./character-detail.model";
+import { characterDetailKeys } from "./key-queries";
 
 export const CharacterDetailPage = () => {
   const { characterId } = useParams();
 
-  const { data: character } = useQuery(["character", characterId], () =>
-    getCharacter(characterId)
+  const { data: character } = useQuery(
+    [characterDetailKeys.characterDetail(characterId), characterId],
+    () => getCharacter(characterId)
   );
 
   return (
