@@ -433,12 +433,12 @@ export const CharacterDetailPage = () => {
 
 > Sobre optimizaciones y render: https://tkdodo.eu/blog/react-query-render-optimizations
 
-- Vamos a hacer una prueba, creamos una tercera página que va a mostrar la 
-lista de personajes, pero sin filtrar..., en el fondo va a usar la misma query
-que en la página de colección, así que vamos a refactorizar a _core_ varias cosas.
+- Vamos a hacer una prueba, creamos una tercera página que va a mostrar la
+  lista de personajes, pero sin filtrar..., en el fondo va a usar la misma query
+  que en la página de colección, así que vamos a refactorizar a _core_ varias cosas.
 
-> Ojo, si trabajamos con ViewModels tendríamos que crear una API intermedia y 
-mappers.
+> Ojo, si trabajamos con ViewModels tendríamos que crear una API intermedia y
+> mappers.
 
 _./src/core/queries/model.ts_
 
@@ -456,7 +456,7 @@ export interface Character {
 _./src/core/queries/character-collection.api.ts_
 
 ```ts
-import { Character } from "./character-collection.model";
+import { Character } from "./model";
 
 // add random value to simulate network latency (bad connection), between 1 and 5 seconds
 const randomLatency = () => Math.floor(Math.random() * 5 + 1) * 1000;
@@ -479,27 +479,163 @@ export const getCharacterCollection = async (
 _./src/core/queries/character-collection.query.ts_
 
 ```ts
-const useCharacterCollectionQuery = (filter: string) => {
+export const useCharacterCollectionQuery = (filter: string) => {
   return useQuery(["character-collection", filter], () =>
     getCharacterCollection(filter)
   );
 };
 ```
 
+- Añadimos un barrel:
+
+_./src/core/queries/index.ts_
+
+```diff
+export * from "./query-client";
++ export * from "./character-collection.query";
++ export * from "./model";
+```
+
 - Ahora nos vamos a la página de characterCollection, hacemos limpia y usamos
-nuestro custom hook.
+  nuestro custom hook.
 
 - Borramos model.ts (aquí podríamos discutir si tener un VM y mapeador dentro o si
-considerar que el model de core se considera ya un modelo de cliente común).
+  considerar que el model de core se considera ya un modelo de cliente común).
 
+- Borramos el api (ya está en core).
 
-- Borramos el 
+- Ahora vamos a la página de detalle, hacemos limpia y usamos nuestro custom hook.
 
+_./src/pages/character-collection/character-collection.page.tsx_
 
+```diff
+import React from "react";
+import { Link } from "react-router-dom";
+- import { useQuery } from "@tanstack/react-query";
+- import { getCharacterCollection } from "./character-collection.api";
+- import { Character } from "./character-collection.model";
++ import {useCharacterCollectionQuery} from '../core/queries'
 
+export const CharacterCollectionPage = () => {
+  const [filter, setFilter] = React.useState("");
+
+-  const query = useQuery(["characters", filter], () =>
+-    getCharacterCollection(filter)
+-  );
+
++  const query = useCharacterCollectionQuery(filter);
+
+  return (
+```
+
+Vamos a ejecutar esto:
+
+```bash
+npm start
+```
+
+- Vamos a crear ahora la tercera página y veamos que ocurre:
+
+- Tercera pagina:
+
+_./src/pages/another/another.page.tsx_
+
+```tsx
+import React from "react";
+import { Link } from "react-router-dom";
+import { useCharacterCollectionQuery } from "../../core/queries";
+
+export const AnotherPage = () => {
+  const query = useCharacterCollectionQuery("");
+
+  return (
+    <>
+      <h1>Character Collection</h1>
+      <label htmlFor="filter">filter </label>
+      <ul>
+        {query.data?.map((character) => (
+          <li key={character.id}>
+            <Link to={`/${character.id}`}>{character.name}</Link>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+};
+```
+
+- La añadimos al barrel:
+
+_./src/pages/index.ts_
+
+```diff
+export * from "./character-collection/character-collection.page";
+export * from "./character-detail/character-detail.page";
++ export * from "./another/another.page";
+```
+
+- La añadimos al router:
+
+_./src/app.tsx_
+
+```diff
+- import { CharacterCollectionPage, CharacterDetailPage } from "./pages";
++ import { CharacterCollectionPage, CharacterDetailPage, AnotherPage } from "./pages";
+
+export const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <HashRouter>
+        <Routes>
+          <Route path="/" element={<CharacterCollectionPage />} />
+          <Route path="/:characterId" element={<CharacterDetailPage />} />
++          <Route path="/another" element={<AnotherPage />} />
+        </Routes>
+      </HashRouter>
+    </QueryClientProvider>
+  );
+};
+```
+
+- Vamos a añadir un enlace desde la home:
+
+_./src/pages/character-collection/character-collection.page.tsx_
+
+```diff
+  return (
+    <>
+      <h1>Character Collection</h1>
++      <div>
++       <Link to="/another">Link to Another page</Link>
++      </div>
+      <label htmlFor="filter">filter </label>
+      <input
+        id="filter"
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+      />
+      <ul>
+        {query.data?.map((character) => (
+          <li key={character.id}>
+            <Link to={`/${character.id}`}>{character.name}</Link>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+};
+```
+
+Probamos y vemos que tenemos carga instantánea de la página.
+
+Para terminar, vamos a resolver el tema de los _magic string_ para los nombres de las
+consultas, aquí podemos añadir un fichero de constantes:
+
+Otra opción sería usar un UUID para cada query y si queremos un prefijo en cada una
+para evitar colisiones.
 
 Y una definición de constantes para las consultas
-(aquí podríamos estructurar algo si quisieramos encapsularlo en
+(aquí podríamos estructurar algo si quisiéramos encapsularlo en
 pods, por ejemplo prefijo del pod)
 
 ---

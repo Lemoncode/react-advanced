@@ -1,4 +1,4 @@
-import { Character } from "./character-collection.model";
+import { Character } from "./model";
 
 // add random value to simulate network latency (bad connection), between 1 and 5 seconds
 const randomLatency = () => Math.floor(Math.random() * 5 + 1) * 1000;
