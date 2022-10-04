@@ -13,7 +13,7 @@ Este ejemplo toma como punto de partida el ejemplo _00-boiler-plate_.
 
 ## Paso a Paso
 
-- Primero copiamos el ejemplo anterior, y hacemos un _npm install_
+- Hacemos un _npm install_
 
 ```bash
 npm install
@@ -126,6 +126,8 @@ Segundo lo consumimos en el componente padre:
 - Por otro cuando instanciamos nuestro segundo _InputComponent_ le pasamos
   esa _ref_ por propiedad.
 
+_./src/app.tsx_
+
 ```diff
 export function App() {
 + const secondInputRef = React.useRef<HTMLInputElement>(null);
@@ -153,6 +155,7 @@ export function App() {
 
 Ya sólo nos queda manejar esa referencia cuando el usuario pulse en el botón.
 
+_./src/app.tsx_
 ```diff
 export function App() {
   const secondInputRef = React.useRef<HTMLInputElement>(null);
@@ -228,6 +231,9 @@ const InputComponent : React.FC<InputProps> = (props) => {
   );
 };
 
+```
+_./src/app.tsx_
+```diff
 export default function App() {
   const secondInputRef = React.useRef<HTMLInputElement>(null);
   const [firstName, setFirstName] = React.useState("");
@@ -297,6 +303,7 @@ interface InputProps {
 
 Segundo, volvemos a actualizar el padre:
 
+_./src/app.tsx_
 ```diff
 export default function App() {
   const secondInputRef = React.useRef<HTMLInputElement>(null);
