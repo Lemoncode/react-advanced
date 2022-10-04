@@ -888,6 +888,342 @@ _./src/pages/todo/todo-page.tsx_
   />
 ```
 
+A este código le hace falta un refactor, tenemos mucho código
+y es complicado de leer, ¿Qué podemos plantear?
+
+- A nivel de hooks, podemos sacar todo lo relacionado con queries un
+  hook que podríamos llamar useTodoQueries.
+
+- A nivel de markup:
+  - Crear un componente intermedio para mostrar/editar un item.
+  - Crear un componente intermedio para entrar en modo add o añadir
+    un time.
+
+Empezamos por el hook (de momento lo sacamos al mismo fichero):
+
+```diff
++ const useTodoQueries = () => {
++  const queryClient = useQueryClient();
++  const handleSaveSuccess = () => {
++    queryClient.invalidateQueries(todoKeys.todoList());
++  };
++
++  const { data } = useTodoListQuery();
++  const updateMutation = useUpdateTodoItemMutation(handleSaveSuccess);
++  const appendMutation = useAppendTodoItemMutation(handleSaveSuccess);
++
++  return {
++    data,
++    updateMutation,
++    appendMutation,
++    handleSaveSuccess,
++  };
++};
+
+export const TodoPage: React.FC = () => {
+-  const queryClient = useQueryClient();
+
+-  const handleSaveSuccess = () => {
+-    queryClient.invalidateQueries(todoKeys.todoList());
+-  };
+
+-  const { data } = useTodoListQuery();
+-  const updateMutation = useUpdateTodoItemMutation(handleSaveSuccess);
+-  const appendMutation = useAppendTodoItemMutation(handleSaveSuccess);
++ const { data, updateMutation, appendMutation, handleSaveSuccess } = useTodoQueries();
+
+  const [editingId, setEditingId] = React.useState(ReadOnlyMode);
+
+  const handleEnterEditMode = (id: number) => {
+    setEditingId(id);
+  };
+
+  const handleUpdate = (item: TodoItem) => {
+    updateMutation.mutate(item);
+    setEditingId(ReadOnlyMode);
+  };
+
+  const handleAppend = (item: TodoItem) => {
+    appendMutation.mutate(item);
+    setEditingId(ReadOnlyMode);
+  };
+
+  const handleCancel = () => {
+    setEditingId(ReadOnlyMode);
+  };
+
+  return (
+```
+
+ahora podemos decidir si sacar este hook a un fichero aparte o no.
+
+Si quisiéramos podríamos sacar los handlers a otro hook o incluso incluirlo
+en el hook de queries.
+
+Vamos a por la parte de markup:
+
+- Creamos un wrapper que se va a llamar _Todoitem_ y va a agrupar la lógica
+  para mostrar uno u otro, así como ambos componentes:
+
+_./src/pages/todo/components/todo-item.component.tsx_
+
+```tsx
+import React from "react";
+import { TodoItem } from "../todo.model";
+import { TodoItemEdit } from "./todo-item-edit.component";
+import { TodoItemDisplay } from "./todo-item-display.component";
+
+interface Props {
+  editingId: number;
+  todo: TodoItem;
+  onEnterEditMode: (id: number) => void;
+  onUpdate: (item: TodoItem) => void;
+  onCancel: () => void;
+}
+
+export const TodoItemComponent: React.FC<Props> = (props: Props) => {
+  const { todo, editingId, onEnterEditMode, onUpdate, onCancel } = props;
+
+  return (
+    <>
+      {todo.id !== editingId ? (
+        <TodoItemDisplay key={todo.id} item={todo} onEdit={onEnterEditMode} />
+      ) : (
+        <TodoItemEdit
+          key={todo.id}
+          item={todo}
+          onSave={onUpdate}
+          onCancel={onCancel}
+        />
+      )}
+    </>
+  );
+};
+```
+
+- Lo añadimos al barrel de componentes:
+
+_./src/pages/todo/components/index.ts_
+
+```diff
+- export * from "./todo-item-display.component";
+- export * from "./todo-item-edit.component";
++ export * from "./todo-item.component";
+```
+
+- Refactorizamos TodoPage
+
+_./src/pages/todo/todo-page.tsx_
+
+```diff
+import classes from "./todo.page.css";
+import { TodoItem } from "./todo.model";
+- import { TodoItemDisplay, TodoItemEdit } from "./components";
++ import { TodoItemComponent } from "./components";
+```
+
+_./src/pages/todo/todo-page.tsx_
+
+```diff
+      <div className={classes.todoList}>
+        {data?.map((todo) =>
+-          todo.id !== editingId ? (
+-            <TodoItemDisplay
+-              key={todo.id}
+-              item={todo}
+-              onEdit={handleEnterEditMode}
+-            />
+-          ) : (
+-            <TodoItemEdit
+-              key={todo.id}
+-              item={todo}
+-              onSave={handleUpdate}
+-              onCancel={handleCancel}
+-            />
+-          )
++          <TodoItemComponent
++            key={todo.id}
++            todo={todo}
++            editingId={editingId}
++            onEnterEditMode={handleEnterEditMode}
++            onUpdate={handleUpdate}
++            onCancel={handleCancel}
++          />
+        )}
+        )}
+      </div>
+```
+
+Sacamos al model las constanted de ReadOnly y AppendMode.
+
+_./src/pages/todo/todo.model.ts_
+
+```diff
++ export const ReadOnlyMode = -1;
++ export const AppendMode = 0;
+
+export interface TodoItem {
+  id: number;
+  description: string;
+  isDone: boolean;
+}
+
+export const createEmptyTodoItem = (): TodoItem => ({
+  id: 0,
+  description: "",
+  isDone: false,
+});
+```
+
+Importamos y eliminamos la instancia local de todo page:
+
+_/.src/pages/todo/todo-page.tsx_
+
+```diff
+- import { TodoItem } from "./todo.model";
++ import { TodoItem, ReadOnlyMode, AppendMode } from "./todo.model";
+import { TodoItemComponent } from "./components";
+
+- const ReadOnlyMode = -1;
+- const AppendMode = 0;
+```
+
+Vamos ahora a por el Append, tenemos que crear un fichero de CSS
+
+_./src/pages/todo/components/todo-append.component.css_
+
+```css
+.todo-list {
+  display: grid;
+  grid-template-columns: 1fr 3fr 1fr;
+  grid-gap: 1rem;
+  margin: 1rem;
+}
+
+.append-container {
+  margin: 10px 0 10px 0;
+}
+```
+
+_./src/todo/components/todo/components/todo-append.tsx_
+
+```tsx
+import React from "react";
+import { TodoItem, AppendMode, ReadOnlyMode } from "../todo.model";
+import { TodoItemEdit } from "./todo-item-edit.component";
+import classes from "./todo.append.css";
+
+interface Props {
+  editingId: number;
+  setAppendMode: () => void;
+  onAppend: (item: TodoItem) => void;
+  onCancel: () => void;
+}
+
+export const TodoAppendComponent: React.FC<Props> = (props: Props) => {
+  const { editingId, setAppendMode, onAppend, onCancel } = props;
+
+  return (
+    <>
+      {editingId !== AppendMode ? (
+        <button onClick={setAppendMode}>Enter Insert New Item Node</button>
+      ) : (
+        <div className={classes.todoList}>
+          <TodoItemEdit onSave={onAppend} onCancel={onCancel} />
+        </div>
+      )}
+    </>
+  );
+};
+```
+
+- Lo añadimos al barrel:
+
+_./src/pages/todo/components/index.ts_
+
+```diff
+export * from "./todo-item.component";
++ export * from "./todo-append.component";
+```
+
+- Vamos a importarlo y vamos a refactorizar la página:
+
+_./src/pages/todo/todo-page.tsx_
+
+```diff
+import { TodoItem, ReadOnlyMode, AppendMode } from "./todo.model";
+- import { TodoItemComponent } from "./components";
++ import { TodoItemComponent, TodoAppendComponent } from "./components";
+```
+
+_./src/pages/todo/todo-page.tsx_
+
+```diff
+      <div className={classes.appendContainer}>
+-        {editingId !== AppendMode ? (
+-          <button onClick={() => setEditingId(AppendMode)}>
+-            Enter Insert New Item Node
+-          </button>
+-        ) : (
+-          <div className={classes.todoList}>
+-            <TodoItemEdit
+-              onSave={handleAppend}
+-              onCancel={() => setEditingId(ReadOnlyMode)}
+-            />
+-          </div>
+-        )}
++        <TodoAppendComponent
++          editingId={editingId}
++          setAppendMode={() => setEditingId(AppendMode)}
++          onAppend={handleAppend}
++          onCancel={() => setEditingId(ReadOnlyMode)}
++        />
+      </div>
+      <Link to="/list">To List</Link>
+    </>
+  );
+};
+```
+
+Ahora estamos en el punto en el que podemos o bien decidir que ya
+el código es lo suficientemente legible o podríamos seguir refactorizando.
+
+En ese caso que se podría hacer para simplificar el fichero _todo.page_
+
+- El hook inline que hemos definido extraerlo a otro fichero.
+- Crear un componente TodoItemCollection (que incluye el css container)
+- Meter el Div container del Append dentro del componente.
+
+Podrías quedar algo así como:
+
+** Pseudocodigo **
+
+```tsx
+<>
+  <h1>Todo Page</h1>
+  <TodoItemCollection
+    data={data}
+    editingId={editingId}
+    onEnterEditMode={handleEnterEditMode}
+    onUpdate={handleUpdate}
+    onCancel={handleCancel}
+  />
+  <TodoAppendComponent
+    editingId={editingId}
+    setAppendMode={() => setEditingId(AppendMode)}
+    onAppend={handleAppend}
+    onCancel={() => setEditingId(ReadOnlyMode)}
+  />
+</>
+```
+¿Merece la pena este refactor?
+
+# EJERCICIO
+
+Realiza la misma implementación pero para el endpoint de listas.
+
 # Referencias
 
 https://tanstack.com/query/v4/docs/guides/mutations
+
+

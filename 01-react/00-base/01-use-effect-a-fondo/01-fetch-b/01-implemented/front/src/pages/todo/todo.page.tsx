@@ -8,22 +8,30 @@ import {
   useAppendTodoItemMutation,
 } from "./todo-query";
 import classes from "./todo.page.css";
-import { TodoItem } from "./todo.model";
-import { TodoItemDisplay, TodoItemEdit } from "./components";
+import { TodoItem, ReadOnlyMode, AppendMode } from "./todo.model";
+import { TodoItemComponent, TodoAppendComponent } from "./components";
 
-const ReadOnlyMode = -1;
-const AppendMode = 0;
-
-export const TodoPage: React.FC = () => {
-  const queryClient = useQueryClient();
-
+const useTodoQueries = () => {
   const handleSaveSuccess = () => {
     queryClient.invalidateQueries(todoKeys.todoList());
   };
 
+  const queryClient = useQueryClient();
   const { data } = useTodoListQuery();
   const updateMutation = useUpdateTodoItemMutation(handleSaveSuccess);
   const appendMutation = useAppendTodoItemMutation(handleSaveSuccess);
+
+  return {
+    data,
+    updateMutation,
+    appendMutation,
+    handleSaveSuccess,
+  };
+};
+
+export const TodoPage: React.FC = () => {
+  const { data, updateMutation, appendMutation, handleSaveSuccess } =
+    useTodoQueries();
   const [editingId, setEditingId] = React.useState(ReadOnlyMode);
 
   const handleEnterEditMode = (id: number) => {
@@ -48,36 +56,24 @@ export const TodoPage: React.FC = () => {
     <>
       <h1>Todo Page</h1>
       <div className={classes.todoList}>
-        {data?.map((todo) =>
-          todo.id !== editingId ? (
-            <TodoItemDisplay
-              key={todo.id}
-              item={todo}
-              onEdit={handleEnterEditMode}
-            />
-          ) : (
-            <TodoItemEdit
-              key={todo.id}
-              item={todo}
-              onSave={handleUpdate}
-              onCancel={handleCancel}
-            />
-          )
-        )}
+        {data?.map((todo) => (
+          <TodoItemComponent
+            key={todo.id}
+            todo={todo}
+            editingId={editingId}
+            onEnterEditMode={handleEnterEditMode}
+            onUpdate={handleUpdate}
+            onCancel={handleCancel}
+          />
+        ))}
       </div>
       <div className={classes.appendContainer}>
-        {editingId !== AppendMode ? (
-          <button onClick={() => setEditingId(AppendMode)}>
-            Enter Insert New Item Node
-          </button>
-        ) : (
-          <div className={classes.todoList}>
-            <TodoItemEdit
-              onSave={handleAppend}
-              onCancel={() => setEditingId(ReadOnlyMode)}
-            />
-          </div>
-        )}
+        <TodoAppendComponent
+          editingId={editingId}
+          setAppendMode={() => setEditingId(AppendMode)}
+          onAppend={handleAppend}
+          onCancel={() => setEditingId(ReadOnlyMode)}
+        />
       </div>
       <Link to="/list">To List</Link>
     </>

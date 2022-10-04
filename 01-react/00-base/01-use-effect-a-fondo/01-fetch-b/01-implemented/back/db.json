@@ -16,7 +16,7 @@
   "todos": [
     {
       "id": 1,
-      "description": "dunno",
+      "description": "whatever",
       "isDone": false
     },
     {
@@ -73,6 +73,11 @@
       "id": 12,
       "description": "Patatas",
       "isDone": false
+    },
+    {
+      "id": 13,
+      "description": "PEreas",
+      "isDone": true
     }
   ]
 }
