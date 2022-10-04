@@ -5,7 +5,7 @@ en segundos.
 
 # Pasos iniciales
 
-- Copia el proyecto de boiler plate.
+- Copia el proyecto de *boiler plate*.
 
 - Instala las dependencias
 
@@ -13,7 +13,7 @@ en segundos.
 npm install
 ```
 
-- Vamos a mostrar un tag de video:
+- Vamos a mostrar un *tag* de video:
 
 ```diff
 import React from "react";
@@ -43,5 +43,5 @@ export const App = () => {
 # Pistas
 
 - Pistas:
-  - Mira el evento onTimeUpdate, eso se dispara cada vez que el video va avanzando.
-  - ¿De donde sacas en el segundo actual y la duración? :) huele a que vas a tener que usar refs...
+  - Mira el evento *onTimeUpdate*, eso se dispara cada vez que el video va avanzando.
+  - ¿De dónde sacas en el segundo actual y la duración? :) huele a que vas a tener que usar *refs*...
