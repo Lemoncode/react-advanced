@@ -246,13 +246,25 @@ _./src/common/components/modal/modal.css_
   justify-content: center;
   font-size: 2rem;
 }
+
+.close-btn {
+  padding: 1rem;
+  border-radius: 0.25rem;
+  border: none;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  -webkit-border-radius: 0.25rem;
+  -moz-border-radius: 0.25rem;
+  -ms-border-radius: 0.25rem;
+  -o-border-radius: 0.25rem;
+}
 ```
 
 _./src/common/components/modal/modal.tsx_
 
 ```tsx
-import "./modal.css";
 import React from "react";
+import classes from "./modal.css";
 
 interface Props {
   children: React.ReactNode;
@@ -266,11 +278,11 @@ export const Modal: React.FC<Props> = (props) => {
   if (!isOpen) return null;
 
   return (
-    <div className="modal">
+    <div className={classes.modal}>
       <button className="close-btn" onClick={handleClose}>
         Close
       </button>
-      <div className="modal-content">{children}</div>
+      <div className={classes.modalContent}>{children}</div>
     </div>
   );
 };

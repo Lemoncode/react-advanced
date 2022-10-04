@@ -1,5 +1,5 @@
 import React from "react";
-import "./modal.css";
+import classes from "./modal.css";
 
 interface Props {
   children: React.ReactNode;
@@ -21,11 +21,11 @@ export const Modal: React.FC<Props> = (props) => {
   if (!isOpen) return null;
 
   return (
-    <div className="modal">
-      <button className="close-btn" onClick={handleClose}>
+    <div className={classes.modal}>
+      <button className={classes.closeBtn} onClick={handleClose}>
         Close
       </button>
-      <div className="modal-content">{children}</div>
+      <div className={classes.modalContent}>{children}</div>
     </div>
   );
 };
