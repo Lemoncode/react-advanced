@@ -2,7 +2,7 @@
 
 ## Resumen
 
-Cuando usamos el *hook* _useRef_ nos permite de una manera fácil poder mantener la referencia
+Cuando usamos el _hook_ _useRef_ nos permite de una manera fácil poder mantener la referencia
 a un elemento del DOM (por ejemplo un _input_ o un _select_), y poder cambiar propiedades del mismo
 como por ejemplo asignarle el foco a ese elemento o cualquier otra.
 
@@ -20,12 +20,12 @@ npm install
 ```
 
 En este ejemplo vamos a crearnos un componente que vamos a llamar _InputComponent_ en el que vamos a envolver un
-elemento *(HTML) input*.
+elemento _(HTML) input_.
 
 Tenemos un requerimiento: cuando el usuario pulsa en un botón que se encuentra fuera del componente
-queremos darle el foco al elemento *input* interno de nuestro _InputComponent_.
+queremos darle el foco al elemento _input_ interno de nuestro _InputComponent_.
 
-Aquí tenemos un desafío, podemos tener un *ref* al _input_ dentro de nuestro _InputComponent_, pero...
+Aquí tenemos un desafío, podemos tener un _ref_ al _input_ dentro de nuestro _InputComponent_, pero...
 nosotros queremos manejar esa referencia desde el componente padre, ¿qué podemos hacer? _ForwardRef_ al rescate.
 
 Primero vamos a definir nuestro componente _InputComponent_
@@ -52,7 +52,7 @@ export const InputComponent: React.FC<InputProps> = (props) => {
 };
 ```
 
-Vamos a añadir nuestro componente principal que instanciará dos *inputComponents* y un botón:
+Vamos a añadir nuestro componente principal que instanciará dos _inputComponents_ y un botón:
 
 _./src/App.tsx_
 
@@ -85,9 +85,9 @@ export function App() {
 Ahora viene la parte interesante: queremos que cuando el usuario pulse en el botón, el foco
 se asigne al segundo _InputComponent_.
 
-¿Cómo podríamos intentar implementar esto con lo que sabemos de *React*? Podríamos exponer una propiedad _ref_, esto no va a funcionar, veamos por qué...
+¿Cómo podríamos intentar implementar esto con lo que sabemos de _React_? Podríamos exponer una propiedad _ref_, esto no va a funcionar, veamos por qué...
 
-Primero en el _InputComponent_ exponemos la propiedad _ref_. Es el nombre de la propiedad que tienen todos los componentes nativos en *React* para obtener su instancia:
+Primero en el _InputComponent_ exponemos la propiedad _ref_. Es el nombre de la propiedad que tienen todos los componentes nativos en _React_ para obtener su instancia:
 
 _./src/common/input.component.tsx_
 
@@ -124,7 +124,7 @@ Segundo lo consumimos en el componente padre:
 
 - Por un lado definimos una variable que tendrá la referencia.
 - Por otro cuando instanciamos nuestro segundo _InputComponent_ le pasamos
-  esa *ref* por propiedad.
+  esa _ref_ por propiedad.
 
 ```diff
 export function App() {
@@ -185,8 +185,8 @@ export function App() {
 }
 ```
 
-Como vemos, esto no funciona, debido a que la propiedad [*ref*](https://reactjs.org/docs/refs-and-the-dom.html) es una propiedad
-nativa de los componentes de *React*, al igual que por ejemplo la propiedad [*key*](https://reactjs.org/docs/lists-and-keys.html).
+Como vemos, esto no funciona, debido a que la propiedad [_ref_](https://reactjs.org/docs/refs-and-the-dom.html) es una propiedad
+nativa de los componentes de _React_, al igual que por ejemplo la propiedad [_key_](https://reactjs.org/docs/lists-and-keys.html).
 
 Tenemos el siguiente error:
 
@@ -194,7 +194,7 @@ Tenemos el siguiente error:
 react-dom.development.js?f8c1:86 Warning: Function components cannot be given refs. Attempts to access this ref will fail. Did you mean to use React.forwardRef()?
 ```
 
-Podemos hacer un *workaround* un poco sucio y por ejemplo cambiarle el nombre a la propiedad.
+Podemos hacer un _workaround_ un poco sucio y por ejemplo cambiarle el nombre a la propiedad.
 
 _./src/common/input.component.tsx_
 
@@ -259,7 +259,7 @@ Si te fijas ahora cuando pulsas en el botón, el foco de la ventana se va al seg
 
 Es hora de usar las _ForwardRef_.
 
-Primero, en el _InputComponent_ exponemos la _forwardRef_, si te fijas es una función que envuelve a tu componente funcional de *React*.
+Primero, en el _InputComponent_ exponemos la _forwardRef_, si te fijas es una función que envuelve a tu componente funcional de _React_.
 
 _./src/common/input.component.tsx_
 
@@ -326,3 +326,16 @@ export default function App() {
 Este ejemplo tal cual te puede parecer un caso un poco raro pero... ponte en el escenario en el que estás validando
 un formulario y el equipo de usabilidad te ha pedido poner el foco en el primer campo que tenga un error... ahora
 empieza todo a tener más sentido ¿Verdad?
+
+# ¿Te apuntas a nuestro máster?
+
+Si te ha gustado este ejemplo y tienes ganas de aprender Front End
+guiado por un grupo de profesionales ¿Por qué no te apuntas a
+nuestro [Máster Front End Online Lemoncode](https://lemoncode.net/master-frontend#inicio-banner)? Tenemos tanto edición de convocatoria
+con clases en vivo, como edición continua con mentorización, para
+que puedas ir a tu ritmo y aprender mucho.
+
+También puedes apuntarte a nuestro Bootcamp de Back End [Bootcamp Backend](https://lemoncode.net/bootcamp-backend#inicio-banner)
+
+Y si tienes ganas de meterte una zambullida en el mundo _devops_
+apuntate nuestro [Bootcamp devops online Lemoncode](https://lemoncode.net/bootcamp-devops#bootcamp-devops/inicio)
