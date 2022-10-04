@@ -159,3 +159,137 @@ Vamos ver que tal funciona esto:
 ```bash
 npm start
 ```
+
+- Tenemos algo básico cargando, vamos a simular que vamos a trabajar
+  en un proyecto más grande, es hora de hacer refactor dela consultas:
+
+Vamos a crear query keys para el area de TODOs:
+
+_./src/pages/todo/todo-key-queries.ts_
+
+```ts
+export const coreKeys = {
+  all: ["todo"] as const,
+  todoList: () => [...coreKeys.all, "todoList"] as const,
+};
+```
+
+Y vamos a crear un fichero con hooks que hagan de wrapper de
+las consultas.
+
+_./src/pages/todo/todo-query.ts_
+
+```ts
+import { useQuery } from "@tanstack/react-query";
+import { getTodoList } from "./todo.api";
+import { TodoItem } from "./todo.model";
+import { coreKeys } from "./todo-key-queries";
+
+export const useTodoListQuery = () => {
+  return useQuery(coreKeys.todoList, () => getTodoList());
+};
+```
+
+Vamos a darle uso en la página:
+
+_./src/pages/todo/todo.page.tsx_
+
+```diff
+import React from "react";
+import { Link } from "react-router-dom";
+- import { useQuery } from "@tanstack/react-query";
+- import { getTodoList } from "./todo.api";
++ import {useTodoListQuery} from './todo-query';
+
+export const TodoPage: React.FC = () => {
+-  const { data } = useQuery(["todoList"], () => getTodoList());
++  const { data } = useTodoListQuery();
+
+
+  return (
+```
+
+- Le damos algo de estilado a la lista de TODOs:
+
+  - Vamos a tener un grid con tres columnas:
+    - Estado de la tarea.
+    - Nombre de la tarea.
+    - Paleta de comandos (editar, borrar, o si ya estas
+      editando grabar / cancelar).
+
+_./src/pages/todo/todo.page.css_
+
+```css
+.todo-list {
+  display: grid;
+  grid-template-columns: 1fr 3fr 1fr;
+  grid-gap: 1rem;
+  margin: 1rem;
+}
+```
+
+- Aplicamos el estilo a la lista:
+
+_./src/pages/todo/todo.page.tsx_
+
+```diff
+import React from "react";
+import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { getTodoList } from "./todo.api";
++ import classes from './todo.page.css';
+
+export const TodoPage: React.FC = () => {
+  const { data } = useQuery(["todoList"], () => getTodoList());
+
+  return (
+    <>
+      <h1>Todo Page</h1>
+-      <ul>
++      <div className={classes.todoList}>
+        {data?.map((todo) => (
++          <>
++            <div>{todo.isDone ? "✅" : "⭕️"}</div>
++            <div>{todo.description}</div>
++            <div>Command area</div>
++          </>
+        ))}
+-          <li key={todo.id}>
+-            {todo.isDone ? "✅" : "⭕️"} {todo.description}
+-          </li>
+        ))}
+-      </ul>
++      </div>
+      <Link to="/list">To List</Link>
+    </>
+  );
+};
+```
+
+- Como vamos a tener modo edición vamos a encapsular ya el modo
+  display.
+
+- Es hora de ponernos a trabajar en modo edición, para ello
+  vamos a distinguir entre dos componentes:
+
+- El componente de visualización (refactorizamos)
+
+_./src_
+
+```tsx
+
+```
+
+Y le damos uso:
+
+- El componente de edición:
+
+```tsx
+
+```
+
+- Para saber si un TODO esta en edición (sólo dejaremos que
+  uno esté en edición a la vez), podemos o bien usar un flag o
+  tener en cada TODO un flag para saber si está en modo edición.
+
+Para hacer el ejemplo más completo con React Query vamos a usar

@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getTodoList } from "./todo.api";
+import classes from "./todo.page.css";
 
 export const TodoPage: React.FC = () => {
   const { data } = useQuery(["todoList"], () => getTodoList());
@@ -9,13 +10,15 @@ export const TodoPage: React.FC = () => {
   return (
     <>
       <h1>Todo Page</h1>
-      <ul>
+      <div className={classes.todoList}>
         {data?.map((todo) => (
-          <li key={todo.id}>
-            {todo.isDone ? "✅" : "⭕️"} {todo.description} -
-          </li>
+          <>
+            <div>{todo.isDone ? "✅" : "⭕️"}</div>
+            <div>{todo.description}</div>
+            <div>Command area</div>
+          </>
         ))}
-      </ul>
+      </div>
       <Link to="/list">To List</Link>
     </>
   );
