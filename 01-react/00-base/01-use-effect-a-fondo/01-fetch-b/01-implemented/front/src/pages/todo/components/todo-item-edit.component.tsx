@@ -1,15 +1,18 @@
 import React from "react";
-import { TodoItem } from "../todo.model";
+import { TodoItem, createEmptyTodoItem } from "../todo.model";
 
 interface Props {
-  item: TodoItem;
+  item?: TodoItem;
   onSave: (item: TodoItem) => void;
   onCancel: () => void;
 }
 
+const itemOrDefault = (item: TodoItem) =>
+  item ? { ...item } : createEmptyTodoItem();
+
 export const TodoItemEdit: React.FC<Props> = (props: Props) => {
   const { item, onSave, onCancel } = props;
-  const [editItem, setEditItem] = React.useState({ ...item });
+  const [editItem, setEditItem] = React.useState(itemOrDefault(item));
 
   return (
     <>

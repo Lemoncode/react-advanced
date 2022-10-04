@@ -634,21 +634,21 @@ _./src/pages/todo/todo.page.tsx_
 
 ```diff
 export const TodoPage: React.FC = () => {
-+ const handleUpdateSuccess = () => {
++ const handleSaveSuccess = () => {
 +  console.log("Update Success");
 + }
 
   const { data } = useTodoListQuery();
-+ const mutation = useUpdateTodoItemMutation<TodoItem>(null, handleUpdateSuccess);
++ const updateMutation = useUpdateTodoItemMutation<TodoItem>(null, handleSaveSuccess);
   const [editingId, setEditingId] = React.useState(ReadOnlyMode);
 
   const handleEnterEditMode = (id: number) => {
     setEditingId(id);
   };
 
-  const handleSave = (item: TodoItem) => {
+  const handleUpdate = (item: TodoItem) => {
 -    console.log("Save", item);
-+   mutation.mutate(item);
++   updateMutation.mutate(item);
     setEditingId(ReadOnlyMode);
   };
 ```
@@ -657,8 +657,8 @@ export const TodoPage: React.FC = () => {
   se actualice un item, para ello vamos a usar el método
   _invalidateQueries_ que nos ofrece React Query.
 
-
 _./src/pages/todo/todo.page.tsx_
+
 ```diff
 import React from "react";
 import { Link } from "react-router-dom";
@@ -672,10 +672,222 @@ _./src/pages/todo/todo.page.tsx_
 ```diff
 + const queryClient = useQueryClient();
 
-  const handleUpdateSuccess = () => {
+  const handleSaveSuccess = () => {
 -    console.log("Update Success");
 +  queryClient.invalidateQueries(todoKeys.todoList());
   };
 ```
 
+- Si ejecutamos podemos verlo en acción (también podríamos haber añadido
+  indicadores de carga, etc...).
 
+- Vamos ahora al modo añadir un nuevo ToDo.
+
+- Vamos a crear un factory para crear ToDo's vacios.
+
+_./src/pages/todo/todo.model.ts_
+
+```diff
+export interface TodoItem {
+  id: number;
+  description: string;
+  isDone: boolean;
+}
+
++ export const createEmptyTodoItem = (): TodoItem => ({
++     id: 0,
++     description: "",
++     isDone: false,
++   });
+```
+
+Vamos a adaptar el componente de edición para que acepta el modo
+inserción.
+
+Añadimos un poco de estilado:
+
+_./src/pages/todo/todo.page.css_
+
+```diff
+.todo-list {
+  display: grid;
+  grid-template-columns: 1fr 3fr 1fr;
+  grid-gap: 1rem;
+  margin: 1rem;
+}
+
++ .append-container {
++  margin: 10px 0 10px 0
++ }
+```
+
+_./src/pages/todo/components/todo-item-edit.component.tsx_
+
+```diff
+import React from "react";
+- import { TodoItem } from "../todo.model";
++ import { TodoItem, createEmptyTodoItem } from "../todo.model";
+
+interface Props {
+-  item: TodoItem;
++  item?: TodoItem;
+  onSave: (item: TodoItem) => void;
+  onCancel: () => void;
+}
+```
+
+_./src/pages/todo/components/todo-item-edit.component.tsx_
+
+```diff
++ const itemOrDefault = (item : TodoItem) => (item) ?
++  { ...item }
++ :
++ createEmptyTodoItem();
+
+export const TodoItemEdit: React.FC<Props> = (props: Props) => {
+  const { item, onSave, onCancel } = props;
+-  const [editItem, setEditItem] = React.useState({ ...item });
++  const [editItem, setEditItem] = React.useState(itemOrDefault(item));
+```
+
+Y vamos a crear el markup en la página, lo que hacemos aquí:
+
+- Si no estamos en modo inserción mostramos un botón para entrar en dicho modo.
+- Una vez que estamos en modo inserción ocultamos el botón anterior y
+  mostramos el componente para editar todos, no le pasamos ningún item, ya
+  que este es nuevo y recogemos el resultado, en caso de cancelar pasamos
+  a modo ReadOnly.
+
+_./src/pages/todo/todo.page.tsx_
+
+```diff
+      </div>
++      <div className={classes.appendContainer}>
++        {editingId !== AppendMode ? (
++          <button onClick={() => setEditingId(AppendMode)}>
++            Enter Insert New Item Node
++          </button>
++        ) : (
++          <div className={classes.todoList}>
++            <TodoItemEdit
++              onSave={() => console.log("Insert item")}
++              onCancel={() => setEditingId(ReadOnlyMode)}
++            />
++          </div>
++        )}
++      </div>
+      <Link to="/list">To List</Link>
+    </>
+  );
+```
+
+> Esto se podía refactorizar y encapsularlo en un componente
+> intermedio.
+
+Nos queda hacer el insert real, vamos a por la api:
+
+_./src/pages/todo/todo.api.ts_
+
+```diff
+export const updateTodoItem = async (item: TodoItem): Promise<TodoItem> => {
+  const response = await fetch(`http://localhost:3000/todos/${item.id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(item),
+  });
+
+  const data = await response.json();
+  return data;
+};
+
++ export const appendTodoItem = async (item: TodoItem): Promise<TodoItem> => {
++  const response = await fetch(`http://localhost:3000/todos`, {
++    method: "POST",
++    headers: {
++      "Content-Type": "application/json",
++    },
++    body: JSON.stringify(item),
++  });
++
++  const data = await response.json();
++  return data;
++}
+```
+
+Y a por la mutación:
+
+_./src/pages/todo/todo-query.tsx_
+
+```diff
+import { useQuery, useMutation } from "@tanstack/react-query";
+- import { getTodoList, updateTodoItem } from "./todo.api";
++ import { getTodoList, updateTodoItem, appendTodoItem } from "./todo.api";
+import { TodoItem } from "./todo.model";
+import { todoKeys } from "./todo-key-queries";
+```
+
+_./src/pages/todo/todo-query.tsx_
+
+```diff
+export const useUpdateTodoItemMutation = (onSuccessFn: () => void) => {
+  return useMutation(updateTodoItem, {
+    onSuccess: () => onSuccessFn(),
+  });
+};
+
++ export const useAppendTodoItemMutation = (onSuccessFn: () => void) =>
++  useMutation(appendTodoItem, {onSuccess: () => onSuccessFn()});
+```
+
+Y lo añadimos a la página:
+
+_./src/pages/todo/todo-page.tsx_
+
+```diff
+import React from "react";
+import { Link } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import { todoKeys } from "./todo-key-queries";
+- import { useTodoListQuery, useUpdateTodoItemMutation } from "./todo-query";
++ import { useTodoListQuery, useUpdateTodoItemMutation, useAppendTodoItemMutation } from "./todo-query";
+import classes from "./todo.page.css";
+```
+
+_./src/pages/todo/todo-page.tsx_
+
+```diff
+  const { data } = useTodoListQuery();
+  const updateMutation = useUpdateTodoItemMutation(handleSaveSuccess);
++ const appendMutation = useAppendTodoItemMutation(handleSaveSuccess);
+  const [editingId, setEditingId] = React.useState(ReadOnlyMode);
+
+  const handleEnterEditMode = (id: number) => {
+    setEditingId(id);
+  };
+
+  const handleUpdate = (item: TodoItem) => {
+    updateMutation.mutate(item);
+    setEditingId(ReadOnlyMode);
+  };
+
++ const handleAppend = (item: TodoItem) => {
++   appendMutation.mutate(item);
++   setEditingId(ReadOnlyMode);
++ };
+```
+
+_./src/pages/todo/todo-page.tsx_
+
+```diff
+  <TodoItemEdit
+-    onSave={() => console.log("Insert item")}
++    onSave={handleAppend}
+    onCancel={() => setEditingId(ReadOnlyMode)}
+  />
+```
+
+# Referencias
+
+https://tanstack.com/query/v4/docs/guides/mutations

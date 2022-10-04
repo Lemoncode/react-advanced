@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { getTodoList, updateTodoItem } from "./todo.api";
+import { getTodoList, updateTodoItem, appendTodoItem } from "./todo.api";
 import { TodoItem } from "./todo.model";
 import { todoKeys } from "./todo-key-queries";
 
@@ -12,3 +12,6 @@ export const useUpdateTodoItemMutation = (onSuccessFn: () => void) => {
     onSuccess: () => onSuccessFn(),
   });
 };
+
+ export const useAppendTodoItemMutation = (onSuccessFn: () => void) => 
+  useMutation(appendTodoItem, {onSuccess: () => onSuccessFn()});
