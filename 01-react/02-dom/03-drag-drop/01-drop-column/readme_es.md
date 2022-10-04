@@ -34,31 +34,23 @@ En React tenemos varias librerías que los implementan, las más populares:
 Lo primero ¿Qué librería elegimos?
 
 Esta un decisión complicada, para que nos sirve para siguientes decisiones vamos a ver que factores nos pueden ayudar a tomar la decisión
-(ninguno de estos es determinante per se pero si nos pueden guiar a tomar la decisión menos mala):
+(ninguno de estos es determinante pero si nos pueden guiar a tomar la decisión menos mala):
 
-- El primero que debemos de ver es la licencia del proyecto ¿Es licencia MIT? Aquí nos podemos encontrar con un problema si esa librería
-  tiene una licencia restrictiva (podría ser que no permitiera el uso comercial o que tuviéramos que publicar nuestro código fuente como open source)
+- El primero que debemos de ver es la licencia del proyecto ¿Es licencia MIT? Aquí nos podemos encontrar con un problema si esa librería tiene una licencia restrictiva (podría ser que no permitiera el uso comercial o que tuviéramos que publicar nuestro código fuente como open source)
 
-- Uno obvio es el número de estrellas que tiene el proyecto, un proyecto con un buen número de estrellas suele quere decir que es un proyecto
-  que lo ha usado bastante gente y que seguramente encontramos bastante ayuda en StackOverflow.
+- Uno obvio es el número de estrellas que tiene el proyecto, un proyecto con un buen número de estrellas suele querer decir que es un proyecto que lo ha usado bastante gente y que seguramente encontramos bastante ayuda en StackOverflow.
 
-- Otro factor importante ¿Cómo de actualizado está el proyecto? Vamos a ver cuando se hizo la última release y como de actualizado está el
-  proyecto, ya que igual en su día fue muy popular, pero ahora se encuentra abandonado (igual no es compatible con la última versión de React,
-  o tiene fallos de seguridad que no se han corregido...).
+- Otro factor importante ¿Cómo de actualizado está el proyecto? Vamos a ver cuando se hizo la última release y como de actualizado está el proyecto, ya que igual en su día fue muy popular, pero ahora se encuentra abandonado (igual no es compatible con la última versión de React, o tiene fallos de seguridad que no se han corregido...).
 
-- Otro tema interesante es comparar el flujo de descargas de npm trends, aquí sacamos una grafica de descargas (por cierto muy divertido
-  ver el bajón de descargas en el periodo navideño), aquí podemos descargar cual es la que más descargas tienes y como evoluciona a lo
-  largo del tiempo (que no quiere decir que sea la mejor...)
+- Otro tema interesante es comparar el flujo de descargas de npm trends, aquí sacamos una grafica de descargas (por cierto muy divertido ver el bajón de descargas en el periodo navideño), aquí podemos descargar cual es la que más descargas tienes y como evoluciona a lo largo del tiempo (que no quiere decir que sea la mejor...)
 
 - Es buena idea fijarnos en el autor y grupo que ha desarrollado la librería:
 
   - Si es un autor de otras librerías de renombre podemos esperar que la librería tenga cierta calidad.
   - Si es pertenece a un grupo de autores y además cuenta con un buen sponsorship, podemos esperar que la librería tenga su mantenimiento.
-  - Si es de una empresa (Facebook, Microsoft, Google, Air Bnb) podemos esperar un código supuestamente de calidad, y en cuanto a mantenimiento
-    depende, puede que mientras le haga falta tenga una evolución perfecta, en cuanto no puede entrar en vía muerta.
+  - Si es de una empresa (Facebook, Microsoft, Google, Air Bnb) podemos esperar un código supuestamente de calidad, y en cuanto a mantenimiento depende, puede que mientras le haga falta tenga una evolución perfecta, en cuanto no puede entrar en vía muerta.
 
-- Después de ver estos temas rápidos, toca ponernos con el readme y ver que ofrece, igual nos encontramos de primeras que el proyecto
-  ya no tiene mantenimiento oficial.
+- Después de ver estos temas rápidos, toca ponernos con el readme y ver que ofrece, igual nos encontramos de primeras que el proyecto ya no tiene mantenimiento oficial.
 
 - Seguimos con temas técnicos, evaluar que funcionalidad ofrece, y que queremos implementar.
 
@@ -71,8 +63,7 @@ Esta un decisión complicada, para que nos sirve para siguientes decisiones vamo
 
 - Otro tema a tener en cuenta es hacer un audit de la librería y ver si tiene dependencias anticuadas etc..
 
-- Esto nos puede servir para descartar alguna opción, el último paso es construir una prueba de concepto con los desafíos más comunes que necesitamos
-  y probarlo, es importante pedir tiempo en un sprint para hacer un spike ya que una decisión erronea puede tener un coste a largo plazo muy alto.
+- Esto nos puede servir para descartar alguna opción, el último paso es construir una prueba de concepto con los desafíos más comunes que necesitamos day probarlo, es importante pedir tiempo en un sprint para hacer un spike ya que una decisión erronea puede tener un coste a largo plazo muy alto.
 
 Vamos a ponernos manos a la obra evaluando las librerías que hemos visto antes:
 
