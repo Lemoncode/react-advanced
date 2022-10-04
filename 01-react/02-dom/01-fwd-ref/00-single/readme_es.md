@@ -2,11 +2,11 @@
 
 ## Resumen
 
-Cuando usamos el hook _useRef_ nos permite de una manera fácil poder mantener la referencia
+Cuando usamos el *hook* _useRef_ nos permite de una manera fácil poder mantener la referencia
 a un elemento del DOM (por ejemplo un _input_ o un _select_), y poder cambiar propiedades del mismo
 como por ejemplo asignarle el foco a ese elemento o cualquier otra.
 
-Esto está genial si la referencia la tenemos dentro del mismo componente, pero ¿y si quisieramos
+Esto está genial si la referencia la tenemos dentro del mismo componente, pero ¿y si quisiéramos
 pasar esa referencia desde el componente padre? Las _ForwardRef_ nos pueden ser de gran ayuda.
 
 Este ejemplo toma como punto de partida el ejemplo _00-boiler-plate_.
@@ -20,12 +20,12 @@ npm install
 ```
 
 En este ejemplo vamos a crearnos un componente que vamos a llamar _InputComponent_ en el que vamos a envolver un
-elemento (HTML) input.
+elemento *(HTML) input*.
 
 Tenemos un requerimiento: cuando el usuario pulsa en un botón que se encuentra fuera del componente
-queremos darle el foco al elemento input interno de nuestro _InputComponent_.
+queremos darle el foco al elemento *input* interno de nuestro _InputComponent_.
 
-Aquí tenemos un desafío, podemos tener un ref al _input_ dentro de nuestro _InputComponent_, pero...
+Aquí tenemos un desafío, podemos tener un *ref* al _input_ dentro de nuestro _InputComponent_, pero...
 nosotros queremos manejar esa referencia desde el componente padre, ¿qué podemos hacer? _ForwardRef_ al rescate.
 
 Primero vamos a definir nuestro componente _InputComponent_
@@ -41,7 +41,7 @@ export interface InputProps {
   onChange: (newValue: string) => void;
 }
 
-const InputComponent: React.FC<InputProps> = (props) => {
+export const InputComponent: React.FC<InputProps> = (props) => {
   const { label, value, onChange } = props;
 
   const handleChange = (event: any) => {
@@ -52,7 +52,7 @@ const InputComponent: React.FC<InputProps> = (props) => {
 };
 ```
 
-Vamos a añadir nuestro componente principal que instanciará dos inputComponents y un botón:
+Vamos a añadir nuestro componente principal que instanciará dos *inputComponents* y un botón:
 
 _./src/App.tsx_
 
@@ -85,9 +85,9 @@ export function App() {
 Ahora viene la parte interesante: queremos que cuando el usuario pulse en el botón, el foco
 se asigne al segundo _InputComponent_.
 
-¿Cómo podríamos intentar implementar esto con lo que sabemos de React? Podríamos exponer una propiedad _ref_, esto no va a funcionar, veamos por qué...
+¿Cómo podríamos intentar implementar esto con lo que sabemos de *React*? Podríamos exponer una propiedad _ref_, esto no va a funcionar, veamos por qué...
 
-Primero en el _InputComponent_ exponemos la propiedad _ref_. Es el nombre de la propiedad que tienen todos los componentes nativos en React para obtener su instancia:
+Primero en el _InputComponent_ exponemos la propiedad _ref_. Es el nombre de la propiedad que tienen todos los componentes nativos en *React* para obtener su instancia:
 
 _./src/common/input.component.tsx_
 
@@ -124,7 +124,7 @@ Segundo lo consumimos en el componente padre:
 
 - Por un lado definimos una variable que tendrá la referencia.
 - Por otro cuando instanciamos nuestro segundo _InputComponent_ le pasamos
-  esa ref por propiedad.
+  esa *ref* por propiedad.
 
 ```diff
 export function App() {
@@ -185,8 +185,8 @@ export function App() {
 }
 ```
 
-Como vemos, ésto no funciona, debido a que la propiedad [ref](https://reactjs.org/docs/refs-and-the-dom.html) es una propiedad
-nativa de los componentes de React, al igual que por ejemplo la propiedad [key](https://reactjs.org/docs/lists-and-keys.html).
+Como vemos, esto no funciona, debido a que la propiedad [*ref*](https://reactjs.org/docs/refs-and-the-dom.html) es una propiedad
+nativa de los componentes de *React*, al igual que por ejemplo la propiedad [*key*](https://reactjs.org/docs/lists-and-keys.html).
 
 Tenemos el siguiente error:
 
@@ -194,7 +194,7 @@ Tenemos el siguiente error:
 react-dom.development.js?f8c1:86 Warning: Function components cannot be given refs. Attempts to access this ref will fail. Did you mean to use React.forwardRef()?
 ```
 
-Podemos hacer un workaround un poco sucio y por ejemplo cambiarle el nombre a la propiedad.
+Podemos hacer un *workaround* un poco sucio y por ejemplo cambiarle el nombre a la propiedad.
 
 _./src/common/input.component.tsx_
 
@@ -255,13 +255,11 @@ export default function App() {
 
 Si te fijas ahora cuando pulsas en el botón, el foco de la ventana se va al segundo _InputComponent_.
 
-¿Qué ocurre si necesitamos usar la propiedad _ref_ sin tener que inventarnos nuevas propiedades? Un ejemplo práctico, podría ser
-crear nuestra propia librería de componentes y dejar la posibilidad de que accedan a la referencia de cada componente.
+¿Qué ocurre si necesitamos usar la propiedad _ref_ sin tener que inventarnos nuevas propiedades? Un ejemplo práctico, podría ser crear nuestra propia librería de componentes y dejar la posibilidad de que accedan a la referencia de cada componente.
 
 Es hora de usar las _ForwardRef_.
 
-Primero, en el _InputComponent_ exponemos la _forwardRef_, si te fijas es una función que envuelve a tu
-componente funcional de React.
+Primero, en el _InputComponent_ exponemos la _forwardRef_, si te fijas es una función que envuelve a tu componente funcional de *React*.
 
 _./src/common/input.component.tsx_
 
