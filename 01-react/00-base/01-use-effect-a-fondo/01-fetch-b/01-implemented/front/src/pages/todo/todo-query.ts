@@ -1,10 +1,14 @@
-import { useQuery } from "@tanstack/react-query";
-import { getTodoList } from "./todo.api";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { getTodoList, updateTodoItem } from "./todo.api";
 import { TodoItem } from "./todo.model";
-import { coreKeys } from "./todo-key-queries";
+import { todoKeys } from "./todo-key-queries";
 
 export const useTodoListQuery = () => {
-  return useQuery(coreKeys.todoList(), () =>
-    getTodoList()
-  );
+  return useQuery(todoKeys.todoList(), () => getTodoList());
+};
+
+export const useUpdateTodoItemMutation = (onSuccessFn: () => void) => {
+  return useMutation(updateTodoItem, {
+    onSuccess: () => onSuccessFn(),
+  });
 };

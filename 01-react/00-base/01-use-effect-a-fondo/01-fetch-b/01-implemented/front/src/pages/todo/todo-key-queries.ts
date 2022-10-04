@@ -1,4 +1,4 @@
-export const coreKeys = {
+export const todoKeys = {
   all: ["todo"] as const,
-  todoList: () => [...coreKeys.all, "todoList"] as const,
+  todoList: () => [...todoKeys.all, "todoList"] as const,
 };
