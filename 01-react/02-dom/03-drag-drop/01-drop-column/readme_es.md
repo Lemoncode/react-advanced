@@ -119,17 +119,15 @@ Atlassian esta justo especializada en eso pero así jugamos a más bajo nivel).
 
 ### Boilerplate
 
-- Primero copiamos el ejemplo anterior, y hacemos un _npm install_
+- Primero copiamos _00-boiler-plate_, y hacemos un _npm install_
 
 ```bash
 npm install
 ```
 
-- Antes de ponernos con el Drag & Drop vamos a definir nuestro componente de
-  kanban, para ello:
+- Antes de ponernos con el Drag & Drop vamos a definir nuestro componente de kanban, para ello:
 
-  - Vamos a crear un proyecto de prueba (si lo que hemos hecho está bien
-    montado podremos pasarlo al proyecto real y conectarlo), de esta manera:
+  - Vamos a crear un proyecto de prueba (si lo que hemos hecho está bien montado podremos pasarlo al proyecto real y conectarlo), de esta manera:
     - Avanzamos de forma ligera (hay veces que proyectos grandes tardan en
       transpilar o meten ruido con otros temas).
     - Nos centramos en la funcionalidad y tenemos un arbol de ficheros
@@ -281,11 +279,8 @@ export interface Column {
 + }
 ```
 
-- Y para terminar, es _KanbanContent_ será la entidad de punto de entrada
-  que instanciemos en nuestro componente, así que mejor tener una función
-  para instanciar un kanban vacío que sirva como punto de entrada seguro
-  (creamos un factory), de esta manera nos ahorramos ir haciendo chequeos
-  de campo nulo etc...
+- Y para terminar, _KanbanContent_ será la entidad de punto de entrada
+  que instanciemos en nuestro componente, así que mejor tener una función para instanciar un kanban vacío que sirva como punto de entrada seguro(creamos un factory), de esta manera nos ahorramos ir haciendo chequeos de campo nulo etc...
 
 _./src/kanban/model.ts_
 
@@ -324,7 +319,7 @@ toma inception :))
 _./src/kanban/mock-data.ts_
 
 ```ts
-import { CardContent, KanbanContent } from "./model";
+import { KanbanContent } from "./model";
 
 export const mockData: KanbanContent = {
   columns: [
@@ -391,7 +386,7 @@ export const mockData: KanbanContent = {
 _./src/kanban/kanban.api.ts_
 
 ```ts
-import { CardContent, KanbanContent } from "./model";
+import { KanbanContent } from "./model";
 import { mockData } from "./mock-data";
 
 export const loadKanbanContent = async (): Promise<KanbanContent> => {
@@ -469,7 +464,6 @@ import React from "react";
 import {
   KanbanContent,
   createDefaultKanbanContent,
-  CardContent,
 } from "./model";
 import { loadKanbanContent } from "./kanban.api";
 import classes from "./kanban.container.css";
@@ -528,7 +522,7 @@ import React from "react";
 
 export const App = () => {
 -  return <h1>Hello React !!</h1>;
-+  return <KanbanContainer />;
++  return <KanbanContainer />
 };
 ```
 
@@ -584,7 +578,7 @@ _./src/kanban/column/column.component.tsx_
 ```tsx
 import React from "react";
 import classes from "./column.component.css";
-import { CardContent } from "./model";
+import { CardContent } from "../model";
 
 interface Props {
   name: string;
@@ -712,7 +706,7 @@ _./src/kanban/column/column.component.tsx_
 import React from "react";
 import classes from "./column.component.css";
 import { CardContent } from "./model";
-+ import {Card} from './card.component';
++ import {Card} from '../card.component';
 ```
 
 _./src/kanban/column/column.component.tsx_
@@ -737,6 +731,8 @@ npm start
 ```
 
 ✅ Somos capaces de mostrar las cards...
+
+// TODO: VOY POR AQUÍ
 
 - Ya tenemos nuestro tablero montado, es hora de ver como va quedando
   nuestra carpeta _kanban_ parece que hay muchos ficheros, sería buena idea
