@@ -1,5 +1,4 @@
 import React from "react";
-import { CSSTransition } from "react-transition-group";
 import { AnimationWrapper } from "./animation-wrapper.component";
 
 interface Patient {
@@ -30,50 +29,47 @@ export const MyForm = () => {
 
   return (
     <form>
-      <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-        <label>
-          Nombre:
-          <input
-            type="text"
-            name="name"
-            value={patient.name}
-            onChange={handleChange}
-          />
-        </label>
-
-        <AnimationWrapper
-          inProp={feverFlag}
-          render={(animationInProgress) => (
-            <label>
-              Temperatura:
-              <input
-                type="number"
-                name="temperature"
-                value={patient.temperature}
-                onChange={handleChange}
-                style={{ background: feverFlag ? "lightCoral" : "white" }}
-              />
-              {animationInProgress ? "Animation in progress" : "quiet"}
-            </label>
-          )}
+      <label>
+        Nombre:
+        <input
+          type="text"
+          name="name"
+          value={patient.name}
+          onChange={handleChange}
         />
-        <label>
-          Presión arterial:
-          <input
-            type="number"
-            name="bloodPressureL"
-            value={patient.bloodPressureL}
-            onChange={handleChange}
-          />
-          /
-          <input
-            type="number"
-            name="bloodPressureH"
-            value={patient.bloodPressureH}
-            onChange={handleChange}
-          />
-        </label>
-      </div>
+      </label>
+      <AnimationWrapper
+        inProp={feverFlag}
+        render={(animationInProgress) => (
+          <label>
+            Temperatura:
+            <input
+              type="number"
+              name="temperature"
+              value={patient.temperature}
+              onChange={handleChange}
+              style={{ background: feverFlag ? "lightCoral" : "white" }}
+            />
+            {animationInProgress ? "Animation in progress" : "quiet"}
+          </label>
+        )}
+      />
+      <label>
+        Presión arterial:
+        <input
+          type="number"
+          name="bloodPressureL"
+          value={patient.bloodPressureL}
+          onChange={handleChange}
+        />
+        /
+        <input
+          type="number"
+          name="bloodPressureH"
+          value={patient.bloodPressureH}
+          onChange={handleChange}
+        />
+      </label>
     </form>
   );
 };
