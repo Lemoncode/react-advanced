@@ -2,7 +2,7 @@
 
 Cada vez que se pinta un componente de tipo función, se ejecuta la función completa, es decir, si tenemos algo así como:
 
-*./src/App.js*
+*./src/app.js*
 
 ```diff
 export default function App() {
