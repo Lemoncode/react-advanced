@@ -54,7 +54,7 @@ export const InputComponent: React.FC<InputProps> = (props) => {
 
 Vamos a añadir nuestro componente principal que instanciará dos _inputComponents_ y un botón:
 
-_./src/App.tsx_
+_./src/app.tsx_
 
 ```tsx
 import React from "react";
