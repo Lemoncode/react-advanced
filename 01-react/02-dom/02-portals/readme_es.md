@@ -159,6 +159,7 @@ En este caso como vamos a manipular directamente el *DOM*, y queremos que el có
 - Crear un estado para guardar una referencia al nodo del DOM (en caso de que se cree de forma dinámica)
 - En el _useLayoutEffect_, comprobamos si el nodo existe, en caso de que no creamos el nodo y lo guardamos en el estado, después en el destructuro del _useEffectLayout_ lo eliminamos.
 
+_./src/common/components/react-portal.component.tsx_
 ```diff
 + import React from "react";
 import ReactDOM from "react-dom";
@@ -170,7 +171,7 @@ export const ReactPortalComponent: React.FC<Props> = (props) => {
 + React.useLayoutEffect(() => {
   let element = document.getElementById(wrapperId);
 +  let createdOnTheFly = false;
-+
+
   if (!element) {
     element = createWrapperAndAppendToBody(wrapperId);
 +    createdOnTheFly = true;
@@ -279,7 +280,7 @@ export const Modal: React.FC<Props> = (props) => {
 
   return (
     <div className={classes.modal}>
-      <button className="close-btn" onClick={handleClose}>
+      <button className={classes.closeBtn} onClick={handleClose}>
         Close
       </button>
       <div className={classes.modalContent}>{children}</div>
