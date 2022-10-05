@@ -1,8 +1,6 @@
 # UseEffect - Fetch
 
-Hasta ahora cuando nos ha hecho falta trabajar con React es muy normal usar el
-hook `useEffect` para hacer peticiones a una API de datos, en este ejemplo
-vamos a ver que problemas nos podemos encontrar
+Hasta ahora cuando nos ha hecho falta trabajar con React es muy normal usar el hook `useEffect` para hacer peticiones a una API de datos, en este ejemplo vamos a ver qué problemas nos podemos encontrar.
 
 # Manos a la obra
 
@@ -20,9 +18,7 @@ Ejecutamos y todo fantástico:
 npm start
 ```
 
-Vamos a mejorar un poco el código, es buena idea trabajar con React en modo estricto
-(https://reactjs.org/docs/strict-mode.html), así que vamos a habilitarlo (esto sólo
-se habilita en desarrollo, en producción se descarta de forma automática).
+Vamos a mejorar un poco el código, es buena idea trabajar con React en modo estricto (https://reactjs.org/docs/strict-mode.html), así que vamos a habilitarlo (esto sólo se habilita en desarrollo, en producción se descarta de forma automática).
 
 _./src/app.tsx_
 
@@ -43,7 +39,7 @@ export const App = () => {
 
 Si ahora depuramos o añadimos un console.log en el componente `CharacterCollectionPage` nos podemos encontrar con una sorpresa...
 
-_./src/pages/character-collection/_
+_./src/pages/character-collection/character-collection.page.tsx_
 
 ```diff
   React.useEffect(() => {
@@ -59,8 +55,7 @@ Si te fijas esto se llama dos veces, y es algo normal...
 
 Peeero... esto nos puede volver locos.
 
-Podríamos implementar un parche y es ignorar la primera llamada, pero
-esto no quita que no se haga la llamada dos veces, algo así como:
+Podríamos implementar un parche y es ignorar la primera llamada, pero esto no quita que no se haga la llamada dos veces, algo así como:
 
 _./src/pages/character-collection/_
 
@@ -78,21 +73,18 @@ _./src/pages/character-collection/_
   }, []);
 ```
 
-> ¿Quien me explica como funciona este código?
+> ¿Quién me explica cómo funciona este código?
 
-Pero lo mejor... no es hacerlo así, sino intentar quitarse de enmedio
-el useEffect para esto, Esto no lo digo yo, lo dicen:
+Pero lo mejor... no es hacerlo así, sino intentar quitarse de enmedio el useEffect para esto.
+
+ Esto no lo digo yo, lo dicen:
 
 - Dan Abramov: https://github.com/facebook/react/issues/24502
-- La documentación oficial de Facebook nueva (puede que esté en beta,
-  buscar aquí): https://beta.reactjs.org/learn/you-might-not-need-an-effect#fetching-data
+- La documentación oficial de Facebook nueva (puede que esté en beta, buscar aquí): https://beta.reactjs.org/learn/you-might-not-need-an-effect#fetching-data
 
-El consejo es que usemos _useEffect_ para sincronizarnos con el mundo
-exterior, no para traernos datos.
+El consejo es que usemos _useEffect_ para sincronizarnos con el mundo exterior, no para traernos datos.
 
-Antes de dar solución a esto, vamos a ahondar un poco más en los problemas
-que tenemos de usar _useEffect_, vamos a quitar el hack del ignore y
-el _strict.mode_ para ir identificando más problemas:
+Antes de dar solución a esto, vamos a ahondar un poco más en los problemas que tenemos de usar _useEffect_, vamos a quitar el *hack* del ignore y el _strict.mode_ para ir identificando más problemas:
 
 _./src/app.tsx_
 
@@ -131,32 +123,26 @@ _./src/pages/character-collection/character-collection.page.tsx_
 
 ¿Qué podemos hacer para traernos datos?
 
-- Una opción sería un hacernos un custom hook para esto, pero, no
-  dejamos de hacer dos llamadas en desarrollo y además, siendo
-  un problema tan común ¿No habrá una solución más estándar?
-
-- Usar una solucíon de tipo Framework, NextJs y Remix, en el caso de NextJs
-  tenemos una opción que es _getInitialProps_ que se ejecuta en servidor.
-
+- Una opción sería un hacernos un *custom hook* para esto, pero, no dejamos de hacer dos llamadas en desarrollo y además, siendo un problema tan común ¿No habrá una solución más estándar?
+  
+- Usar una solución de tipo *Framework*, *NextJs* y *Remix*, en el caso de *NextJs* tenemos una opción que es _getInitialProps_ que se ejecuta en servidor.
+  
 - Utilizar una librería para gestionar consultas como _react-query_
 
 Para este caso vamos a estudiar _react-query_
 
-React Query nos permite:
+*React Query* nos permite:
 
 - Sacar las consultas que hagamos fuera de los efectos de React.
 - Nos permite cachear las consultas.
 - Nos permite refrescar las consultas.
-- Nos permite gestionar el estado de la consulta (loading, error, data).
+- Nos permite gestionar el estado de la consulta (*loading*, *error*, *data*).
 
-Es decir nos aporta una funcionalidad rica para manejar estos casos.
+Es decir, nos aporta una funcionalidad rica para manejar estos casos.
 
-Antes de ponernos refactorizar el código, vamos a sacar a la luz
-un par de casos más que nos pueden dar problemas:
+Antes de ponernos refactorizar el código, vamos a sacar a la luz un par de casos más que nos pueden dar problemas:
 
-Vamos a simular que la api tiene un retraso en contestar (tenemos
-mala conexión o va cargado el servidor), introducimos un retraso
-aleatorio entre 1 y 5 segundos:
+Vamos a simular que la api tiene un retraso en contestar (tenemos mala conexión o va cargado el servidor), introducimos un retraso aleatorio entre 1 y 5 segundos:
 
 _./src/pages/character-collection/character-collection.api.ts_
 
@@ -175,31 +161,25 @@ export const getCharacterCollection = async (): Promise<Character[]> => {
 };
 ```
 
-Si ahora cargamos, vemos el retraso la primera vez (todo ok), pero cuando navegamos
-a la página de detalle y volvemos, se nos carga la página de listado de actores en
-blanco, esto es una pena,¿No podríamos tener almacenado la entrada anterior y
-al carga la página mostrar ese resultado mientras en background se carga el nuevo?
+Si ahora cargamos, vemos el retraso la primera vez (todo ok), pero cuando navegamos a la página de detalle y volvemos, se nos carga la página de listado de actores en blanco, esto es una pena, ¿No podríamos tener almacenado la entrada anterior y al carga la página mostrar ese resultado mientras en *background* se carga el nuevo?
 Así daríamos mejor experiencia al usuario.
 
 Esto lo podríamos hacer tirando de contexto y montando algo por nuestra cuenta,
 pero si empiezas a afinarlo igual querrías:
 
 - Que lo guardara en una caché.
-- Que esa cache estuviera activa por X segundos.
+- Que esa caché estuviera activa por X segundos.
 - Que se recargara automáticamente al pasar X segundos, o si el usuario pierde el foco
   de la ventana y vuelve a ella.
 - Si hacemos alguna "mutación", por ejemplo añadimos un nuevo actor.
 
-Vamos que huele a que o nos arremangamos a hacer "nuestra cosa" o buscamos mejor
-algo ya hecho y robusto :).
+Vamos que huele a que o nos arremangamos a hacer "*nuestra cosa*" o buscamos mejor algo ya hecho y robusto :).
 
-Vamos a aprovechar esa latencia aleatoria que hemos introducido y vamos a hablar de
-condiciones de carrera.
+Vamos a aprovechar esa latencia aleatoria que hemos introducido y vamos a hablar de condiciones de carrera.
 
 ¿Qué es una condición de carrera? Es un problema que se produce cuando dos o más hilos de ejecución (o procesos) acceden a la misma variable compartida y al menos uno de ellos escribe en ella. Si los hilos de ejecución no se sincronizan adecuadamente, el resultado final puede depender del orden en que se ejecutan los hilos de ejecución.
 
-Vamos a verlo con un caso práctico, añadimos una caja de texto de filtrado para
-buscar nombres de caracteres:
+Vamos a verlo con un caso práctico, añadimos una caja de texto de filtrado para buscar nombres de caracteres:
 
 _./src/pages/character-collection/character-collection.api.ts_
 
@@ -245,7 +225,7 @@ export const CharacterCollectionPage = () => {
     <>
       <h1>Character Collection</h1>
 -      <Link to="/1">Character 1</Link>
-+      <label to="filter">filter</label>
++      <label htmlFor="filter">filter</label>
 +      <input id="filter" value={filter} onChange={e => setFilter(e.target.value)}/>
       <ul>
         {characters.map((character) => (
@@ -264,29 +244,27 @@ Como ahora hemos metido el retraso aleatorio fíjate en lo que pasa:
 - Se lanzan varias consultas en paralelo.
 - Igual llega una del pasado y se cuela machacando a la nueva.
 
-Veámoslo en acción, vamos a teclear "alien":
+Veámoslo en acción, vamos a teclear "*alien*":
 
 ```bash
 npm start
 ```
 
-Igual tenemos que probar varias veces, pero fíjate que no siempre obtenemos
-los caracteres que empiezan por _ali_
+Igual tenemos que probar varias veces, pero fíjate que no siempre obtenemos los caracteres que empiezan por _ali_.
 
-¿Qué esta pasando aquí? Que en algunas ocasionas la consulta _a_ o la _al_ llega
-después que la _alien_
+¿Qué está pasando aquí? Qué en algunas ocasionas la consulta _a_ o la _al_ llega después que la _alien_.
 
 ¿Qué podíamos hacer?
 
 - Podríamos utilizar el parche anterior y cancelar consultas.
 - Podríamos utilizar un _debounce_ para que no se lancen tantas consultas.
 
-Todas estos parches pueden estar bien, pero lo suyo es que alguien se encargue
-de gestionar esto por mi.
+Todos estos parches pueden estar bien, pero lo suyo es que alguien se encargue
+de gestionar esto por mí.
 
 ## React query
 
-Vamos a remangarnos y ponernos con React Query a ver como nos resuelve esto
+Vamos a remangarnos y ponernos con *React Query* a ver cómo nos resuelve esto.
 
 Vamos a instalar la dependencia:
 
@@ -296,7 +274,7 @@ npm i @tanstack/react-query
 
 Vamos a añadir un _provider_ para las queries.
 
-_./src/core/query-client.ts_
+_./src/core/queries/query-client.ts_
 
 ```ts
 import { QueryClient } from "@tanstack/react-query";
@@ -304,7 +282,7 @@ import { QueryClient } from "@tanstack/react-query";
 export const queryClient = new QueryClient();
 ```
 
-_./src/core/index.ts_
+_./src/core/queries/index.ts_
 
 ```ts
 export * from "./query-client";
@@ -312,13 +290,13 @@ export * from "./query-client";
 
 Vamos a inicializarlo en nuestra app:
 
-_./src/App.tsx_
+_./src/app.tsx_
 
 ```diff
 import React from "react";
 import { HashRouter, Routes, Route } from "react-router-dom";
 + import { QueryClientProvider } from "@tanstack/react-query";
-+ import { queryClient } from "./core";
++ import { queryClient } from "./core/queries";
 import { CharacterCollectionPage, CharacterDetailPage } from "./pages";
 
 export const App = () => {
@@ -336,14 +314,14 @@ export const App = () => {
 };
 ```
 
-Y ahora vamos a darle uso en nuestra página de characterCollection
+Y ahora vamos a darle uso en nuestra página de *characterCollection*
 
-- Nos traemos el hook de useQuery.
-- Wrapeamos la llamada a la API que ya teníamos en un useQuery y en el
-  el primer parámetro de tipo array:
-  - Le damos un nombre a la query (aquí sería buena idea usar constantes, y
-    prefijos, ya que esa query la podemos reusar).
-  - Le pasamos el filtro de texto, fijate que esto ya se queda como reactivo, si cambia el filtro se volverá a lanzar la consulta.
+- Nos traemos el *hook* de *useQuery*.
+- *Wrapeamos* la llamada a la API que ya teníamos en un *useQuery* y en el
+  el primer parámetro de tipo *array*:
+  - Le damos un nombre a la *query* (aquí sería buena idea usar constantes, y
+    prefijos, ya que esa *query* la podemos reusar).
+  - Le pasamos el filtro de texto, fíjate que esto ya se queda como reactivo, si cambia el filtro se volverá a lanzar la consulta.
 
 _./src/pages/character-collection/character-collection.page.tsx_
 
@@ -385,16 +363,14 @@ _./src/pages/character-collection/character-collection.page.tsx_
       </ul>
 ```
 
-Vamos a probar esto (ojo recuerda que hay un delay random en la api)
+Vamos a probar esto (ojo recuerda que hay un *delay random* en la api)
 
-- Fíjate que ya si podemos teclear "alien" y se quedará con la última.
+- Fíjate que ya si podemos teclear "*alien*" y se quedará con la última.
 - Si vamos a la página de detalle y volvemos a la colección, nos muestra
-  el resultado de filtro vacío mientras ejecuta la consultan en background
+  el resultado de filtro vacío mientras ejecuta la consulta en *background*
   para traerse los datos actualizados.
 
-¿Qué podíamos hacer para almacenar los datos del filtro más allá de la
-muerte de la página? Con lo que ya sabemos una opción podría ser almacenarlo
-en el contexto de React, OPCIONAL ejercicio guardar el filtro en contexto.
+¿Qué podíamos hacer para almacenar los datos del filtro más allá de la muerte de la página? Con lo que ya sabemos una opción podría ser almacenarlo en el contexto de React, OPCIONAL ejercicio guardar el filtro en contexto.
 
 EJERCICIO
 
@@ -402,7 +378,7 @@ Vamos a hacer lo mismo con character detail:
 
 **Solución**
 
-Y en el de CharacterDetail
+Y en el de *CharacterDetail*
 
 _./src/pages/character-collection/character-detail.page.tsx_
 
@@ -433,9 +409,7 @@ export const CharacterDetailPage = () => {
 
 > Sobre optimizaciones y render: https://tkdodo.eu/blog/react-query-render-optimizations
 
-- Vamos a hacer una prueba, creamos una tercera página que va a mostrar la
-  lista de personajes, pero sin filtrar..., en el fondo va a usar la misma query
-  que en la página de colección, así que vamos a refactorizar a _core_ varias cosas.
+- Vamos a hacer una prueba, creamos una tercera página que va a mostrar la lista de personajes, pero sin filtrar..., en el fondo va a usar la misma *query* que en la página de colección, así que vamos a refactorizar a core varias cosas.
 
 > Ojo, si trabajamos con ViewModels tendríamos que crear una API intermedia y
 > mappers.
@@ -474,11 +448,14 @@ export const getCharacterCollection = async (
 };
 ```
 
-- Ya que estamos vamos a crear un custom hook para wrapear el useQuery
+- Ya que estamos vamos a crear un *custom hook* para *wrapear* el *useQuery*
 
 _./src/core/queries/character-collection.query.ts_
 
 ```ts
+import { useQuery } from "@tanstack/react-query";
+import { getCharacterCollection } from "./character-collection.api";
+
 export const useCharacterCollectionQuery = (filter: string) => {
   return useQuery(["character-collection", filter], () =>
     getCharacterCollection(filter)
@@ -486,7 +463,7 @@ export const useCharacterCollectionQuery = (filter: string) => {
 };
 ```
 
-- Añadimos un barrel:
+- Añadimos un *barrel*:
 
 _./src/core/queries/index.ts_
 
@@ -496,13 +473,12 @@ export * from "./query-client";
 + export * from "./model";
 ```
 
-- Ahora nos vamos a la página de characterCollection, hacemos limpia y usamos
-  nuestro custom hook.
+- Ahora nos vamos a la página de *characterCollection*, hacemos limpia y usamos nuestro *custom hook*.
+  
+- Borramos *model.ts* (aquí podríamos discutir si tener un VM y mapeador dentro o si
+  considerar que el *model* de *core* se considera ya un modelo de cliente común).
 
-- Borramos model.ts (aquí podríamos discutir si tener un VM y mapeador dentro o si
-  considerar que el model de core se considera ya un modelo de cliente común).
-
-- Borramos el api (ya está en core).
+- Borramos la api (ya está en *core*).
 
 - Ahora vamos a la página de detalle, hacemos limpia y usamos nuestro custom hook.
 
@@ -514,7 +490,7 @@ import { Link } from "react-router-dom";
 - import { useQuery } from "@tanstack/react-query";
 - import { getCharacterCollection } from "./character-collection.api";
 - import { Character } from "./character-collection.model";
-+ import {useCharacterCollectionQuery} from '../core/queries'
++ import { useCharacterCollectionQuery } from "../../core/queries";
 
 export const CharacterCollectionPage = () => {
   const [filter, setFilter] = React.useState("");
@@ -536,7 +512,7 @@ npm start
 
 - Vamos a crear ahora la tercera página y veamos que ocurre:
 
-- Tercera pagina:
+- Tercera página:
 
 _./src/pages/another/another.page.tsx_
 
@@ -551,7 +527,6 @@ export const AnotherPage = () => {
   return (
     <>
       <h1>Character Collection</h1>
-      <label htmlFor="filter">filter </label>
       <ul>
         {query.data?.map((character) => (
           <li key={character.id}>
@@ -564,7 +539,7 @@ export const AnotherPage = () => {
 };
 ```
 
-- La añadimos al barrel:
+- La añadimos al *barrel*:
 
 _./src/pages/index.ts_
 
@@ -574,7 +549,7 @@ export * from "./character-detail/character-detail.page";
 + export * from "./another/another.page";
 ```
 
-- La añadimos al router:
+- La añadimos al *router*:
 
 _./src/app.tsx_
 
@@ -597,7 +572,7 @@ export const App = () => {
 };
 ```
 
-- Vamos a añadir un enlace desde la home:
+- Vamos a añadir un enlace desde la *home*:
 
 _./src/pages/character-collection/character-collection.page.tsx_
 
@@ -628,19 +603,17 @@ _./src/pages/character-collection/character-collection.page.tsx_
 
 Probamos y vemos que tenemos carga instantánea de la página.
 
-Para terminar, vamos a resolver el tema de los _magic string_ para los nombres de las
-consultas, aquí podemos añadir un fichero de constantes:
+Para terminar, vamos a resolver el tema de los _magic string_ para los nombres de las consultas, aquí podemos añadir un fichero de constantes:
 
 Aquí hay un tema interesante:
 
-- En estos ejemplos sencillos hemos añadido una key, y en el caso de pasar un parámetro,
-  dos (la key y el parámetro en si).
-- Es interesante añadir una tercera key para agrupar por areas, de esta forma podemos
+- En estos ejemplos sencillos hemos añadido una *key*, y en el caso de pasar un parámetro,
+  dos (la *key* y el parámetro en sí).
+- Es interesante añadir una tercera *key* para agrupar por áreas, de esta forma podemos
   hacer cosas interesantes tales como invalidar todas las consultas de un área dada
-  (por ejemplo todas las globales, o todas las de un pod dado).
+  (por ejemplo todas las globales, o todas las de un *pod* dado).
 
-Aunque, va a ser un overkill montar un sistema de este tipo para este proyecto, vamos
-a por ello sobre todo con el objetivo de aprender.
+Aunque, va a ser un *overkill* montar un sistema de este tipo para este proyecto, vamos a por ello sobre todo con el objetivo de aprender.
 
 _./src/core/queries/key-queries.ts_
 
@@ -671,11 +644,11 @@ export const useCharacterCollectionQuery = (filter: string) => {
 ```
 
 > ¿Por qué lo del spread operator? La gracia de esto es encadenar, por ejemplo
-> podrías tener todas las consulta de ese area identificada con _core_, pero a su
+> podrías tener todas las consulta de ese área identificada con _core_, pero a su
 > vez crear una subcategoría de _listing_ y así podríamos de una tacada invalidar,
-> por ejemplo todos los listados de ese area\_
+> por ejemplo todos los listados de ese área\_
 
-Vamos a hacer lo mismo con el area de _character-detail_:
+Vamos a hacer lo mismo con el área de _character-detail_:
 
 EJERCICIO
 
@@ -697,7 +670,7 @@ _./src/pages/character-detail/character-detail.page.tsx_
 
 ```diff
 import { getCharacter } from "./character-detail.api";
-import { Character } from "./character-detail.model";
+- import { Character } from "./character-detail.model";
 + import { characterDetailKeys } from './key-queries';
 
 export const CharacterDetailPage = () => {
@@ -709,10 +682,10 @@ export const CharacterDetailPage = () => {
   );
 ```
 
-Esto pinta bien, vamos a por un ejemplo en el que también hagamos actualizaciones e inserciones (siguiente ejemplo TODO list).
+Esto pinta bien, vamos a por un ejemplo en el que también hagamos actualizaciones e inserciones (siguiente ejemplo TODO *list*).
 
 # Referencias
 
 - Manejo de queries: https://tkdodo.eu/blog/effective-react-query-keys
 
-- Cleaner data fetching with React Query: https://dev.to/siddharthvenkatesh/cleaner-data-fetching-with-react-query-4klg
+- *Cleaner data fetching with React Query*: https://dev.to/siddharthvenkatesh/cleaner-data-fetching-with-react-query-4klg
