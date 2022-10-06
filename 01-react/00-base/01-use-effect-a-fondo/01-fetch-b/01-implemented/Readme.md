@@ -2,10 +2,10 @@
 
 Vamos a seguir practicando con React Query, esta vez vamos a:
 
-- Trabajar con mutaciones (post / update).
+- Trabajar con mutaciones (*post* / *update*).
 - Invalidar consultas.
 
-Vamos a crear una aplicación que va a manejar una lista de ToDos.
+Vamos a crear una aplicación que va a manejar una lista de *ToDos*.
 
 Después como ejercicio trabajaremos con una lista de la compra.
 
@@ -21,16 +21,16 @@ cd back
 npm install
 ```
 
-Y ha dejarlo arrancado
+Y a dejarlo arrancado
 
 ```bash
 npm start
 ```
 
-Accedemos desde el navegador a _localhost:3000_ y vemos que podemos navegar a un listado de TODOs.
+Accedemos desde el navegador a _localhost:3000_ y vemos que podemos navegar a un listado de *TODOs*.
 
-- Dejamos ese terminal abierto y creamos un nuevo terminal, esta vez toca trabajar con el front, si estamos
-  en el raiz hacemos un cd front y luego arrancamos:
+- Dejamos ese terminal abierto y creamos un nuevo terminal, esta vez toca trabajar con el *front*, si estamos
+  en el raíz hacemos un *cd front* y luego arrancamos:
 
 ```bash
 cd front
@@ -46,10 +46,9 @@ npm start
 
 - Aquí vemos una aplicación sencilla con dos ventanas.
 
-- Vamos a arrancarnos con la página de TODOs.
+- Vamos a arrancarnos con la página de *TODOs*.
 
-- Lo primero que vamos a hacer es definir el modelo para los
-  TODOs:
+- Lo primero que vamos a hacer es definir el modelo para los *TODOs*:
 
 _./src/pages/todo/todo.model.ts_
 
@@ -61,11 +60,8 @@ export interface TodoItem {
 }
 ```
 
-- Si siguieramos programación progresiva, ahora crearíamos una lista
-  mock harcodeada y nos pondríamos con el componente para después
-  conectar con la API real, en este caso vamos a tirar por crear la
-  API para poder centrarnos en React Query.
-
+- Si siguiéramos programación progresiva, ahora crearíamos una lista *mock* *harcodeada* y nos pondríamos con el componente para después conectar con la API real, en este caso vamos a tirar por crear la API para poder centrarnos en *React Query*.
+  
 - Vamos a definir la API:
 
 _./src/pages/todo/todo.api.ts_
@@ -80,14 +76,13 @@ export const getTodoList = async (): Promise<TodoItem[]> => {
 };
 ```
 
-- Vamos a por la parte de componente y vamos a consumir esa API,
-  para ello usaremos React Query.
+- Vamos a por la parte de componente y vamos a consumir esa API, para ello usaremos React Query que instalaremos en nuestra aplicación de *front*.
 
 ```bash
 npm install @tanstack/react-query
 ```
 
-Toca instanciar el provider a nivel de App:
+Toca instanciar el *provider* a nivel de *App*:
 
 Creamos el query client:
 
@@ -160,10 +155,9 @@ Vamos ver que tal funciona esto:
 npm start
 ```
 
-- Tenemos algo básico cargando, vamos a simular que vamos a trabajar
-  en un proyecto más grande, es hora de hacer refactor dela consultas:
+- Tenemos algo básico cargando, vamos a simular que vamos a trabajar en un proyecto más grande, es hora de hacer refactor de las consultas:
 
-Vamos a crear query keys para el area de TODOs:
+Vamos a crear *query keys* para el área de *TODOs*:
 
 _./src/pages/todo/todo-key-queries.ts_
 
@@ -174,19 +168,17 @@ export const todoKeys = {
 };
 ```
 
-Y vamos a crear un fichero con hooks que hagan de wrapper de
-las consultas.
+Y vamos a crear un fichero con *hooks* que hagan de *wrapper* de las consultas.
 
 _./src/pages/todo/todo-query.ts_
 
 ```ts
 import { useQuery } from "@tanstack/react-query";
 import { getTodoList } from "./todo.api";
-import { TodoItem } from "./todo.model";
 import { todoKeys } from "./todo-key-queries";
 
 export const useTodoListQuery = () => {
-  return useQuery(todoKeys.todoList, () => getTodoList());
+  return useQuery(todoKeys.todoList(), () => getTodoList());
 };
 ```
 
@@ -209,9 +201,9 @@ export const TodoPage: React.FC = () => {
   return (
 ```
 
-- Le damos algo de estilado a la lista de TODOs:
+- Le damos algo de estilado a la lista de *TODOs*:
 
-  - Vamos a tener un grid con tres columnas:
+  - Vamos a tener un *grid* con tres columnas:
     - Estado de la tarea.
     - Nombre de la tarea.
     - Paleta de comandos (editar, borrar, o si ya estas
@@ -266,8 +258,7 @@ export const TodoPage: React.FC = () => {
 };
 ```
 
-- Como vamos a tener modo edición vamos a encapsular ya el modo
-  display.
+- Como vamos a tener modo edición vamos a encapsular ya el modo *display*.
 
 _./src/pages/todo/components/todo-item-display.component.tsx_
 
@@ -292,7 +283,7 @@ export const TodoItemDisplay: React.FC<Props> = (props) => {
 };
 ```
 
-- Creamos un barrel:
+- Creamos un *barrel*:
 
 _./src/pages/todo/components/index.ts_
 
@@ -309,8 +300,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getTodoList } from "./todo.api";
-import classes from "./todo.page.css";
 + import {TodoItemDisplay} from './components';
+import classes from "./todo.page.css";
 ```
 
 _./src/pages/todo/todo.page.tsx_
@@ -326,20 +317,17 @@ _./src/pages/todo/todo.page.tsx_
 -            <div>{todo.description}</div>
 -            <div>Command area</div>
 -          </React.Fragment>
-+          <TodoItemDisplay key={todo.id} item={todo}>
++          <TodoItemDisplay key={todo.id} item={todo} />
         ))}
       </div>
 ```
 
-- Para saber si un TODO esta en edición (sólo dejaremos que
-  uno esté en edición a la vez), podemos o bien usar un flag o
-  tener en cada TODO un flag para saber si está en modo edición.
+- Para saber si un *TODO* está en edición (sólo dejaremos que uno esté en edición a la vez), podemos o bien usar un *flag* o tener en cada *TODO* un *flag* para saber si está en modo edición.
 
-Vamos a almacenar en una variable el Id del TODO en edición,
-tendremos los siguientes valores:
+Vamos a almacenar en una variable el *Id* del *TODO* en edición, tendremos los siguientes valores:
 
-- -1 -> No hay ningún TODO en edición.
-- 0 -> Estamos insertando un nuevo TODO.
+- -1 -> No hay ningún *TODO* en edición.
+- 0 -> Estamos insertando un nuevo *TODO*.
 - > 0 -> Estamos editando un TODO que ya existe.
 
 _./src/pages/todo/todo.page.tsx_
@@ -353,8 +341,7 @@ import { TodoItemDisplay } from "./components";
 export const TodoPage: React.FC = () => {
 ```
 
-- Vamos a mostrar componente de edición o estado según
-  lo que toque.
+- Vamos a mostrar componente de edición o estado según lo que toque.
 
 _./src/pages/todo/todo.page.tsx_
 
@@ -368,14 +355,15 @@ export const TodoPage: React.FC = () => {
       <h1>Todo Page</h1>
       <div className={classes.todoList}>
         {data?.map((todo) => (
-+         (todo.id !== editingId) ?
-+           <TodoItemDisplay key={todo.id} item={todo}/>
-+        :
++         (todo.id !== editingId) ? (
+            <TodoItemDisplay key={todo.id} item={todo}/>
++        ) : (
 +            <>
 +              <h6>Edit Mode...</h6>
 +              <h6>Todo...</h6>
 +              <h6>Todo...</h6>
 +            </>
++	 	  )
         ))}
       </div>
       <Link to="/list">To List</Link>
@@ -384,7 +372,7 @@ export const TodoPage: React.FC = () => {
 };
 ```
 
-Y vamos a añadir el botón para entrar en edit mode:
+Y vamos a añadir el botón para entrar en *edit mode*:
 
 _./src/pages/todo/components/todo-item-display.component.tsx_
 
@@ -432,10 +420,10 @@ export const TodoPage: React.FC = () => {
         {data?.map((todo) =>
           todo.id !== editingId ? (
 -            <TodoItemDisplay key={todo.id} item={todo}/>
-+            <TodoItemDisplay key={todo.id} item={todo} onEdit={handleEnterEditMode}/>
++            <TodoItemDisplay key={todo.id} item={todo} onEdit={handleEnterEditMode} />
 ```
 
-- Vamos a crear el component de edición:
+- Vamos a crear el *component* de edición:
 
 _./src/pages/todo/components/todo-item-edit.component.tsx_
 
@@ -481,7 +469,7 @@ export const TodoItemEdit: React.FC<Props> = (props: Props) => {
 };
 ```
 
-Lo añadimos al barrel
+Lo añadimos al *barrel*
 
 _./src/pages/todo/components/index.ts_
 
@@ -516,7 +504,7 @@ export const TodoPage: React.FC = () => {
     setEditingId(id);
   };
 
-+ const handleSave = (item: TodoItem) => {
++ const handleUpdate = (item: TodoItem) => {
 +   console.log("Save", item);
 +   setEditingId(ReadOnlyMode);
 + };
@@ -548,7 +536,7 @@ _./src/pages/todo/todo.page.tsx_
 -              <h6>Todo...</h6>
 -              <h6>Todo...</h6>
 -            </>
-+           <TodoItemEdit key={todo.id} item={todo} onSave={handleSave} onCancel={handleCancel}/>
++           <TodoItemEdit key={todo.id} item={todo} onSave={handleUpdate} onCancel={handleCancel}/>
           )
           )
         )}
@@ -558,6 +546,8 @@ _./src/pages/todo/todo.page.tsx_
 Vamos ahora a la parte interesante, queremos grabar los cambios en el servidor.
 
 - Definimos la entrada en la API:
+
+_./src/pages/todo/todo.api.tsx_
 
 ```diff
 import { TodoItem } from "./todo.model";
@@ -582,12 +572,7 @@ export const getTodoList = async (): Promise<TodoItem[]> => {
 + };
 ```
 
-- ¿Y qué hacemos con React Query? En este caso nos ofrece
-  _mutations_ esto nos permite lanzar una actualización, tener
-  tracking de la misma (lo puedo incrustar en el JSX) y ver que
-  hacer tanto si tiene éxito como si no, aquí vamos a por el caso
-  "feliz" y cuando se actualize vamos a relanzar la consulta de
-  lista de TODos para asegurarnos que está todo al día.
+- ¿Y qué hacemos con *React Query*? En este caso nos ofrece _mutations_ esto nos permite lanzar una actualización, tener *tracking* de la misma (lo puedo incrustar en el JSX) y ver que hacer tanto si tiene éxito como si no, aquí vamos a por el caso "*feliz*" y cuando se actualice vamos a relanzar la consulta de lista de TODOs para asegurarnos que está todo al día.
 
 _./src/pages/todo/todo-query.ts_
 
@@ -614,9 +599,7 @@ export const useTodoListQuery = () => {
 + };
 ```
 
-Vamos a darle uso en la handler de la página, en este caso lo que
-hacemos es enviar la actualización y pedir que invalide la consulta
-con la lista de items.
+Vamos a darle uso en la *handler* de la página, en este caso lo que hacemos es enviar la actualización y pedir que invalide la consulta con la lista de *items*.
 
 _./src/pages/todo/todo.page.tsx_
 
@@ -639,7 +622,7 @@ export const TodoPage: React.FC = () => {
 + }
 
   const { data } = useTodoListQuery();
-+ const updateMutation = useUpdateTodoItemMutation<TodoItem>(null, handleSaveSuccess);
++ const updateMutation = useUpdateTodoItemMutation(handleSaveSuccess);
   const [editingId, setEditingId] = React.useState(ReadOnlyMode);
 
   const handleEnterEditMode = (id: number) => {
@@ -653,9 +636,7 @@ export const TodoPage: React.FC = () => {
   };
 ```
 
-- Vamos a pedir ahora que se refresque la lista de TODos cuando
-  se actualice un item, para ello vamos a usar el método
-  _invalidateQueries_ que nos ofrece React Query.
+- Vamos a pedir ahora que se refresque la lista de *TODos* cuando se actualice un *item*, para ello vamos a usar el método _invalidateQueries_ que nos ofrece *React Query*.
 
 _./src/pages/todo/todo.page.tsx_
 
@@ -678,12 +659,11 @@ _./src/pages/todo/todo.page.tsx_
   };
 ```
 
-- Si ejecutamos podemos verlo en acción (también podríamos haber añadido
-  indicadores de carga, etc...).
+- Si ejecutamos podemos verlo en acción (también podríamos haber añadido indicadores de carga, etc...).
+  
+- Vamos ahora al modo añadir un nuevo *ToDo*.
 
-- Vamos ahora al modo añadir un nuevo ToDo.
-
-- Vamos a crear un factory para crear ToDo's vacios.
+- Vamos a crear un *factory* para crear *ToDo's* vacios.
 
 _./src/pages/todo/todo.model.ts_
 
@@ -701,8 +681,7 @@ export interface TodoItem {
 +   });
 ```
 
-Vamos a adaptar el componente de edición para que acepta el modo
-inserción.
+Vamos a adaptar el componente de edición para que acepta el modo inserción.
 
 Añadimos un poco de estilado:
 
@@ -750,13 +729,13 @@ export const TodoItemEdit: React.FC<Props> = (props: Props) => {
 +  const [editItem, setEditItem] = React.useState(itemOrDefault(item));
 ```
 
-Y vamos a crear el markup en la página, lo que hacemos aquí:
+Y vamos a crear el *markup* en la página, lo que hacemos aquí:
 
 - Si no estamos en modo inserción mostramos un botón para entrar en dicho modo.
 - Una vez que estamos en modo inserción ocultamos el botón anterior y
-  mostramos el componente para editar todos, no le pasamos ningún item, ya
+  mostramos el componente para editar todos, no le pasamos ningún *item*, ya
   que este es nuevo y recogemos el resultado, en caso de cancelar pasamos
-  a modo ReadOnly.
+  a modo *ReadOnly*.
 
 _./src/pages/todo/todo.page.tsx_
 
@@ -843,7 +822,7 @@ export const useUpdateTodoItemMutation = (onSuccessFn: () => void) => {
 
 Y lo añadimos a la página:
 
-_./src/pages/todo/todo-page.tsx_
+_./src/pages/todo/todo.page.tsx_
 
 ```diff
 import React from "react";
@@ -855,7 +834,7 @@ import { todoKeys } from "./todo-key-queries";
 import classes from "./todo.page.css";
 ```
 
-_./src/pages/todo/todo-page.tsx_
+_./src/pages/todo/todo.page.tsx_
 
 ```diff
   const { data } = useTodoListQuery();
@@ -888,18 +867,18 @@ _./src/pages/todo/todo-page.tsx_
   />
 ```
 
-A este código le hace falta un refactor, tenemos mucho código
-y es complicado de leer, ¿Qué podemos plantear?
+A este código le hace falta un refactor, tenemos mucho código y es complicado de leer, ¿Qué podemos plantear?
 
-- A nivel de hooks, podemos sacar todo lo relacionado con queries un
-  hook que podríamos llamar useTodoQueries.
-
+- A nivel de hooks, podemos sacar todo lo relacionado con *queries* en un *hook* que podríamos llamar *useTodoQueries*.
+  
 - A nivel de markup:
   - Crear un componente intermedio para mostrar/editar un item.
-  - Crear un componente intermedio para entrar en modo add o añadir
-    un time.
+  - Crear un componente intermedio para entrar en modo *add* o añadir
+    un *item*.
 
 Empezamos por el hook (de momento lo sacamos al mismo fichero):
+
+_./src/pages/todo/todo-page.tsx_
 
 ```diff
 + const useTodoQueries = () => {
@@ -955,12 +934,11 @@ export const TodoPage: React.FC = () => {
   return (
 ```
 
-ahora podemos decidir si sacar este hook a un fichero aparte o no.
+Ahora podemos decidir si sacar este *hook* a un fichero aparte o no.
 
-Si quisiéramos podríamos sacar los handlers a otro hook o incluso incluirlo
-en el hook de queries.
+Si quisiéramos podríamos sacar los *handlers* a otro *hook* o incluso incluirlo en el *hook* de *queries*.
 
-Vamos a por la parte de markup:
+Vamos a por la parte de *markup*:
 
 - Creamos un wrapper que se va a llamar _Todoitem_ y va a agrupar la lógica
   para mostrar uno u otro, así como ambos componentes:
@@ -1011,7 +989,7 @@ _./src/pages/todo/components/index.ts_
 + export * from "./todo-item.component";
 ```
 
-- Refactorizamos TodoPage
+- Refactorizamos *TodoPage*
 
 _./src/pages/todo/todo-page.tsx_
 
@@ -1054,7 +1032,7 @@ _./src/pages/todo/todo-page.tsx_
       </div>
 ```
 
-Sacamos al model las constanted de ReadOnly y AppendMode.
+Sacamos al *model* las constantes de *ReadOnly* y *AppendMode*.
 
 _./src/pages/todo/todo.model.ts_
 
@@ -1075,7 +1053,7 @@ export const createEmptyTodoItem = (): TodoItem => ({
 });
 ```
 
-Importamos y eliminamos la instancia local de todo page:
+Importamos y eliminamos la instancia local de *todo* *page*:
 
 _/.src/pages/todo/todo-page.tsx_
 
@@ -1088,7 +1066,7 @@ import { TodoItemComponent } from "./components";
 - const AppendMode = 0;
 ```
 
-Vamos ahora a por el Append, tenemos que crear un fichero de CSS
+Vamos ahora a por el *Append*, tenemos que crear un fichero de CSS
 
 _./src/pages/todo/components/todo-append.component.css_
 
@@ -1105,13 +1083,13 @@ _./src/pages/todo/components/todo-append.component.css_
 }
 ```
 
-_./src/todo/components/todo/components/todo-append.tsx_
+_./src/todo/components/todo/components/todo-append.component.tsx_
 
 ```tsx
 import React from "react";
 import { TodoItem, AppendMode, ReadOnlyMode } from "../todo.model";
 import { TodoItemEdit } from "./todo-item-edit.component";
-import classes from "./todo.append.css";
+import classes from "./todo-append.component.css";
 
 interface Props {
   editingId: number;
@@ -1137,7 +1115,7 @@ export const TodoAppendComponent: React.FC<Props> = (props: Props) => {
 };
 ```
 
-- Lo añadimos al barrel:
+- Lo añadimos al *barrel*:
 
 _./src/pages/todo/components/index.ts_
 
@@ -1185,14 +1163,13 @@ _./src/pages/todo/todo-page.tsx_
 };
 ```
 
-Ahora estamos en el punto en el que podemos o bien decidir que ya
-el código es lo suficientemente legible o podríamos seguir refactorizando.
+Ahora estamos en el punto en el que podemos o bien decidir que ya el código es lo suficientemente legible o podríamos seguir refactorizando.
 
 En ese caso que se podría hacer para simplificar el fichero _todo.page_
 
-- El hook inline que hemos definido extraerlo a otro fichero.
-- Crear un componente TodoItemCollection (que incluye el css container)
-- Meter el Div container del Append dentro del componente.
+- El *hook inline* que hemos definido extraerlo a otro fichero.
+- Crear un componente *TodoItemCollection* (que incluye el *css container*)
+- Meter el *Div* *container* del *Append* dentro del componente.
 
 Podrías quedar algo así como:
 
@@ -1225,5 +1202,4 @@ Realiza la misma implementación pero para el endpoint de listas.
 # Referencias
 
 https://tanstack.com/query/v4/docs/guides/mutations
-
 
