@@ -57,7 +57,7 @@ Peeero... esto nos puede volver locos.
 
 Podríamos implementar un parche y es ignorar la primera llamada, pero esto no quita que no se haga la llamada dos veces, algo así como:
 
-_./src/pages/character-collection/_
+_./src/pages/character-collection/character-collection.page.tsx_
 
 ```diff
   React.useEffect(() => {
@@ -352,6 +352,16 @@ export const CharacterCollectionPage = () => {
 _./src/pages/character-collection/character-collection.page.tsx_
 
 ```diff
+import React from "react";
+import { Link } from "react-router-dom";
+import { getCharacterCollection } from "./character-collection.api";
+import { useQuery } from "@tanstack/react-query";
+- import { Character } from "./character-collection.model";
+```
+
+_./src/pages/character-collection/character-collection.page.tsx_
+
+```diff
       <ul>
 -        {characters.map((character) => (
 +        {query.data?.map((character) => (
@@ -405,6 +415,17 @@ export const CharacterDetailPage = () => {
 -  }, []);
 
   return (
+```
+
+_./src/pages/character-collection/character-detail.page.tsx_
+
+```diff
+import React from "react";
+import { Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { getCharacter } from "./character-detail.api";
+- import { Character } from "./character-detail.model";
 ```
 
 > Sobre optimizaciones y render: https://tkdodo.eu/blog/react-query-render-optimizations
@@ -489,7 +510,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 - import { useQuery } from "@tanstack/react-query";
 - import { getCharacterCollection } from "./character-collection.api";
-- import { Character } from "./character-collection.model";
 + import { useCharacterCollectionQuery } from "../../core/queries";
 
 export const CharacterCollectionPage = () => {
@@ -632,7 +652,6 @@ _./src/core/queries/character-collection.query.ts_
 ```diff
 import { useQuery } from "@tanstack/react-query";
 import { getCharacterCollection } from "./character-collection.api";
-import { Character } from "./model";
 + import { coreKeys } from './key-queries';
 
 export const useCharacterCollectionQuery = (filter: string) => {
@@ -670,7 +689,6 @@ _./src/pages/character-detail/character-detail.page.tsx_
 
 ```diff
 import { getCharacter } from "./character-detail.api";
-- import { Character } from "./character-detail.model";
 + import { characterDetailKeys } from './key-queries';
 
 export const CharacterDetailPage = () => {
