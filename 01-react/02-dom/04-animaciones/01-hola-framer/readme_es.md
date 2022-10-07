@@ -86,7 +86,7 @@ _./src/app.tsx_
 
 ```diff
 export const App = () => {
-  const [myScale, setMyScale] = React.useState(1);
++  const [myScale, setMyScale] = React.useState(1);
 
   return (
 +  <div style={{ display: "inline-flex", flexDirection: "column" }}>
@@ -102,4 +102,114 @@ export const App = () => {
 };
 ```
 
-Oye y si quiero lanzar una animación cuando se monta el componente?
+Vale pero igual yo lo que quiero es que la animación vaya de ida y vuelta
+sin tener que pulsar el botón de shrink...
+
+```diff
+export const App = () => {
+-  const [myScale, setMyScale] = React.useState(1);
++  const [myScale, setMyScale] = React.useState([1, 1]);
+
+
+  return (
+  <div style={{ display: "inline-flex", flexDirection: "column" }}>
+    <motion.div className="caja" animate={{ scale: myScale }}>
+      <h1>Hello React !!</h1>
+    </motion.div>
+-   <button onClick={() => setMyScale(1.5)}>Anime !</button>
+-   <button onClick={() => setMyScale(1)}>Shrink !</button>
++   <button onClick={() => setMyScale([1, 1.5, 1])}>Bigger smaller !</button>
+  </div>
+  );
+};
+```
+
+Esta chulo, pero quiero que la animación de vuelta se haga más lenta,
+¿Qué puedo hacer? Vamos a crear una propiedad de duration.
+
+```diff
+export const App = () => {
+  const [myScale, setMyScale] = React.useState([1, 1]);
+
+
+  return (
+  <div style={{ display: "inline-flex", flexDirection: "column" }}>
+    <motion.div
+      className="caja"
+      animate={{ scale: myScale }}
++        transition={{
++          times: [0, 0.1, 1],
++          duration: 3,
++        }}
+    >
+      <h1>Hello React !!</h1>
+    </motion.div>
+    <button onClick={() => setMyScale([1, 1.5, 1])}>Bigger smaller !</button>
+  </div>
+  );
+};
+```
+
+- Pongamos que queremos dejar la animación corriendo en bucle, una cosa
+  que podemos hacer usar la propiedad _yoyo_
+
+```diff
+      <motion.div
+        className="caja"
+        animate={{ scale: myScale }}
+        transition={{
+          times: [0, 0.1, 1],
+          duration: 3,
++          yoyo: Infinity,
+        }}
+      >
+```
+
+> Hay más valores, _yoyo_, _loop_ (añadimos bucle inifinity o numero de veces...)
+
+```diff
+      <motion.div
+        className="caja"
+        animate={{ scale: myScale }}
+        transition={{
+          times: [0, 0.1, 1],
+          duration: 3,
+-          yoyo: Infinity,
++          loop: 5,
+        }}
+      >
+```
+
+Mejor quitadlo del código que nos puede dejar rallados XDDD
+
+- Ahora tenemos un problema, pinchando en el botón solo podemos
+  ejecutar la animación una sóla vez, el problema es que el setState
+  lo ponemos al mismo valor siempre, ¿Qué podemos hacer? Aquí podemos
+  dejar de usar la aproximación declarative e ir a por código, podemos
+  usar el hook _useAnimation_, vamos a reemplazar el app completo:
+
+_./src/app.tsx_
+
+```tsx
+import React, { useEffect } from "react";
+import { motion, useAnimation } from "framer-motion";
+
+export const App = () => {
+  const controls = useAnimation();
+
+  const handleAnimation = () => {
+    controls.start({
+      scale: [1, 1.5, 1],
+    });
+  };
+
+  return (
+    <div style={{ display: "inline-flex", flexDirection: "column" }}>
+      <motion.div className="caja" animate={controls}>
+        <h1>Hello React !!</h1>
+      </motion.div>
+      <button onClick={handleAnimation}>Bigger smaller !</button>
+    </div>
+  );
+};
+```
