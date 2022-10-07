@@ -31,12 +31,18 @@ npm install framer-motion
 
 _./global/styles.css_
 
-```css
+```diff
+body {
+  font-family: sans-serif;
+}
+
 .caja {
-  width: 200px;
-  height: 200px;
-  border-radius: 80%;
-  background: palevioletred;
+  display: inline-flex;
+  border-radius: 10%;
+  margin: 30px;
+  padding: 30px;
+  background: darkcyan;
+  color: white;
 }
 ```
 
@@ -53,6 +59,22 @@ export const App = () => {
 +     <motion.div className="caja" initial={{opacity: 0}} animate={{opacity: 1}}>
       <h1>Hello React !!</h1>
 +     </motion.div>
+  );
+};
+```
+
+Vamos a seguir jugando, en este caso queremos que el componente se haga un
+poco más grande cuando hagamos hover sobre él.
+
+_./src/app.tsx_
+
+```diff
+export const App = () => {
+  return (
+-    <motion.div className="caja" initial={{opacity: 0}} animate={{opacity: 1}}>
++    <motion.div className="caja" whileHover={{ scale: 1.2 }}>
+      <h1>Hello React !!</h1>
+     </motion.div>
   );
 };
 ```
