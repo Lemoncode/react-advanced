@@ -2,9 +2,15 @@ import React from "react";
 import { motion } from "framer-motion";
 
 export const App = () => {
+  const [myScale, setMyScale] = React.useState(1);
+
   return (
-    <motion.div className="caja" whileHover={{ scale: 1.2 }}>
-      <h1>Hello React !!</h1>
-    </motion.div>
+    <div style={{ display: "inline-flex", flexDirection: "column" }}>
+      <motion.div className="caja" animate={{ scale: myScale }}>
+        <h1>Hello React !!</h1>
+      </motion.div>
+      <button onClick={() => setMyScale(1.5)}>Grow !</button>
+      <button onClick={() => setMyScale(1)}>Shrink !</button>
+    </div>
   );
 };

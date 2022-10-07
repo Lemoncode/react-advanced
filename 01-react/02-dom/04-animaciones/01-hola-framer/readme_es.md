@@ -78,3 +78,28 @@ export const App = () => {
   );
 };
 ```
+
+¿Y si quiero lanzar una animación cuando se hace click en un botón?
+Aquí podemos jugar con el state,
+
+_./src/app.tsx_
+
+```diff
+export const App = () => {
+  const [myScale, setMyScale] = React.useState(1);
+
+  return (
++  <div style={{ display: "inline-flex", flexDirection: "column" }}>
+-    <motion.div className="caja" whileHover={{ scale: 1.2 }}>
++    <motion.div className="caja" animate={{ scale: myScale }}>
+
+      <h1>Hello React !!</h1>
+    </motion.div>
++   <button onClick={() => setMyScale(1.5)}>Anime !</button>
++   <button onClick={() => setMyScale(1)}>Shrink !</button>
++  </div>
+  );
+};
+```
+
+Oye y si quiero lanzar una animación cuando se monta el componente?
