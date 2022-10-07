@@ -1,0 +1,22 @@
+.container {
+  display: flex;
+  width: 170px;
+  height: 100px;
+  border-radius: 100px;
+  padding: 10px;
+  cursor: pointer;
+  z-index: 2;
+  background-color: #2f4858;
+}
+
+.marble {
+  width: 80px;
+  height: 80px;
+  margin: 10px;
+  border-radius: 100%;
+  background-color: white;
+}
+
+.container[data-isOn="true"] {
+  justify-content: flex-end;
+}

@@ -21,7 +21,7 @@ npm install
 - Si no tenemos ya framer instalado, lo instalamos.
 
 ```bash
-
+npm install framer-motion
 ```
 
 - Lo siguiente vamos a crearnos un toggle button sin animaciones.
@@ -38,7 +38,7 @@ interface Props {
   onToggle: () => void;
 }
 
-export const ToggleButton: ReactFC<Props> = (props) => {
+export const ToggleButton: React.FC<Props> = (props) => {
   const { on, onToggle } = props;
 
   return (
@@ -101,7 +101,7 @@ export const ToggleButton : ReactFC<Props> = (props) => {
 
   return (
 -    <div className={classes.container}>
-+    <div className={classes.container}>
++    <div className={classes.container} onClick={onToggle}>
       <div/>
     </div>
   );
@@ -137,6 +137,7 @@ _./components/toggle-button.component.css_
 + .marble {
 +  width: 80px;
 +  height: 80px;
++  margin: 10px;
 +  border-radius: 100%;
 +  background-color: white;
 + }
@@ -245,7 +246,9 @@ import {motion} from 'framer-motion';
 ```diff
   <div className={classes.container} data-isOn={on}>
 -    <div className={classes.marble} layout/>
-+    <div className={classes.marble} layout transition={spring}/>
++    <motion.div className={classes.marble} layout transition={spring}/>
+        <div className={classes.marble} />
++    </motion.div>
 ```
 
 # Apendice usando class name composer
