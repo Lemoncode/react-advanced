@@ -288,6 +288,4 @@ Y en el markup
 +      )}
       >
     data-isOn={on}>
-
-
 ```
