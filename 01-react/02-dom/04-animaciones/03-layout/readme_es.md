@@ -281,10 +281,13 @@ import classes from "./toggle-button.css";
 Y en el markup
 
 ```diff
--  <div className={classes.container} data-isOn={on}>
-+  <div className={classes.container} className={classNames(
-+        classes.container,
-+        isOn ? classes.containerOn : null
-+      )}>
+   <div
+-    className={classes.container}
++    className={classNames(classes.container,
++        on ? classes.containerOn : null
++      )}
+      >
+    data-isOn={on}>
+
 
 ```
