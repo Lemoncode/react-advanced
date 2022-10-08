@@ -15,6 +15,13 @@ vamos a ver que trae framer para estos casos.
 npm install
 ```
 
+- Si partimos del boiler plate necesitaremos instalar el paquete
+  de framer/motion
+
+```bash
+npm install framer-motion --save
+```
+
 - Vamos a empezar por controlar el scroll a nivel de página.
 
 - Para ello vamos a crear un componente que tenga un montón de texto _loremp ipsum_.
@@ -96,6 +103,118 @@ export function LoremIpsum() {
           ultricies, mollis mi in, euismod dolor.
         </p>
         <p>Quisque convallis ligula non magna efficitur tincidunt.</p>
+        <h2>Sub-header</h2>
+        <p>
+          Maecenas quis elementum nulla, in lacinia nisl. Ut rutrum fringilla
+          aliquet. Pellentesque auctor vehicula malesuada. Aliquam id feugiat
+          sem, sit amet tempor nulla. Quisque fermentum felis faucibus, vehicula
+          metus ac, interdum nibh. Curabitur vitae convallis ligula. Integer ac
+          enim vel felis pharetra laoreet. Interdum et malesuada fames ac ante
+          ipsum primis in faucibus. Pellentesque hendrerit ac augue quis
+          pretium.
+        </p>
+        <p>
+          Morbi ut scelerisque nibh. Integer auctor, massa non dictum tristique,
+          elit metus efficitur elit, ac pretium sapien nisl nec ante. In et ex
+          ultricies, mollis mi in, euismod dolor.
+        </p>
+        <p>Quisque convallis ligula non magna efficitur tincidunt.</p>
+        <h2>Sub-header</h2>
+        <p>
+          Maecenas quis elementum nulla, in lacinia nisl. Ut rutrum fringilla
+          aliquet. Pellentesque auctor vehicula malesuada. Aliquam id feugiat
+          sem, sit amet tempor nulla. Quisque fermentum felis faucibus, vehicula
+          metus ac, interdum nibh. Curabitur vitae convallis ligula. Integer ac
+          enim vel felis pharetra laoreet. Interdum et malesuada fames ac ante
+          ipsum primis in faucibus. Pellentesque hendrerit ac augue quis
+          pretium.
+        </p>
+        <p>
+          Morbi ut scelerisque nibh. Integer auctor, massa non dictum tristique,
+          elit metus efficitur elit, ac pretium sapien nisl nec ante. In et ex
+          ultricies, mollis mi in, euismod dolor.
+        </p>
+        <p>Quisque convallis ligula non magna efficitur tincidunt.</p>
+        <h2>Sub-header</h2>
+        <p>
+          Maecenas quis elementum nulla, in lacinia nisl. Ut rutrum fringilla
+          aliquet. Pellentesque auctor vehicula malesuada. Aliquam id feugiat
+          sem, sit amet tempor nulla. Quisque fermentum felis faucibus, vehicula
+          metus ac, interdum nibh. Curabitur vitae convallis ligula. Integer ac
+          enim vel felis pharetra laoreet. Interdum et malesuada fames ac ante
+          ipsum primis in faucibus. Pellentesque hendrerit ac augue quis
+          pretium.
+        </p>
+        <p>
+          Morbi ut scelerisque nibh. Integer auctor, massa non dictum tristique,
+          elit metus efficitur elit, ac pretium sapien nisl nec ante. In et ex
+          ultricies, mollis mi in, euismod dolor.
+        </p>
+        <p>Quisque convallis ligula non magna efficitur tincidunt.</p>
+        <h2>Sub-header</h2>
+        <p>
+          Maecenas quis elementum nulla, in lacinia nisl. Ut rutrum fringilla
+          aliquet. Pellentesque auctor vehicula malesuada. Aliquam id feugiat
+          sem, sit amet tempor nulla. Quisque fermentum felis faucibus, vehicula
+          metus ac, interdum nibh. Curabitur vitae convallis ligula. Integer ac
+          enim vel felis pharetra laoreet. Interdum et malesuada fames ac ante
+          ipsum primis in faucibus. Pellentesque hendrerit ac augue quis
+          pretium.
+        </p>
+        <p>
+          Morbi ut scelerisque nibh. Integer auctor, massa non dictum tristique,
+          elit metus efficitur elit, ac pretium sapien nisl nec ante. In et ex
+          ultricies, mollis mi in, euismod dolor.
+        </p>
+        <p>Quisque convallis ligula non magna efficitur tincidunt.</p>
+        <h2>Sub-header</h2>
+        <p>
+          Maecenas quis elementum nulla, in lacinia nisl. Ut rutrum fringilla
+          aliquet. Pellentesque auctor vehicula malesuada. Aliquam id feugiat
+          sem, sit amet tempor nulla. Quisque fermentum felis faucibus, vehicula
+          metus ac, interdum nibh. Curabitur vitae convallis ligula. Integer ac
+          enim vel felis pharetra laoreet. Interdum et malesuada fames ac ante
+          ipsum primis in faucibus. Pellentesque hendrerit ac augue quis
+          pretium.
+        </p>
+        <p>
+          Morbi ut scelerisque nibh. Integer auctor, massa non dictum tristique,
+          elit metus efficitur elit, ac pretium sapien nisl nec ante. In et ex
+          ultricies, mollis mi in, euismod dolor.
+        </p>
+        <p>Quisque convallis ligula non magna efficitur tincidunt.</p>
+        <h2>Sub-header</h2>
+        <p>
+          Maecenas quis elementum nulla, in lacinia nisl. Ut rutrum fringilla
+          aliquet. Pellentesque auctor vehicula malesuada. Aliquam id feugiat
+          sem, sit amet tempor nulla. Quisque fermentum felis faucibus, vehicula
+          metus ac, interdum nibh. Curabitur vitae convallis ligula. Integer ac
+          enim vel felis pharetra laoreet. Interdum et malesuada fames ac ante
+          ipsum primis in faucibus. Pellentesque hendrerit ac augue quis
+          pretium.
+        </p>
+        <p>
+          Morbi ut scelerisque nibh. Integer auctor, massa non dictum tristique,
+          elit metus efficitur elit, ac pretium sapien nisl nec ante. In et ex
+          ultricies, mollis mi in, euismod dolor.
+        </p>
+        <p>Quisque convallis ligula non magna efficitur tincidunt.</p>
+        <h2>Sub-header</h2>
+        <p>
+          Maecenas quis elementum nulla, in lacinia nisl. Ut rutrum fringilla
+          aliquet. Pellentesque auctor vehicula malesuada. Aliquam id feugiat
+          sem, sit amet tempor nulla. Quisque fermentum felis faucibus, vehicula
+          metus ac, interdum nibh. Curabitur vitae convallis ligula. Integer ac
+          enim vel felis pharetra laoreet. Interdum et malesuada fames ac ante
+          ipsum primis in faucibus. Pellentesque hendrerit ac augue quis
+          pretium.
+        </p>
+        <p>
+          Morbi ut scelerisque nibh. Integer auctor, massa non dictum tristique,
+          elit metus efficitur elit, ac pretium sapien nisl nec ante. In et ex
+          ultricies, mollis mi in, euismod dolor.
+        </p>
+        <p>Quisque convallis ligula non magna efficitur tincidunt.</p>
       </article>
     </>
   );
@@ -123,26 +242,124 @@ export const App = () => {
   para ello vamos a crear un div que se vaya poniendo de color rojo conforme vayamos llegando
   a cierto punto de progreso, para ello, creamos el armazon:
 
-_./src/app.css_
+_./src/components/progress-bar.css_
 
 ```css
-
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: Aquamarine;
+  transform-origin: 0%;
+}
 ```
 
-- En la aplicación añadimos el div con el estilo.
+_./src/components/progress-bar.tsx_
+
+```tsx
+import React from "react";
+import { motion } from "framer-motion";
+import classes from "./progress-bar.components.css";
+
+interface Props {
+  progress: number; // Value in between 0 and 1
+}
+
+export const ProgressBar = ({ progress }: Props) => {
+  return (
+    <motion.div
+      className={classes.progressBar}
+      style={{
+        transform: `scaleX(${progress})`,
+      }}
+    />
+  );
+};
+```
+
+- Vamos añadir el progress bar a la aplicaión:
 
 _./src/app.tsx_
+
+```diff
+import React from "react";
+import { LoremIpsum } from "./components/lorem-ipsum.component";
++ import { ProgressBar } from "./components/progress-bar.component";
+
+export const App = () => {
+  return (
+    <>
++     <ProgressBar progress={0.5} />
+      <LoremIpsum />
+    </>
+  );
+};
+```
 
 - Y ahora vamos a usar el hook de framer para tracker el scroll _useScroll_ (por defecto a nivel de página), y vamos a mapear el valor que da entre 0 y 1 para transformalo a ancho del div
   que queremos mostrar.
 
-_./src/app.css_
+_./src/app.tsx_
 
 ```diff
+import React from "react";
+import { LoremIpsum } from "./components/lorem-ipsum.component";
+import { ProgressBar } from "./components/progress-bar.component";
++ import { useScroll } from "framer-motion";
 
+export const App = () => {
++  const { scrollYProgress } = useScroll();
++  const [currentPosition, setcurrentPosition] = React.useState(0);
+
++  React.useEffect(() => {
++    return scrollYProgress.onChange((latest) => {
++      setcurrentPosition(latest);
++    });
++  }, []);
+
+  return (
+    <>
+      <ProgressBar
+-        progress={0.5}
++        progress={currentPosition}
+      />
+      <LoremIpsum />
+    </>
+  );
+};
 ```
 
 - Fijate lo que obtenemos ahora.
+
+```bash
+npm start
+```
+
+- ¿Te gustaría que la animación fuera más suave? Vamos a meterle spring...
+
+_./src/components/app.tsx_
+
+```diff
+import React from "react";
+import { LoremIpsum } from "./components/lorem-ipsum.component";
+import { ProgressBar } from "./components/progress-bar.component";
+- import { useScroll } from "framer-motion";
++ import { useScroll, useSpring } from "framer-motion";
+
+export const App = () => {
+  const { scrollYProgress } = useScroll();
++   const scaleX = useSpring(scrollYProgress);
+  const [currentPosition, setcurrentPosition] = React.useState(0);
+
+  React.useEffect(() => {
+    return scrollYProgress.onChange((latest) => {
+-      setcurrentPosition(latest);
++      setcurrentPosition(scaleX.get());
+    });
+  }, []);
+```
 
 - Esto está muy bien, pero ¿y si tuvieramos dos divs con scroll? Usando las _refs_ de
   react podemos hacer que el scroll se refiera a un elemento en concreto. Vamos a por ello:
@@ -156,7 +373,5 @@ Definimos las refs
 Las enlanzamos al useScroll
 
 Y ya lo tenemos...
-
-¿Te gustaría que la animación fuera más suave? Vamos a meterle spring...
 
 También podrías implementar un indicador circular:
