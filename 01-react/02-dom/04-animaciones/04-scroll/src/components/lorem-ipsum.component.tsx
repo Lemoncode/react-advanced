@@ -1,8 +1,11 @@
 import React from "react";
+import { forwardRef } from "react";
 
-export function LoremIpsum() {
+export const LoremIpsum = forwardRef<HTMLDivElement>((props, ref) => {
   return (
-    <>
+    <div style={{ height: "300px", overflow: "auto", border: "1px solid red" }}
+    ref={ref} 
+    >
       <article>
         <p>
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam ac
@@ -185,6 +188,6 @@ export function LoremIpsum() {
         </p>
         <p>Quisque convallis ligula non magna efficitur tincidunt.</p>
       </article>
-    </>
+    </div>
   );
-}
+})

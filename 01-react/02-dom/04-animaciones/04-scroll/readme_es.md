@@ -337,41 +337,181 @@ export const App = () => {
 npm start
 ```
 
-- ¿Te gustaría que la animación fuera más suave? Vamos a meterle spring...
+- Esto está muy bien, pero ¿y si tuvieramos dos divs con scroll? Usando las _refs_ de react podemos hacer que el scroll se refiera a un elemento en concreto. Vamos a por ello:
 
-_./src/components/app.tsx_
+Vamos a crear un contenedor flex para mostrar dos divs.
+
+_./src/app.css_
+
+```css
+.container {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+}
+```
+
+Y vamos a instanciar dos loremipsum, uno a la izquierda y otro a la derecha.
+
+_./src/app.tsx_
 
 ```diff
 import React from "react";
 import { LoremIpsum } from "./components/lorem-ipsum.component";
 import { ProgressBar } from "./components/progress-bar.component";
-- import { useScroll } from "framer-motion";
-+ import { useScroll, useSpring } from "framer-motion";
+import { useScroll } from "framer-motion";
++ import classes from "./app.css";
+```
+
+_./src/app.tsx_
+
+```diff
+  return (
+-    <>
++    <div className={classes.container}>
++      <div>
+        <ProgressBar progress={currentPosition} />
+        <LoremIpsum />
++      </div>
++      <div>
++        <ProgressBar progress={currentPosition} />
++        <LoremIpsum />
++      </div>
+-    </>
++    </div>
+  );
+```
+
+- Los progress bar vamos quitarle la posición absoluta
+
+_./src/components/progress-bar.component.css_
+
+```diff
+.progress-bar {
+-  position: fixed;
+-  top: 0;
+-  left: 0;
+-  right: 0;
+  height: 10px;
+  background: Aquamarine;
+  transform-origin: 0%;
+}
+```
+
+Y en el lorem ipsum lo encapsulamos en un div con un overflow auto:
+
+_./src/components/lorem-ipsum.component.tsx_
+
+```diff
+import React from "react";
+
+export function LoremIpsum() {
+  return (
+-    <>
++    <div style={{height: 300px, overflow: auto, borxer: 1px solid red}}>
+    // (...)
+-    </>
++    </div>
+```
+
+Ahora queremos enganchar el useScroll con cada div, para ello
+tenemos que sacarlo como ref de cada componente (podemos usar
+\_forwardref), y ya acoplarlo al useScroll.
+
+_./src/components/lorem-ipsum.component.tsx_
+
+```diff
+import React from "react";
++ import { forwardRef } from "react";
+
+- export function LoremIpsum() {
++ export const LoremIpsum = forwardRef<HTMLDivElement>((props, ref) => {
+  return (
+    <div style={{ height: 300px, overflow: auto, borxer: 1px solid red }}
++      ref={ref}
+    >
+
+    //(...)
+
++  )
+```
+
+Y en el app.tsx vamos a engancharlo con el useScroll:
+
+_./src/app.tsx_
+
+```diff
++ import React from "react";
+import React, { useRef } from "react";
+// (...)
 
 export const App = () => {
-  const { scrollYProgress } = useScroll();
-+   const scaleX = useSpring(scrollYProgress);
-  const [currentPosition, setcurrentPosition] = React.useState(0);
++ const refDivTextA = useRef(null);
++ const refDivTextB = useRef(null);
+
+// (...)
+
+      <div style={{ width: "200px" }}>
+        <ProgressBar progress={currentPosition} />
+-        <LoremIpsum />
++        <LoremIpsum ref={refDivTextA} />
+      </div>
+      <div style={{ width: "200px" }}>
+        <ProgressBar progress={currentPosition} />
+
+-        <LoremIpsum />
++        <LoremIpsum ref={refDivTextB} />
+      </div>
+
+```
+
+Y vamos a enlzarlos con el useScroll:
+
+_./src/app.tsx_
+
+```diff
+-  const { scrollYProgress } = useScroll();
++  const { scrollYProgressA } = useScroll({container: refDivTextA}));
++  const { scrollYProgressB } = useScroll({container: refDivTextB}));
+
+-  const [currentPosition, setcurrentPosition] = React.useState(0);
++  const [currentPositionA, setcurrentPositionA] = React.useState(0);
++  const [currentPositionB, setcurrentPositionB] = React.useState(0);
+
+
 
   React.useEffect(() => {
-    return scrollYProgress.onChange((latest) => {
--      setcurrentPosition(latest);
-+      setcurrentPosition(scaleX.get());
-    });
+-    return scrollYProgress.onChange((latest) => {
++    scrollYProgressA.onChange((latest) => {
++      setcurrentPositionA(latest);
++    });
+
++    scrollYProgressB.onChange((latest) => {
++      setcurrentPositionB(latest);
++    });
   }, []);
 ```
 
-- Esto está muy bien, pero ¿y si tuvieramos dos divs con scroll? Usando las _refs_ de
-  react podemos hacer que el scroll se refiera a un elemento en concreto. Vamos a por ello:
+Y vamos a pasarle el valor de cada uno a su progress bar:
 
-Definimos dos divs con el contenido.
+```diff
+      <div style={{ width: "200px" }}>
+-        <ProgressBar progress={currentPosition} />
++        <ProgressBar progress={currentPositionA} />
 
-Definimos un div de progreso por cada uno
+        <LoremIpsum />
+      </div>
+      <div style={{ width: "200px" }}>
+-        <ProgressBar progress={currentPosition} />
++        <ProgressBar progress={currentPositionB} />
+        <LoremIpsum />
+      </div>
+```
 
-Definimos las refs
+- Vamos a probar a ver que tal queda esto:
 
-Las enlanzamos al useScroll
-
-Y ya lo tenemos...
+```bash
+npm start
+```
 
 También podrías implementar un indicador circular:
