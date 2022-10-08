@@ -11,8 +11,7 @@ export const App = () => {
 
   React.useEffect(() => {
     return scrollYProgress.onChange((latest) => {
-      setcurrentPosition(latest);
-      //setcurrentPosition(scaleX.get());
+      setcurrentPosition(scaleX.get());
     });
   }, []);
 
