@@ -4,5 +4,14 @@
 - Contexto y Rendimiento.
 - Recoil / Jotai.
 - Virtualizando contenido
-- React swr
 - Cargas de módulos bajo demanda
+
+***
+
+# Virtualizacion
+
+https://wanago.io/2022/06/27/long-lists-react-virtualization/
+
+Vamos a usar react-window
+
+https://github.com/bvaughn/react-window

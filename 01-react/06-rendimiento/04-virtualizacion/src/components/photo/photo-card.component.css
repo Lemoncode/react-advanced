@@ -1,0 +1,11 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  width: 600px;
+  height: 200px;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  color: black;
+  overflow: hidden;
+}
