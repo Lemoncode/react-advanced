@@ -13,7 +13,7 @@ vamos a ver que trae *framer* para estos casos.
 npm install
 ```
 
-- Si partimos del boiler plate necesitaremos instalar el paquete
+- Si partimos del *boiler plate* necesitaremos instalar el paquete
   de framer/motion
 
 ```bash
@@ -258,21 +258,23 @@ _./src/components/progress-bar.component.tsx_
 
 ```tsx
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, MotionValue } from "framer-motion";
 import classes from "./progress-bar.component.css";
 
 interface Props {
-  progress: number; // Value in between 0 and 1
+  progress: MotionValue<number> | number; // Value in between 0 and 1
 }
 
 export const ProgressBar = ({ progress }: Props) => {
   return (
-    <motion.div
-      className={classes.progressBar}
-      style={{
-        transform: `scaleX(${progress})`,
-      }}
-    />
+    <>
+      <motion.div
+        className={classes.progressBar}
+        style={{
+          scaleX: progress,
+        }}
+      />
+    </>
   );
 };
 ```
@@ -308,24 +310,32 @@ import { ProgressBar } from "./components/progress-bar.component";
 
 export const App = () => {
 +  const { scrollYProgress } = useScroll();
-+  const [currentPosition, setcurrentPosition] = React.useState(0);
-
-+  React.useEffect(() => {
-+    return scrollYProgress.onChange((latest) => {
-+      setcurrentPosition(latest);
-+    });
-+  }, []);
 
   return (
     <>
       <ProgressBar
 -        progress={0.5}
-+        progress={currentPosition}
++        progress={scrollYProgress}
       />
       <LoremIpsum />
     </>
   );
 };
+```
+
+- Ya podemos quitar de las *Props* de *ProgressBar* el tipado a *number*, lo usamos para ver un ejemplo visual y ya no sería necesario.
+
+_./src/components/progress-bar.component.tsx_
+
+```diff
+import React from "react";
+import { motion, MotionValue } from "framer-motion";
+import classes from "./progress-bar.component.css";
+
+interface Props {
+-  	progress: MotionValue<number> | number;
++	progress: MotionValue<number>;
+}
 ```
 
 - Fíjate lo que obtenemos ahora.
@@ -366,12 +376,12 @@ _./src/app.tsx_
   return (
 -    <>
 +    <div className={classes.container}>
-+      <div>
-        <ProgressBar progress={currentPosition} />
++      <div style={{ width: "200px" }}>
+        <ProgressBar progress={scrollYProgress} />
         <LoremIpsum />
 +      </div>
-+      <div>
-+        <ProgressBar progress={currentPosition} />
++      <div style={{ width: "200px" }}>
++        <ProgressBar progress={scrollYProgress} />
 +        <LoremIpsum />
 +      </div>
 -    </>
@@ -427,7 +437,7 @@ import React from "react";
 
     //(...)
 - };
-});
++ });
 ```
 
 Y en el *app.tsx* vamos a engancharlo con el *useScroll*:
@@ -443,12 +453,12 @@ export const App = () => {
 
 // (...)
 
-      <div style={{ width: "200px" }}>
+      <div>
         <ProgressBar progress={currentPosition} />
 -        <LoremIpsum />
 +        <LoremIpsum ref={refDivTextA} />
       </div>
-      <div style={{ width: "200px" }}>
+      <div>
         <ProgressBar progress={currentPosition} />
 
 -        <LoremIpsum />
@@ -465,37 +475,20 @@ _./src/app.tsx_
 -  const { scrollYProgress } = useScroll();
 +  const { scrollYProgress: scrollYProgressA } = useScroll({ container: refDivTextA });
 +  const { scrollYProgress: scrollYProgressB } = useScroll({ container: refDivTextB });
-
--  const [currentPosition, setcurrentPosition] = React.useState(0);
-+  const [currentPositionA, setcurrentPositionA] = React.useState(0);
-+  const [currentPositionB, setcurrentPositionB] = React.useState(0);
-
-
-
-  React.useEffect(() => {
--    return scrollYProgress.onChange((latest) => {
-+    scrollYProgressA.onChange((latest) => {
-+      setcurrentPositionA(latest);
-+    });
-
-+    scrollYProgressB.onChange((latest) => {
-+      setcurrentPositionB(latest);
-+    });
-  }, []);
 ```
 
 Y vamos a pasarle el valor de cada uno a su progress bar:
 
 ```diff
-      <div style={{ width: "200px" }}>
--        <ProgressBar progress={currentPosition} />
-+        <ProgressBar progress={currentPositionA} />
+      <div>
+-        <ProgressBar progress={scrollYProgress} />
++        <ProgressBar progress={scrollYProgressA} />
 
         <LoremIpsum />
       </div>
-      <div style={{ width: "200px" }}>
--        <ProgressBar progress={currentPosition} />
-+        <ProgressBar progress={currentPositionB} />
+      <div>
+-        <ProgressBar progress={scrollYProgress} />
++        <ProgressBar progress={scrollYProgressB} />
         <LoremIpsum />
       </div>
 ```
@@ -507,3 +500,63 @@ npm start
 ```
 
 También podrías implementar un indicador circular:
+
+- Vamos primero al *progress-bar.component.tsx*, y añadimos *svg* circular y *motion.circle*:
+
+./src/components/progress-bar.component.tsx
+
+```diff
+<>
++      <svg id="progress" width="100" height="100" viewBox="0 0 100 100">
++        <circle
++          cx="50"
++          cy="50"
++          r="30"
++          className={classes.backgroundCircle}
++        />
++        <motion.circle
++          cx="50"
++          cy="50"
++          r="30"
++          className={classes.indicatorCircle}
++          style={{ pathLength: progress }}
++        />
++      </svg>
+      <motion.div
+        className={classes.progressBar}
+        style={{
+          scaleX: progress,
+        }}
+      />
+    </>
+```
+
+- Añadimos sus estilos
+
+./src/components/progress-bar.component.css_
+
+```diff
+.progress-bar {
+  height: 10px;
+  background: Aquamarine;
+  transform-origin: 0%;
+}
+
++ circle {
++  stroke-dashoffset: 0;
++  stroke-width: 15%;
++  fill: none;
++ }
+
++ .background-circle {
++   stroke: Aquamarine;
++   opacity: 0.4;
++ }
+
++ .indicator-circle {
++   stroke: Aquamarine;
++ }
+```
+
+Y vemos que nos funcionaría perfectamente tanto la barra y el círculo de progreso en la lectura del *loremipsum*.
+
