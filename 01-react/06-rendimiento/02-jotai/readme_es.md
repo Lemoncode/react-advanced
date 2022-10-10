@@ -183,6 +183,48 @@ export const EditNameComponent: React.FC = () => {
 };
 ```
 
+Y lo mismo para el apellido:
+
+_./src/components/display-lastname.component.tsx_
+
+```tsx
+import React from "react";
+import { useFullnameContext } from "../core";
+
+export const DisplayLastnameComponent: React.FC = () => {
+  const { lastname } = useFullnameContext();
+
+  return (
+    <div>
+      <h2>Display Lastname</h2>
+      <h3>{lastname}</h3>
+    </div>
+  );
+};
+```
+
+_./src/components/edit-lastname.component.tsx_
+
+```tsx
+import React from "react";
+import { useFullnameContext } from "../core";
+
+export const EditLastnameComponent: React.FC = () => {
+  const { lastname, setLastname } = useFullnameContext();
+
+  return (
+    <div>
+      <h2>Edit Lastname</h2>
+      <input
+        type="text"
+        value={lastname}
+        onChange={(e) => setLastname(e.target.value)}
+      />
+    </div>
+  );
+};
+```
+
 - Vamos a crear un barrel:
 
 _./src/components/index.ts_
@@ -190,25 +232,32 @@ _./src/components/index.ts_
 ```ts
 export * from "./display-name.component";
 export * from "./edit-name.component";
+export * from "./display-lastname.component";
+export * from "./edit-lastname.component";
 ```
 
-- Le damos uso en la App y vemos que todo funciona como esperabamos.
-
-_./src/app.tsx_
+- Vamos añadirlo todo a la App:
 
 ```diff
 import React from "react";
 import { FullnameProvider } from "./core";
-+ import {DisplayNameComponent, EditNameComponent} from './components';
++ import {
++  DisplayNameComponent,
++  EditNameComponent,
++  DisplayLastnameComponent,
++  EditLastnameComponent,
++ } from "./components";
 
 export const App = () => {
-    return (
-        <FullnameProvider>
--          <h1>Hello React !!</h1>
-+          <DisplayNameComponent />
-+          <EditNameComponent />
-        </FullnameProvider>
-    );
+  return (
+    <FullnameProvider>
+-      <h1>Hello React !!</h1>
++      <DisplayNameComponent/>
++      <EditNameComponent/>
++      <DisplayLastnameComponent/>
++      <EditLastnameComponent/>
+    </FullnameProvider>
+  );
 };
 ```
 
@@ -218,30 +267,71 @@ export const App = () => {
 npm start
 ```
 
-- Vamos a crear un estado en _app_ para almacenar el nombre de un pais.
-
-_./src/app.tsx_
-
-```diff
-
-```
-
-- Vamos a añadir el componente _display-country_.
-
 - Vamos a poner un console.log en cada componente para ver si se tira el render.
 
-- Ejecutamos y bien..., modificamos el nombre y tenemos que ¡Display country se hace render!
-  ¿Esto puede ser porque el componente no es puro? Vamos añadir un _React.memo_
+_./src/components/display-name.component.tsx_
 
-- Fijate que da igual al ser un dato global se tira el render.
+```diff
+export const DisplayNameComponent: React.FC = () => {
+  const { name } = useFullnameContext();
 
-- Si el contexto sólo encapsulara a los componentes de mostrar el nombre
-  y apellidos, podemos ver que el render no se dispara en el campo de pais.
++ console.log("1111 - DisplayNameComponent render");
 
-- Tirar un rerender en todos los niveles porque un valor del contexto cambie
-  no tiene porque impactar negativamente en una aplicación, siempre que esto
-  sea esporádico o si la UI no es compleja, pero hay casos en los que puede
-  impactar negativamente a la usabilidad de la aplicación.
+  return (
+    <div>
+      <h2>Display Name</h2>
+      <h3>{name}</h3>
+    </div>
+  );
+```
+
+_./src/components/edit-name.component.tsx_
+
+```diff
+  const { name, setName } = useFullnameContext();
+
++ console.log("22222 - EditNameComponent render");
+
+  return (
+    <div>
+      <h2>Edit Name</h2>
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+    </div>
+  );
+```
+
+_./src/components/display-lastname.component.tsx_
+
+```diff
+export const DisplayLastnameComponent: React.FC = () => {
+  const { lastname } = useFullnameContext();
+
++ console.log("33333 - DisplayLastnameComponent render");
+```
+
+_./src/components/edit-lastname.component.tsx_
+
+```diff
+  const { lastname, setLastname } = useFullnameContext();
+
++ console.log("4444 - EditLastnameComponent render");
+```
+
+- Si te fijas si cambio el nombre, se tira un render del apellido.
+
+¿Qué problema tenemos con esto? Que en una aplicación real un contexto puede
+tener un modelo complejo (por ejemplo el theme de una aplicación) y tocando
+un sóla propiedad haría que todos los componentes que usen ese context
+se repintaran... podemos plantear parches:
+
+- Mover más abajo el componente que pinta y usar React.memo.
+- Partir el contexto en varios...
+
+Pero estas soluciones no son optimas 100%.
 
 - ¿Y si yo pudiera tener datos globales reactivos que sólo dispararan actualizaciones
   en los componentes que lo usan? Este concepto es lo que implementa la librería
