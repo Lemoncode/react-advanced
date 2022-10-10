@@ -708,4 +708,49 @@ _./src/app.tsx_
     </>
 ```
 
+- Esto está muy bien a nivel global pero y si necesitamos usar esos
+  datos a nivel de subarbol, un tema interesante es el uso de proveedores,
+  pero... son todo o nada (todos los atomos están dentro de ese proveedor)
 
+_./src/app.tsx_
+
+```diff
+import React from "react";
+import {
+  DisplayNameComponent,
+  EditNameComponent,
+  DisplayLastnameComponent,
+  EditLastnameComponent,
+  FullnameComponent,
+  EditFullnameComponent,
+} from "./components";
++ import { Provider } from 'jotai';
+```
+
+```diff
+  return (
+    <>
++     <h1>Island A</h1>    
++     <provider>    
+        <DisplayNameComponent />
+        <EditNameComponent />
+        <DisplayLastnameComponent />
+        <EditLastnameComponent />
+        <FullnameComponent />
+        <EditFullnameComponent />
++     </provider>      
++     <h2>Island B</h2>    
++     <provider>    
++        <DisplayNameComponent />
++        <EditNameComponent />
++        <DisplayLastnameComponent />
++        <EditLastnameComponent />
++        <FullnameComponent />
++        <EditFullnameComponent />
++     </provider>      
+    </>
+  );
+```
+
+Para trabajar esto mejor hay un proyecto en marcha _jotai-molecules_:
+https://github.com/saasquatch/jotai-molecules
