@@ -5,6 +5,7 @@ import {
   DisplayLastnameComponent,
   EditLastnameComponent,
   FullnameComponent,
+  EditFullnameComponent,
 } from "./components";
 
 export const App = () => {
@@ -17,6 +18,7 @@ export const App = () => {
       <DisplayLastnameComponent />
       <EditLastnameComponent />
       <FullnameComponent />
+      <EditFullnameComponent />
     </>
   );
 };

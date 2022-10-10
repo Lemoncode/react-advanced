@@ -592,4 +592,120 @@ export const App = () => {
 };
 ```
 
-- Si probamos podemos ver como funciona.
+- Si probamos podemos ver como funciona y es reactivo.
+
+- Esto no esta mal, pero y si lo quiero es escribir en el átomo
+  derivado..., vamos a crear un componente que se llamará
+  _EditFullnameComponent_ y no queremos usar cada átomo, si no uno
+  derivado de oh ! Sorpresa ! escritura y lectura.
+
+- Definimos este átomo:
+
+_./src/core/atom.ts_
+
+```diff
+import { atom } from "jotai";
+
+export const nameAtom = atom("John");
+export const lastnameAtom = atom("Doe");
+
+export const fullnameAtom = atom((get) => {
+  const name = get(nameAtom);
+  const lastname = get(lastnameAtom);
+  return `${name} ${lastname}`;
+});
+
++ export const fullnameAtomWithWrite = atom(
++  (get) => {
++    const name = get(nameAtom);
++    const lastname = get(lastnameAtom);
++    return {name, lastname};
++  },
++  (get, set, value: {name :string, lastname :string}) => {
++    const { name, lastname } = value;
++
++    set(nameAtom, name);
++    set(lastnameAtom, lastname);
++  }
++);
+```
+
+- Vamos a crear un componente _edit-fullname.component.tsx_
+
+_./src/components/edit-fullname.component.tsx_
+
+```tsx
+import React from "react";
+import { useAtom } from "jotai";
+import { fullnameAtomWithWrite } from "../core";
+
+export const EditFullnameComponent: React.FC = () => {
+  const [fullname, setFullname] = useAtom(fullnameAtomWithWrite);
+
+  console.log("66666 - EditFullnameComponent render");
+
+  return (
+    <div>
+      <h2>Edit Fullname</h2>
+      <input
+        type="text"
+        value={fullname.name}
+        onChange={(e) => {
+          setFullname({ ...fullname, name: e.target.value });
+        }}
+      />
+      <input
+        type="text"
+        value={fullname.lastname}
+        onChange={(e) => {
+          setFullname({ ...fullname, lastname: e.target.value });
+        }}
+      />
+    </div>
+  );
+};
+```
+
+- Vamos a añadirlo al barrel:
+
+_./src/components/index.ts_
+
+```diff
+export * from "./display-name.component";
+export * from "./edit-name.component";
+export * from "./display-lastname.component";
+export * from "./edit-lastname.component";
+export * from "./fullname.component";
++ export * from "./edit-fullname.component";
+```
+
+- Lo instanciamos.
+
+_./src/app.tsx_
+
+```diff
+import React from "react";
+import {
+  DisplayNameComponent,
+  EditNameComponent,
+  DisplayLastnameComponent,
+  EditLastnameComponent,
+  FullnameComponent,
++  EditFullnameComponent,
+} from "./components";
+```
+
+_./src/app.tsx_
+
+```diff
+    <>
+      <DisplayNameComponent />
+      <EditNameComponent />
+      <DisplayLastnameComponent />
+      <EditLastnameComponent />
+      <FullnameComponent />
++      <EditFullnameComponent />
+    </>
+```
+
+
