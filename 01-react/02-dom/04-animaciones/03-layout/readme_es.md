@@ -2,9 +2,9 @@
 
 ## Resumen
 
-Un tema muy interesante que ofrece Framer son las animaciones de layout,
-¿Te imaginas cambiar la dirección de un contenedor flexbox y obtener una
-animación? ¿ Y lo mismo con anchos y altos? Vamos a ver como funciona
+Un tema muy interesante que ofrece *Framer* son las animaciones de *layout*,
+¿Te imaginas cambiar la dirección de un contenedor *flexbox* y obtener una
+animación? ¿Y lo mismo con anchos y altos? Vamos a ver cómo funciona
 esta maravilla.
 
 ## Paso a Paso
@@ -15,16 +15,16 @@ esta maravilla.
 npm install
 ```
 
-- En este ejemplo vamos a mirar de crear un toggle button (si, el
-  famoso del iphone :)).
+- En este ejemplo vamos a mirar de crear un *toggle button* (sí, el
+  famoso del *iphone* :)).
 
-- Si no tenemos ya framer instalado, lo instalamos.
+- Si no tenemos ya *framer* instalado, lo instalamos.
 
 ```bash
 npm install framer-motion
 ```
 
-- Lo siguiente vamos a crearnos un toggle button sin animaciones.
+- Lo siguiente vamos a crearnos un *toggle button* sin animaciones.
 
 - Creamos un componente de clase.
 
@@ -49,7 +49,7 @@ export const ToggleButton: React.FC<Props> = (props) => {
 };
 ```
 
-- Y vamos ya a consumirlo en nuestro App:
+- Y vamos ya a consumirlo en nuestra *App*:
 
 ```tsx
 import React from "react";
@@ -83,7 +83,7 @@ _./components/toggle-button.component.css_
 }
 ```
 
-- Vamos a aplicar esta clase en el div contenedor:
+- Vamos a aplicar esta clase en el *div* contenedor:
 
 _./components/toggle-button.component.tsx_
 
@@ -114,7 +114,7 @@ export const ToggleButton : ReactFC<Props> = (props) => {
 npm start
 ```
 
-Bueno, tenemos un contenedor con un div vació, y ojo fijate en el truco,
+Bueno, tenemos un contenedor con un *div* vacío, y ojo fíjate en el truco,
 por defecto _justify-content_ va a valer _flex-start_, así que cuando
 pongamos un div dentro se mostrará justificado a la izquierda.
 
@@ -150,7 +150,7 @@ export const ToggleButton : ReactFC<Props> = (props) => {
   const {on, onToggle} = props;
 
   return (
-    <div className={classes.container}>
+     <div className={classes.container} onClick={onToggle}>
 -      <div/>
 +      <div className={classes.marble}/>
     </div>
@@ -160,13 +160,13 @@ export const ToggleButton : ReactFC<Props> = (props) => {
 
 - Bueno ya tenemos una "bolita" :).
 
-- Ahora vamos a jugar con el container:
-  - Cuando está off queremos que el flex que el justify-content sea
-    flex-start (lo que hay por defecto).
-  - Cuando el contenedor está en on queremos que el flex sea flex-end.
+- Ahora vamos a jugar con el *container*:
+  - Cuando está *off* queremos que el *flex* que el *justify-content* sea
+    *flex-start* (lo que hay por defecto).
+  - Cuando el contenedor está en on queremos que el *flex* sea *flex-end*.
 
-Esto lo vamos a implementar con dos saber, uno usando atributos de datos en
-el css y otro con un class name composer (me decís vosotros que solución
+Esto lo vamos a implementar con dos sabores, uno usando atributos de datos en
+el *css* y otro con un *class name composer* (me decís vosotros que solución
 véis más limpia).
 
 Vamos a por el atributo de datos en CSS.
@@ -196,43 +196,46 @@ _./components/toggle-button.component.tsx_
 
 ```diff
   return (
--    <div className={classes.container}>
-+    <div className={classes.container} data-isOn={on}>
+-    <div className={classes.container} onClick={onToggle}>
++    <div className={classes.container} onClick={onToggle} data-isOn={on}>
 
       <div className={classes.marble}/>
     </div>
   );
 ```
 
-- Si ahora probamos el toggle funcione, pero se ve muy brusca la transición,
-  manos a la obra con framer.
-
+- Si ahora probamos el *toggle* funciona, pero se ve muy brusca la transición,
+  manos a la obra con *framer*.
 - Importamos _motion_
+
+_./components/toggle-button.component.tsx_
 
 ```diff
 import React from 'react';
-import classes from './toggle-button.component.css';
 + import {motion} from 'framer-motion';
+import classes from './toggle-button.component.css';
 ```
 
 Y ojo que ahora decimos que la canica va a ser un _motion.div_ y le
 añadimos el atributo _layout_
 
+_./components/toggle-button.component.tsx_
+
 ```diff
-  <div className={classes.container} data-isOn={on}>
+ <div className={classes.container} onClick={onToggle} data-isOn={on}>
 -    <div className={classes.marble}/>
-+    <div className={classes.marble} layout/>
++    <motion.div className={classes.marble} layout/>
 ```
 
-- Eyyy !!! ya tenemos un toggle button con animaciones, pero vamos a darle
+- Eyyy!!! ya tenemos un *toggle button* con animaciones, pero vamos a darle
   un puntito mal, hay una propiedad _spring_ con la que podemos jugar para
-  que vaya hasta el final el toggle y rebote un poquito.
+  que vaya hasta el final el *toggle* y rebote un poquito.
 
 Añadir esto al inicio del App
 
 ```diff
-import classes from './toggle-button.component.css';
 import {motion} from 'framer-motion';
+import classes from './toggle-button.component.css';
 
 + const spring = {
 +  type: "spring",
@@ -244,20 +247,19 @@ import {motion} from 'framer-motion';
 - Y lo añadimos a la canica:
 
 ```diff
-  <div className={classes.container} data-isOn={on}>
--    <div className={classes.marble} layout/>
+  <div className={classes.container} onClick={onToggle} data-isOn={on}>
+-    <motion.div className={classes.marble} layout />
 +    <motion.div className={classes.marble} layout transition={spring}/>
-        <div className={classes.marble} />
-+    </motion.div>
+  </div>
 ```
 
-# Apendice usando class name composer
+# Apéndice usando class name composer
 
-Vamos a hacer el cambio de clase usando class composer, para ello vamos
+Vamos a hacer el cambio de clase usando *class composer*, para ello vamos
 a instalar la librería _classnames_:
 
 ```bash
-npm i classnames
+npm i classnames --save
 ```
 
 Y ahora en el css vamos a crear una clase:
