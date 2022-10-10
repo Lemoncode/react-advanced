@@ -514,5 +514,82 @@ npm start
 _./src/core/atoms.ts_
 
 ```diff
+import { atom } from "jotai";
 
+export const nameAtom = atom("John");
+export const lastnameAtom = atom("Doe");
+
++ export const fullnameAtom = atom((get) => {
++  const name = get(nameAtom);
++  const lastname = get(lastnameAtom);
++  return `${name} ${lastname}`;
++ });
 ```
+
+- Ahora vamos a crear un componente que muestre el nombre y el apellido
+  completo.
+
+_./src/components/display-fullname.component.tsx_
+
+```ts
+import React from "react";
+import { useAtom } from "jotai";
+import { fullnameAtom } from "../core";
+
+export const DisplayFullnameComponent: React.FC = () => {
+  const [fullname] = useAtom(fullnameAtom);
+
+  console.log("55555 - DisplayFullnameComponent render");
+
+  return (
+    <div>
+      <h2>Display Fullname</h2>
+      <h3>{fullname}</h3>
+    </div>
+  );
+};
+```
+
+- Lo añadimos al barrel:
+
+_./src/components/index.ts_
+
+```diff
+export * from "./display-name.component";
+export * from "./edit-name.component";
+export * from "./display-lastname.component";
+export * from "./edit-lastname.component";
+export * from "./fullname.component";
++ export * from "./display-fullname.component";
+```
+
+- Y lo añadimos al _app.tsx_
+
+_./src/app.tsx_
+
+```diff
+import React from "react";
+import {
+  DisplayNameComponent,
+  EditNameComponent,
+  DisplayLastnameComponent,
+  EditLastnameComponent,
++  FullnameComponent,
+} from "./components";
+
+export const App = () => {
+  const [country, setCountry] = React.useState<string>("France");
+
+  return (
+    <>
+      <DisplayNameComponent />
+      <EditNameComponent />
+      <DisplayLastnameComponent />
+      <EditLastnameComponent />
++      <FullnameComponent />
+    </>
+  );
+};
+```
+
+- Si probamos podemos ver como funciona.
