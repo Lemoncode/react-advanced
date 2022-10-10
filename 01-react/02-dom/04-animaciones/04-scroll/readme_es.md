@@ -2,14 +2,12 @@
 
 ## Resumen
 
-Poder hacer animaciones mientras se hace scroll se a nivel de página es algo muy interesante,
-vamos a ver que trae framer para estos casos.
+Poder hacer animaciones mientras se hace *scroll* y se vea a nivel de página es algo muy interesante,
+vamos a ver que trae *framer* para estos casos.
 
 ## Paso a Paso
 
 - Este ejemplo toma como punto de partida el ejemplo _00-boiler-plate_.
-
-- Primero copiamos el ejemplo anterior, y hacemos un _npm install_
 
 ```bash
 npm install
@@ -22,7 +20,7 @@ npm install
 npm install framer-motion --save
 ```
 
-- Vamos a empezar por controlar el scroll a nivel de página.
+- Vamos a empezar por controlar el *scroll* a nivel de página.
 
 - Para ello vamos a crear un componente que tenga un montón de texto _loremp ipsum_.
 
@@ -227,7 +225,7 @@ _./src/app.tsx_
 
 ```tsx
 import React from "react";
-import { LoremIpsum } from "/src/components/lorem-ipsum.component.tsx";
+import { LoremIpsum } from "./components/lorem-ipsum.component";
 
 export const App = () => {
   return (
@@ -238,11 +236,11 @@ export const App = () => {
 };
 ```
 
-- Ahora vamos a crear un componente que nos permita tener feedback visual del scroll,
-  para ello vamos a crear un div que se vaya poniendo de color rojo conforme vayamos llegando
-  a cierto punto de progreso, para ello, creamos el armazon:
+- Ahora vamos a crear un componente que nos permita tener *feedback* visual del *scroll*,
+  para ello vamos a crear un *div* que se vaya poniendo de color rojo conforme vayamos llegando
+  a cierto punto de progreso, para ello, creamos el armazón:
 
-_./src/components/progress-bar.css_
+_./src/components/progress-bar.component.css_
 
 ```css
 .progress-bar {
@@ -256,12 +254,12 @@ _./src/components/progress-bar.css_
 }
 ```
 
-_./src/components/progress-bar.tsx_
+_./src/components/progress-bar.component.tsx_
 
 ```tsx
 import React from "react";
 import { motion } from "framer-motion";
-import classes from "./progress-bar.components.css";
+import classes from "./progress-bar.component.css";
 
 interface Props {
   progress: number; // Value in between 0 and 1
@@ -279,7 +277,7 @@ export const ProgressBar = ({ progress }: Props) => {
 };
 ```
 
-- Vamos añadir el progress bar a la aplicaión:
+- Vamos añadir el *progress bar* a la aplicación:
 
 _./src/app.tsx_
 
@@ -298,8 +296,7 @@ export const App = () => {
 };
 ```
 
-- Y ahora vamos a usar el hook de framer para tracker el scroll _useScroll_ (por defecto a nivel de página), y vamos a mapear el valor que da entre 0 y 1 para transformalo a ancho del div
-  que queremos mostrar.
+- Y ahora vamos a usar el *hook* de *framer* para *tracker* el *scroll useScroll* (por defecto a nivel de página), y vamos a mapear el valor que da entre 0 y 1 para transformarlo a ancho del *div* *qué* queremos mostrar.
 
 _./src/app.tsx_
 
@@ -331,15 +328,15 @@ export const App = () => {
 };
 ```
 
-- Fijate lo que obtenemos ahora.
+- Fíjate lo que obtenemos ahora.
 
 ```bash
 npm start
 ```
 
-- Esto está muy bien, pero ¿y si tuvieramos dos divs con scroll? Usando las _refs_ de react podemos hacer que el scroll se refiera a un elemento en concreto. Vamos a por ello:
+- Esto está muy bien, pero ¿y si tuviéramos dos *divs* con *scroll*? Usando las *refs* de React podemos hacer que el *scroll* se refiera a un elemento en concreto. Vamos a por ello:
 
-Vamos a crear un contenedor flex para mostrar dos divs.
+Vamos a crear un contenedor *flex* para mostrar dos *divs*.
 
 _./src/app.css_
 
@@ -351,7 +348,7 @@ _./src/app.css_
 }
 ```
 
-Y vamos a instanciar dos loremipsum, uno a la izquierda y otro a la derecha.
+Y vamos a instanciar dos *loremipsum*, uno a la izquierda y otro a la derecha.
 
 _./src/app.tsx_
 
@@ -398,7 +395,7 @@ _./src/components/progress-bar.component.css_
 }
 ```
 
-Y en el lorem ipsum lo encapsulamos en un div con un overflow auto:
+Y en el *lorem ipsum* lo encapsulamos en un div con un *overflow* auto:
 
 _./src/components/lorem-ipsum.component.tsx_
 
@@ -408,46 +405,41 @@ import React from "react";
 export function LoremIpsum() {
   return (
 -    <>
-+    <div style={{height: 300px, overflow: auto, borxer: 1px solid red}}>
++    <div style={{ height: "300px", overflow: "auto", border: "1px solid red" }}>
     // (...)
 -    </>
 +    </div>
 ```
 
-Ahora queremos enganchar el useScroll con cada div, para ello
-tenemos que sacarlo como ref de cada componente (podemos usar
-\_forwardref), y ya acoplarlo al useScroll.
+Ahora queremos enganchar el *useScroll* con cada *div*, para ello tenemos que sacarlo como *ref* de cada componente (podemos usar *forwardref*), y ya acoplarlo al *useScroll*.
 
 _./src/components/lorem-ipsum.component.tsx_
 
 ```diff
 import React from "react";
-+ import { forwardRef } from "react";
 
 - export function LoremIpsum() {
-+ export const LoremIpsum = forwardRef<HTMLDivElement>((props, ref) => {
++ export const LoremIpsum = React.forwardRef<HTMLDivElement>((props, ref) => {
   return (
     <div style={{ height: 300px, overflow: auto, borxer: 1px solid red }}
 +      ref={ref}
     >
 
     //(...)
-
-+  )
+- };
+});
 ```
 
-Y en el app.tsx vamos a engancharlo con el useScroll:
+Y en el *app.tsx* vamos a engancharlo con el *useScroll*:
 
 _./src/app.tsx_
 
 ```diff
-+ import React from "react";
-import React, { useRef } from "react";
 // (...)
 
 export const App = () => {
-+ const refDivTextA = useRef(null);
-+ const refDivTextB = useRef(null);
++ const refDivTextA = React.useRef(null);
++ const refDivTextB = React.useRef(null);
 
 // (...)
 
@@ -471,8 +463,8 @@ _./src/app.tsx_
 
 ```diff
 -  const { scrollYProgress } = useScroll();
-+  const { scrollYProgressA } = useScroll({container: refDivTextA}));
-+  const { scrollYProgressB } = useScroll({container: refDivTextB}));
++  const { scrollYProgress: scrollYProgressA } = useScroll({ container: refDivTextA });
++  const { scrollYProgress: scrollYProgressB } = useScroll({ container: refDivTextB });
 
 -  const [currentPosition, setcurrentPosition] = React.useState(0);
 +  const [currentPositionA, setcurrentPositionA] = React.useState(0);
@@ -508,7 +500,7 @@ Y vamos a pasarle el valor de cada uno a su progress bar:
       </div>
 ```
 
-- Vamos a probar a ver que tal queda esto:
+- Vamos a probar a ver qué tal queda esto:
 
 ```bash
 npm start
