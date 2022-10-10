@@ -1,1 +1,1 @@
-export * from "./fullname.provider";
+export * from "./atoms";

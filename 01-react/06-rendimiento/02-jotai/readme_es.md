@@ -329,29 +329,190 @@ un sóla propiedad haría que todos los componentes que usen ese context
 se repintaran... podemos plantear parches:
 
 - Mover más abajo el componente que pinta y usar React.memo.
-- Partir el contexto en varios...
+- Partir el contexto en varios, pero la api de context es un poco
+  verbosa...
 
-Pero estas soluciones no son optimas 100%.
+Vamos a por una solución curiosa, vamos a usar _Jotai_ y romper el
+contexto en _atomos_
 
-- ¿Y si yo pudiera tener datos globales reactivos que sólo dispararan actualizaciones
-  en los componentes que lo usan? Este concepto es lo que implementa la librería
-  _jotai_ que tiene un estilo muy parecido a los _stores_ de _svelte_
-
-- Vamos a instalar jotai
+- Vamos a instalar la librería
 
 ```bash
+npm i jotai
+```
+
+- Vamos a borrar los ficheros de contexto.
+
+- fullname.context.ts
+- fullname.provider.ts
+
+Y vamos a crear un fichero que llamaremos _atoms_, ahí
+añadiremos los atoms de nombre y apellidos.
+
+_./src/core/atoms.ts_
+
+```ts
+import { atom } from "jotai";
+
+export const nameAtom = atom("John");
+export const lastnameAtom = atom("Doe");
+```
+
+Actualizamos el barrel
+
+_/src/core/index.ts_
+
+```diff
+- export * from "./fullname.provider";
++ export * from "./atoms";
+```
+
+- Vamos a hacer limpia en el _app.tsx_
+
+_./src/app.tsx_
+
+```diff
+import React from "react";
+- import { FullnameProvider } from "./core";
+import {
+  DisplayNameComponent,
+  EditNameComponent,
+  DisplayLastnameComponent,
+  EditLastnameComponent,
+} from "./components";
+
+export const App = () => {
+
+  return (
+-    <FullnameProvider>
++    <>
+      <DisplayNameComponent />
+      <EditNameComponent />
+      <DisplayLastnameComponent />
+      <EditLastnameComponent />
+-    </FullnameProvider>
++    </>
+  );
+};
+```
+
+Y vamos a hacer uso de los _atoms_
+
+_./src/components/display-name.componet.tsx_
+
+```diff
+import React from "react";
+- import { useFullnameContext } from "../core";
++ import { useAtom } from "jotai";
++ import { nameAtom } from "../core";
+
+export const DisplayNameComponent: React.FC = () => {
+-  const { name } = useFullnameContext();
++  const [name] = useAtom(nameAtom);
+
+  console.log("1111 - DisplayNameComponent render");
+
+  return (
+    <div>
+      <h2>Display Name</h2>
+      <h3>{name}</h3>
+    </div>
+  );
+};
 
 ```
 
-- En Jotai hablamos del concepto de átomo de estado, en nuestro caso vamos a crear
-  un átomo para el nombre del usuario.
+_./src/components/edit-name.component.tsx_
 
-- Eliminamos el uso del contexto.
+```diff
+import React from "react";
+- import { useFullnameContext } from "../core";
++ import { useAtom } from "jotai";
++ import { nameAtom } from "../core";
 
-- Justo en los componentes que lo vamos a usar nos traemos ese atomo.
+export const EditNameComponent: React.FC = () => {
+-  const { name, setName } = useFullnameContext();
++  const [name, setName] = useAtom(nameAtom);
 
-- Si ahora comprobamos sólo se ven afectados los componentes de nombre y apellidos.
+  console.log("22222 - EditNameComponent render");
+
+  return (
+    <div>
+      <h2>Edit Name</h2>
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+    </div>
+  );
+};
+```
+
+_./src/components/display-lastname.component.tsx_
+
+```diff
+import React from "react";
+- import { useFullnameContext } from "../core";
++ import { useAtom } from 'jotai';
++ import { lastnameAtom } from "../core";
+
+export const DisplayLastnameComponent: React.FC = () => {
+-  const { lastname } = useFullnameContext();
++  const [lastname] = useAtom(lastnameAtom);
+
+  console.log("33333 - DisplayLastnameComponent render");
+
+  return (
+    <div>
+      <h2>Display Lastname</h2>
+      <h3>{lastname}</h3>
+    </div>
+  );
+};
+```
+
+_./src/components/edit-lastname.component.tsx_
+
+```diff
+import React from "react";
+- import { useFullnameContext } from "../core";
++ import { useAtom } from 'jotai';
++ import { lastnameAtom } from "../core";
+
+
+export const EditLastnameComponent: React.FC = () => {
+-  const { lastname, setLastname } = useFullnameContext();
++  const [lastname, setLastname] = useAtom(lastnameAtom);
+
+  console.log("4444 - EditLastnameComponent render");
+
+  return (
+    <div>
+      <h2>Edit Lastname</h2>
+      <input
+        type="text"
+        value={lastname}
+        onChange={(e) => setLastname(e.target.value)}
+      />
+    </div>
+  );
+};
+```
+
+- Si ahora probamos podemos ver que sólo se repinta el componente que
+  toca.
 
 ```bash
+npm start
+```
+
+- ¿Y si nos hiciera falta un componente que mostrara el nombre y el a
+  apellido? Tendríamos que tirar de los dos ¿Atomos? Podemos... pero
+  mejor tirar de un estado derivado:
+
+_./src/core/atoms.ts_
+
+```diff
 
 ```

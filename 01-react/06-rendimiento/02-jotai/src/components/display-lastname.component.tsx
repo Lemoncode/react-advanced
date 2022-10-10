@@ -1,8 +1,9 @@
 import React from "react";
-import { useFullnameContext } from "../core";
+import { useAtom } from "jotai";
+import { lastnameAtom } from "../core";
 
 export const DisplayLastnameComponent: React.FC = () => {
-  const { lastname } = useFullnameContext();
+  const [lastname] = useAtom(lastnameAtom);
 
   console.log("33333 - DisplayLastnameComponent render");
 

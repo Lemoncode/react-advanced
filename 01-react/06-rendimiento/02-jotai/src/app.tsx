@@ -1,5 +1,4 @@
 import React from "react";
-import { FullnameProvider } from "./core";
 import {
   DisplayNameComponent,
   EditNameComponent,
@@ -11,11 +10,11 @@ export const App = () => {
   const [country, setCountry] = React.useState<string>("France");
 
   return (
-    <FullnameProvider>
+    <>
       <DisplayNameComponent />
       <EditNameComponent />
       <DisplayLastnameComponent />
       <EditLastnameComponent />
-    </FullnameProvider>
+    </>
   );
 };

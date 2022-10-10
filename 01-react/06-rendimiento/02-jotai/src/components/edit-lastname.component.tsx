@@ -1,8 +1,9 @@
 import React from "react";
-import { useFullnameContext } from "../core";
+import { useAtom } from "jotai";
+import { lastnameAtom } from "../core";
 
 export const EditLastnameComponent: React.FC = () => {
-  const { lastname, setLastname } = useFullnameContext();
+  const [lastname, setLastname] = useAtom(lastnameAtom);
 
   console.log("4444 - EditLastnameComponent render");
 
