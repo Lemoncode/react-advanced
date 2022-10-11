@@ -1,24 +1,25 @@
 # 02 Movimiento
 
+## Resumen
+
+En este ejemplo vamos a ver cómo hacer una transición de una caja de izquierda a derecha con la librería *framer-motion* y cómo hacer para que la caja no desaparezca de nuestra *screen* cuando termina la transición.
+
 ## Paso a Paso
 
-Este ejemplo toma como punto de partida el _00-boiler-plate_.
-
-- Primero copiamos el ejemplo anterior, y hacemos un _npm install_
+- Primero copiamos el ejemplo de _00-boilerplate_, y hacemos un _npm install_
 
 ```bash
 npm install
 ```
-
 - Vamos a instalar la librería de *Framer Motion*
 
 ```bash
 npm install framer-motion
 ```
 
-- Vamos a crear un estilo que llamaremos *caja*
+- Vamos a crear un estilo que llamaremos _caja_
 
-*./global/styles.css*
+*./src/global/styles.css*
 
 ```diff
 body {
@@ -32,10 +33,8 @@ body {
 +  padding: 30px;
 +  background: darkcyan;
 +  color: white;
-+ }
++}
 ```
-
-# Pasos
 
 Vamos a mover la caja 100 pixeles (cuando se monta el componente), sustituimos el app completo:
 
@@ -61,8 +60,6 @@ export const App = () => {
 
 Para que lleve un poco más de tiempo vamos a ponerle una duración:
 
-*./src/app.tsx*
-
 ```diff
 import React, { useEffect } from "react";
 import { motion, useAnimation } from "framer-motion";
@@ -82,9 +79,8 @@ export const App = () => {
 };
 ```
 
-Podemos usar otro tipo de medidas, por ejemplo queremos que vaya al final de la pantalla en ancho, podemos usar _viewPortWidth_:
-
-*./src/app.tsx*
+Podemos usar otro tipo de medidas, por ejemplo queremos que vaya al
+final de la pantalla en ancho, podemos usar _viewPortWidth_:
 
 ```diff
 export const App = () => {
@@ -106,8 +102,6 @@ export const App = () => {
 Y si queremos que no desaparezca (y no queremos trabajar con pixeles a
 fuego):
 
-*./src/app.tsx*
-
 ```diff
 export const App = () => {
   return (
@@ -127,8 +121,6 @@ export const App = () => {
 
 Fíjate que no se queda del todo ajustado, si vemos el CSS, tenemos una margen de 30px, si lo quitamos va bien, así que podemos dejarlo y restarlo para evitar problemas:
 
-*./src/app.tsx*
-
 ```diff
       <motion.div
         className="caja"
@@ -141,83 +133,3 @@ Fíjate que no se queda del todo ajustado, si vemos el CSS, tenemos una margen d
 
 > También podrámos poner el _box-sizing: border-box;_ pero el margen se
 > sigue sin calcular
-
-Eso de *30px* es un poco mágico, vamos a hacer un truco, podemos poner dos elementos uno al principio y otro al final y jugando con *flexbox* hacer que transicionen.
-
-Vamos a reemplazar el app completo:
-
-- Cambiamos el *css*, le damos un ancho fijo al elemento de *hello react* de 100px.
-
-*./global/styles.css*
-
-```diff
-.caja {
-  display: inline-flex;
-  border-radius: 10%;
-  margin: 30px;
-  padding: 30px;
-  background: darkcyan;
-  color: white;
-+  width: 100px;
-}
-```
-
-- Cambiamos en *inline-flex* por un *flex* que tome todo el ancho.
-- Añadimos dos *divs*, uno al principio y otro al final del div
-  (para eso usamos las propiedades del flexbox).
-
-*./src/app.tsx*
-
-```diff
-return (
--   <div style={{ display: "inline-flex", flexDirection: "column" }}>
-+   <div style={{ display: "flex", flexDirection: "column" }}>
-     <motion.div className="caja">
-       <h1>Hello React !!</h1>
-     </motion.div>
-     <div className="caja">
-       <h1>Hello React !!</h1>
-     </div>
-   </div>
-);
-```
-
-- Vamos a poner el _flexDirection_ a _row_, y le damos un _justify-content_
-  a _space-between_ para que se ajuste al ancho de la pantalla.
-
-```diff
-return (
--  <div style={{ display: "flex", flexDirection: "column" }}>
-+  <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
-
-    <motion.div className="caja">
-```
-
-- Añadimos un ref para tener la posición del segundo elemento.
-
-```diff
-export const App = () => {
-+  const endBoxRef = React.useRef<HTMLDivElement>(null);
-
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "space-between",
-      }}
-    >
-      <motion.div className="caja">
-        <h1>Hello React !!</h1>
-      </motion.div>
--      <div className="caja" >
-+      <div className="caja" ref={endBoxRef}>
-       <h1>Hello React !!</h1>
-      </div>
-    </div>
-  );
-};
-```
-
-- Lanzamos animación del primer elemento hasta el segundo elemento.
-- Vamos ahora a poner la opacity del segundo elemento a cero.
