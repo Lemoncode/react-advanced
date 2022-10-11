@@ -215,4 +215,27 @@ export const InputInfo: React.FC<Props> = (props: Props) => {
 const Input = props as React.InputHTMLAttributes<HTMLInputElement>;
 ```
 
+# Ejercicio
+
+Vamos a hacer un pequeño ejercicio, ... le damos vida a la validación
+de campo obligatorio, lo resolvemos a nivel de página...
+
+Una vez hecho, añadir validaciones a un formulario puede parece sencillo
+pero a poco que nos empezamos a meter en escenario reales nos podemos encontrar
+con que:
+
+- No queremos mostrar los mensajes de error a no ser que el usuario
+hay visitado ese campo o ya le haya dado al botón de submit.
+
+- Podemos tener validaciones síncronas y asíncronas.
+
+- Queremos reutilizar validaciones con firmas estándares.
+
+- Queremos tener validaciones a nivel de campo y a nivel de formulario.
+
+- ...
+
+Más adelante veremos una solución para validar formulario de una manera
+más declarativa.
+
 
