@@ -1,4 +1,4 @@
-# 00 UseCallback / UseMemo
+# 01 UseCallback / UseMemo
 
 ## Resumen
 
@@ -9,7 +9,7 @@ de usarlo en todos sitios por defecto.
 Hay un tema divertido aquí, abusar de _useCallback_ o _useMemo_ nos puede llevar a
 tener un rendimiento peor de nuestra aplicación :-@.
 
-¿Cuando debemos de usarlos?
+¿Cuándo debemos de usarlos?
 
 ## Paso a Paso
 
@@ -21,7 +21,7 @@ npm install
 
 - Vamos a crear un componente que sea un dispensador de chuches:
 
-_./src/components/chuches.tsx_
+_./src/components/chuches/chuches.component.tsx_
 
 ```tsx
 import React from "react";
@@ -73,16 +73,15 @@ export const App = () => {
 npm start
 ```
 
-- Bueno un component normal :), si nos ponemos como teóricos del soul
+- Bueno un *component* normal :), si nos ponemos como teóricos del *soul*
   podemos ver que:
-
-  - Oye, tenemos una constante de array de strings con el valor inicial,
-    y esto se recrea en cada render.
-
-  - Por otro lado tenemos una función (callback _dispense_) que también
+  - Oye, tenemos una constante de *array* de *strings* con el valor inicial,
+    y esto se recrea en cada *render*.
+  
+  - Por otro lado tenemos una función (*callback* dispense) que también
     se crea en cada render.
 
-Podíamos pensar... puedo optimizar esto y evitar trabajo en los render,
+Podíamos pensar... puedo optimizar esto y evitar trabajo en los *render*,
 de primeras podrías probar algo así como:
 
 ```diff
@@ -126,16 +125,14 @@ export const MaquinaVending = () => {
 
 Empezamos por _useCallback_:
 
-- Tenemos que definir una función en cada render (useCallback).
-- Tenemos que definir un array.
+- Tenemos que definir una función en cada *render* (*useCallback*).
+- Tenemos que definir un *array*.
 - En el primer render tenemos que definir la función interna.
 - Además empiezo a correr el riesgo de que cuando llame a la función
-  consulta valores del pasado (closure hell).
-
+  consulta valores del pasado (*closure hell*).
 - ¿Y _useMemo_?
-
 - En este caso estamos haciendo el código más complicado de leer.
-- Estamos definiendo una función, ... y el ahorro en rendimiento
+- Estamos definiendo una función,... y el ahorro en rendimiento
   vs la complejidad que metemos no merece la pena.
 
 En este caso sería mejor hacer lo siguiente
@@ -145,6 +142,7 @@ En este caso sería mejor hacer lo siguiente
 
 export const MaquinaVending = () => {
 - const initialCandies = React.useMemo(() => ["gominolas", "chocolatinas", "salaicos", "chicles"], []);
+- const [candies, setCandies] = React.useState(initialCandies);
 + const [candies, setCandies] = React.useState(candiesEntries);
 ```
 
@@ -162,20 +160,19 @@ El tema es que el motor de React se encarga de optimizar los renders.
 
 ## ¿Me olvido de esto?
 
-La respuesta es no, ... lo que si es importante es saber cuando usarlo.
+La respuesta es no, ... lo que sí es importante es saber cuándo usarlo.
 
 ### UseCallback
 
-- Imaginate que tenemos un componente hijo que es pesado de renderizar, por ejemplo:
+- Imagínate que tenemos un componente hijo que es pesado de renderizar, por ejemplo:
   - Renderiza muchos nodos en tiempo real (¿una gráfica?)
   - Renderizamos muchos elementos de ese tipo (basado en ejemplo real, un simple
-    radiobutton con semantic UI que tiene sus animaciones y peso, si pintamos no pasa nada
-    si pintamos 500...).
+    *radiobutton* con *semantic UI* que tiene sus animaciones y peso, si pintamos no pasa nada, si pintamos 500...).
 
-En esta caso, aunque usemos _React.memo_ si pasamos la función como prop al hijo, el componente se va a repintar ya que la dirección que apunta a la función es diferente (se crea cada vez).
+En este caso, aunque usemos _React.memo_ si pasamos la función como *prop* al hijo, el componente se va a repintar ya que la dirección que apunta a la función es diferente (se crea cada vez).
 
 - Lo mismo pasaría si un valor lo pasamos en la parte de dependencias de un
-  _useEffect_ , vamos a ver código un poco forzado para ver el ejemplo:
+  _useEffect_, vamos a ver código un poco forzado para ver el ejemplo:
 
 ```tsx
 export const EjemploForzado = () => {
@@ -205,14 +202,14 @@ export const EjemploForzado = () => {
 ### Memo
 
 En el caso de _useMemo_ nos merece la pena llamarlo si tenemos muchos datos o
-un calculo costos para obtenerlo.
+un cálculo costos para obtenerlo.
 
 Otro tema es cuando aplicar _React.Memo_ a un componente, en este caso igual,
 es cuando voy a pintar muchos componentes hijos, o el componente hijo es pesado
 de renderizar, lo normal es que no me haga falta, React es muy rápido y tiene
-unas optimizaciones de rendering muy buenas.
+unas optimizaciones de *rendering* muy buenas.
 
-¿Como funciona React.Memo? Un pequeño recordatorio:
+¿Cómo funciona *React.Memo*? Un pequeño recordatorio:
 
 ```tsx
 const CountButton = ({ onClick, count }) => {
@@ -236,7 +233,7 @@ const DualCounter = () => {
 ```
 
 Aquí pinche en el botón que pinche se van a renderizar los dos componentes,
-en este caso no pasa nada, pero si _CountButton_ fuera un compomnente
+en este caso no pasa nada, pero si _CountButton_ fuera un componente
 costoso de renderizar, podría hacer lo siguiente:
 
 ```diff
