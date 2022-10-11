@@ -1,0 +1,12 @@
+body {
+  font-family: sans-serif;
+}
+
+.caja {
+  display: inline-flex;
+  border-radius: 10%;
+  margin: 30px;
+  padding: 30px;
+  background: darkcyan;
+  color: white;
+}
