@@ -2,7 +2,7 @@
 
 ## Resumen
 
-En este ejemplo vamos a ver cómo hacer una transición de una caja de izquierda a derecha con la librería *framer-motion* y cómo hacer para que la caja no desaparezca de nuestra *screen* cuando termina la transición.
+En este ejemplo vamos a ver cómo hacer una transición de una caja de izquierda a derecha con la librería _framer-motion_ y cómo hacer para que la caja no desaparezca de nuestra _screen_ cuando termina la transición.
 
 ## Paso a Paso
 
@@ -11,7 +11,8 @@ En este ejemplo vamos a ver cómo hacer una transición de una caja de izquierda
 ```bash
 npm install
 ```
-- Vamos a instalar la librería de *Framer Motion*
+
+- Vamos a instalar la librería de _Framer Motion_
 
 ```bash
 npm install framer-motion
@@ -19,7 +20,7 @@ npm install framer-motion
 
 - Vamos a crear un estilo que llamaremos _caja_
 
-*./src/global/styles.css*
+_./src/global/styles.css_
 
 ```diff
 body {
@@ -38,7 +39,7 @@ body {
 
 Vamos a mover la caja 100 pixeles (cuando se monta el componente), sustituimos el app completo:
 
-*./src/app.tsx*
+_./src/app.tsx_
 
 ```tsx
 import React from "react";
@@ -47,10 +48,7 @@ import { motion } from "framer-motion";
 export const App = () => {
   return (
     <div style={{ display: "inline-flex", flexDirection: "column" }}>
-      <motion.div
-        className="caja"
-        animate={{ x: 100 }}
-      >
+      <motion.div className="caja" animate={{ x: 100 }}>
         <h1>Hello React !!</h1>
       </motion.div>
     </div>
