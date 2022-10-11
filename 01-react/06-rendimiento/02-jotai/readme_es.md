@@ -114,7 +114,7 @@ export const useFullnameContext = () => {
 };
 ```
 
-- Añadimos un barrel para que nuestros imports sean más sencillos.
+- Añadimos un *barrel* para que nuestros *imports* sean más sencillos.
 
 _./src/core/index.ts_
 
@@ -122,7 +122,7 @@ _./src/core/index.ts_
 export * from "./fullname.provider";
 ```
 
-- Vamos a darle uso a este contexto a nivel de app:
+- Vamos a darle uso a este contexto a nivel de *app*:
 
 _./src/app.tsx_
 
@@ -140,7 +140,7 @@ export const App = () => {
 };
 ```
 
-- Ahora vamos a pasar de usar props y usar el contexto para alimentar a un
+- Ahora vamos a pasar de usar *props* y usar el contexto para alimentar a un
   componente que llamaremos _display-name_ y otro que llamaremos _edit-lastname_
 
 _./src/components/display-name.component.tsx_
@@ -225,7 +225,7 @@ export const EditLastnameComponent: React.FC = () => {
 };
 ```
 
-- Vamos a crear un barrel:
+- Vamos a crear un *barrel*:
 
 _./src/components/index.ts_
 
@@ -236,7 +236,7 @@ export * from "./display-lastname.component";
 export * from "./edit-lastname.component";
 ```
 
-- Vamos añadirlo todo a la App:
+- Vamos añadirlo todo a la *App*:
 
 ```diff
 import React from "react";
@@ -261,13 +261,13 @@ export const App = () => {
 };
 ```
 
-- Probamos y vemos que funciona como esperabamos
+- Probamos y vemos que funciona como esperábamos
 
 ```bash
 npm start
 ```
 
-- Vamos a poner un console.log en cada componente para ver si se tira el render.
+- Vamos a poner un *console.log* en cada componente para ver si se tira el *render*.
 
 _./src/components/display-name.component.tsx_
 
@@ -321,15 +321,15 @@ _./src/components/edit-lastname.component.tsx_
 + console.log("4444 - EditLastnameComponent render");
 ```
 
-- Si te fijas si cambio el nombre, se tira un render del apellido.
+- Si te fijas si cambio el nombre, se tira un *render* del apellido.
 
-¿Qué problema tenemos con esto? Que en una aplicación real un contexto puede
-tener un modelo complejo (por ejemplo el theme de una aplicación) y tocando
-un sóla propiedad haría que todos los componentes que usen ese context
+¿Qué problema tenemos con esto? Qué en una aplicación real un contexto puede
+tener un modelo complejo (por ejemplo el *theme* de una aplicación) y tocando
+una sola propiedad haría que todos los componentes que usen ese *context*
 se repintaran... podemos plantear parches:
 
-- Mover más abajo el componente que pinta y usar React.memo.
-- Partir el contexto en varios, pero la api de context es un poco
+- Mover más abajo el componente que pinta y usar *React.memo*.
+- Partir el contexto en varios, pero la *api* de *context* es un poco
   verbosa...
 
 Vamos a por una solución curiosa, vamos a usar _Jotai_ y romper el
@@ -346,8 +346,7 @@ npm i jotai
 - fullname.context.ts
 - fullname.provider.ts
 
-Y vamos a crear un fichero que llamaremos _atoms_, ahí
-añadiremos los atoms de nombre y apellidos.
+Y vamos a crear un fichero que llamaremos _atoms_, ahí añadiremos los *atoms* de nombre y apellidos.
 
 _./src/core/atoms.ts_
 
@@ -358,7 +357,7 @@ export const nameAtom = atom("John");
 export const lastnameAtom = atom("Doe");
 ```
 
-Actualizamos el barrel
+Actualizamos el *barrel*
 
 _/src/core/index.ts_
 
@@ -508,7 +507,7 @@ npm start
 ```
 
 - ¿Y si nos hiciera falta un componente que mostrara el nombre y el a
-  apellido? Tendríamos que tirar de los dos ¿Atomos? Podemos... pero
+  apellido? Tendríamos que tirar de los dos ¿Átomos? Podemos... pero
   mejor tirar de un estado derivado:
 
 _./src/core/atoms.ts_
@@ -550,7 +549,7 @@ export const DisplayFullnameComponent: React.FC = () => {
 };
 ```
 
-- Lo añadimos al barrel:
+- Lo añadimos al *barrel*:
 
 _./src/components/index.ts_
 
@@ -574,7 +573,7 @@ import {
   EditNameComponent,
   DisplayLastnameComponent,
   EditLastnameComponent,
-+  FullnameComponent,
++  DisplayFullnameComponent,
 } from "./components";
 
 export const App = () => {
@@ -586,18 +585,18 @@ export const App = () => {
       <EditNameComponent />
       <DisplayLastnameComponent />
       <EditLastnameComponent />
-+      <FullnameComponent />
++      <DisplayFullnameComponent />
     </>
   );
 };
 ```
 
-- Si probamos podemos ver como funciona y es reactivo.
+- Si probamos podemos ver cómo funciona y es reactivo.
 
-- Esto no esta mal, pero y si lo quiero es escribir en el átomo
+- Esto no está mal, pero y si lo quiero es escribir en el átomo
   derivado..., vamos a crear un componente que se llamará
   _EditFullnameComponent_ y no queremos usar cada átomo, si no uno
-  derivado de oh ! Sorpresa ! escritura y lectura.
+  derivado de ¡oh! ¡Sorpresa! escritura y lectura.
 
 - Definimos este átomo:
 
@@ -666,7 +665,7 @@ export const EditFullnameComponent: React.FC = () => {
 };
 ```
 
-- Vamos a añadirlo al barrel:
+- Vamos a añadirlo al *barrel*:
 
 _./src/components/index.ts_
 
@@ -690,7 +689,7 @@ import {
   EditNameComponent,
   DisplayLastnameComponent,
   EditLastnameComponent,
-  FullnameComponent,
+  DisplayFullnameComponent,
 +  EditFullnameComponent,
 } from "./components";
 ```
@@ -703,14 +702,14 @@ _./src/app.tsx_
       <EditNameComponent />
       <DisplayLastnameComponent />
       <EditLastnameComponent />
-      <FullnameComponent />
+      <DisplayFullnameComponent />
 +      <EditFullnameComponent />
     </>
 ```
 
 - Esto está muy bien a nivel global pero y si necesitamos usar esos
-  datos a nivel de subarbol, un tema interesante es el uso de proveedores,
-  pero... son todo o nada (todos los atomos están dentro de ese proveedor)
+  datos a nivel de subárbol, un tema interesante es el uso de proveedores,
+  pero... son todo o nada (todos los átomos están dentro de ese proveedor)
 
 _./src/app.tsx_
 
@@ -731,23 +730,23 @@ import {
   return (
     <>
 +     <h1>Island A</h1>    
-+     <provider>    
++     <Provider>    
         <DisplayNameComponent />
         <EditNameComponent />
         <DisplayLastnameComponent />
         <EditLastnameComponent />
-        <FullnameComponent />
+        <DisplayFullnameComponent />
         <EditFullnameComponent />
-+     </provider>      
++     </Provider>      
 +     <h2>Island B</h2>    
-+     <provider>    
++     <Provider>    
 +        <DisplayNameComponent />
 +        <EditNameComponent />
 +        <DisplayLastnameComponent />
 +        <EditLastnameComponent />
-+        <FullnameComponent />
++        <DisplayFullnameComponent />
 +        <EditFullnameComponent />
-+     </provider>      
++     </Provider>      
     </>
   );
 ```
