@@ -54,6 +54,8 @@ export interface Client {
   cif: string;
   nie: string;
   other: string;
+  country : string;
+  
 }
 ```
 
