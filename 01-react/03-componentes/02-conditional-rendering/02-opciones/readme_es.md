@@ -95,7 +95,7 @@ export const App = () => {
 
 ¿Por qué pasa esto? Porque la expresión se evalúa y es un cero, entonces se muestra.
 
-Si vamos a usar un _&&_ el consejo aquí es usar un ternario:
+Si vamos a usar un _&&_ el consejo aquí es reemplazarlo por un ternario:
 
 ```diff
 import React from "react";
@@ -117,4 +117,109 @@ export const PlayGround: React.FC = () => {
 };
 ```
 
+Otra opción es encapsular el código en un método de la función
+y usar _if_ _else_
 
+```diff
+export const PlayGround: React.FC = () => {
+  const [clientNameCollection, setClientNameCollection] = React.useState<
+    string[]
+  >([]);
+
++  function renderClientNameCollection() {
++    if (clientNameCollection.length) {
++      return clientNameCollection.map((name) => <h2 key={name}>{name}</h2>);
++    } else {
++      return null;
++    }
++  }
+
+  return (
+    <div>
+      <h1>PlayGround Conditional Rendering</h1>
+-      {clientNameCollection.length
+-        ? clientNameCollection.map((name) => <h2 key={name}>{name}</h2>)
+-        : null}
++        {renderclientNameCollection()}
+    </div>
+  );
+};
+```
+
+Vamos a añadir algunos datos para probar esto:
+
+```diff
+export const PlayGround: React.FC = () => {
+  const [clientNameCollection, setClientNameCollection] = React.useState<
+    string[]
+  >([]);
+
++ React.useEffect(() => {
++    setClientNameCollection(["Pepe", "Juan", "Maria"]);
++ }, []);
+
+  function renderClientNameCollection() {
+    if (clientNameCollection.length) {
+      return clientNameCollection.map((name) => <h2 key={name}>{name}</h2>);
+    } else {
+      return null;
+    }
+  }
+```
+
+Otra opción más es romper en subcomponentes (componentizar), aquí tenemos
+varias opciones:
+
+- Si el componente es muy pequeño, lo podemos meter en el mismo fichero.
+- Podemos sacarlo a un fichero hermano (en la misma carpeta).
+- Si vemos que esto crece podemos crear una subcarpeta y organizar
+  los subcomponentes dentro de ella (o incluso crear una jerarquía), pero
+  todo esto bajo demanda.
+
+Como quedaría esto:
+
+_./src/components/playground/playground.tsx_
+
+```diff
+import React from "react";
+
++ const ClientNameCollectionComponent: React.FC<{
++  clientNameCollection: string[];
++ }> = ({ clientNameCollection }) => (
++  <>
++    {clientNameCollection.map((name) => (
++      <h2 key={name}>{name}</h2>
++    ))}
++  </>
++ );
+
+export const PlayGround: React.FC = () => {
+  const [clientNameCollection, setClientNameCollection] = React.useState<
+    string[]
+  >([]);
+
+-  function renderClientNameCollection() {
+-    if (clientNameCollection.length) {
+-      return clientNameCollection.map((name) => <h2 key={name}>{name}</h2>);
+-    } else {
+-      return null;
+-    }
+-  }
+
+  React.useEffect(() => {
+    setClientNameCollection(["Pepe", "Juan", "Maria"]);
+  }, []);
+
+  return (
+    <div>
+      <h1>PlayGround Conditional Rendering</h1>
+-      {renderClientNameCollection()}
++      {clientNameCollection.length ? (
++        <ClientNameCollectionComponent
++          clientNameCollection={clientNameCollection}
++        />
++      ) : null}
+    </div>
+  );
+};
+```
