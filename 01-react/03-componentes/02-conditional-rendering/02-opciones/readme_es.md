@@ -223,3 +223,241 @@ export const PlayGround: React.FC = () => {
   );
 };
 ```
+
+- Vamos a por otro ejemplo, que pasa si tenemos varios casos que sean
+  "hermano", por ejemplo (ojo esto se podía hacer en un componente :)):
+
+```tsx
+import React from "react";
+
+enum Status {
+  Info,
+  Warning,
+  Error,
+}
+
+interface InfoProps {
+  message: string;
+}
+
+const InfoNotificationComponent: React.FC<InfoProps> = ({ message }) => (
+  <h5 style={{ color: "DarkSlateBlue" }}>{message}</h5>
+);
+
+interface WarningProps {
+  message: string;
+}
+
+const WarningNotificationComponent: React.FC<WarningProps> = ({ message }) => (
+  <h5 style={{ color: "Gold" }}>{message}</h5>
+);
+
+interface ErrorProps {
+  message: string;
+}
+
+const ErrorNotificationComponent: React.FC<ErrorProps> = ({ message }) => (
+  <h5 style={{ color: "Crimson" }}>{message}</h5>
+);
+```
+
+- Vamos a ver como quedaría esto con ternarios...
+
+```ts
+export const PlayGround: React.FC = () => {
+  const [status, setStatus] = React.useState<Status>(Status.Info);
+  const [message, setMessage] = React.useState<string>("Hey, I'm a message");
+
+  React.useEffect(() => {
+    setStatus(Status.Warning);
+  }, []);
+
+  return (
+    <div>
+      <h1>PlayGround Conditional Rendering</h1>
+      {status === Status.Info ? (
+        <InfoNotificationComponent message={message} />
+      ) : status === Status.Warning ? (
+        <WarningNotificationComponent message={message} />
+      ) : (
+        <ErrorNotificationComponent message={message} />
+      )}
+    </div>
+  );
+};
+```
+
+- Cuesta un poco de seguir ¿verdad? Y eso que esta componentizado.
+
+- Vamos a encapsularlo en una función e ir evolucionándolo:
+
+Paso 1:
+
+```diff
+  React.useEffect(() => {
+    setStatus(Status.Warning);
+  }, []);
+
++ function renderNotification() {
++   if (status === Status.Info) {
++     return <InfoNotificationComponent message={message} />;
++   } else if (status === Status.Warning) {
++     return <WarningNotificationComponent message={message} />;
++   } else {
++     return <ErrorNotificationComponent message={message} />;
++  }
++ }
+
+  return (
+    <div>
+      <h1>PlayGround Conditional Rendering</h1>
++      {renderNotification()}
+-      {status === Status.Info ? (
+-        <InfoNotificationComponent message={message} />
+-      ) : status === Status.Warning ? (
+-        <WarningNotificationComponent message={message} />
+-      ) : (
+-        <ErrorNotificationComponent message={message} />
+-      )}
+-    </div>
+-  );
+};
+```
+
+No esta mal, pero el if y elseif sigue siendo un galimatías, ¿Qué podemos usar?
+Aquí viene el amigo _switch/case_ al rescate:
+
+```diff
+  function renderNotification() {
+-    if (status === Status.Info) {
+-      return <InfoNotificationComponent message={message} />;
+-    } else if (status === Status.Warning) {
+-      return <WarningNotificationComponent message={message} />;
+-    } else {
+-      return <ErrorNotificationComponent message={message} />;
+-    }
++    switch (status) {
++      case Status.Info:
++        return <InfoNotificationComponent message={message} />;
++      case Status.Warning:
++        return <WarningNotificationComponent message={message} />;
++      case Status.Error:
++        return <ErrorNotificationComponent message={message} />;
++       default:
++         return null;
++    }
+  }
+```
+
+Si quisiéramos incluso podríamos sacar la función fuera del componente y alimentarle
+por parámetro el status y el mensaje.
+
+Vale.. pero nosotros queremos tener eso dentro del markup, ¿Qué podemos hacer?
+Utilizar una función autoinvocada:
+
+```diff
+  }, []);
+
+-  function renderNotification() {
+-    switch (status) {
+-      case Status.Info:
+-        return <InfoNotificationComponent message={message} />;
+-      case Status.Warning:
+-        return <WarningNotificationComponent message={message} />;
+-      case Status.Error:
+-       return <ErrorNotificationComponent message={message} />;
+-      default:
+-        return null;
+-    }
+-  }
+
+  return (
+    <div>
+      <h1>PlayGround Conditional Rendering</h1>
+-      {renderNotification()}
++      {(() => {
++        switch (status) {
++          case Status.Info:
++            return <InfoNotificationComponent message={message} />;
++          case Status.Warning:
++            return <WarningNotificationComponent message={message} />;
++          case Status.Error:
++            return <ErrorNotificationComponent message={message} />;
++          default:
++            return null;
++        }
++      })()}
+    </div>
+  );
+};
+```
+
+Esto de la función autoinvocada no tiene mala pinta, pero vamos a ver si podemos
+dejarlo más claro en el JSX, vamos a crear un objeto con keys para notificacion state
+(se podría automatizar con TypeScript, habría que darle una vuelta).
+
+```diff
+import React from "react";
+
+enum Status {
+-  Info,
+-  Warning,
+-  Error,
++  Info = "Info",
++  Warning = "Warning",
++  Error = "Error",
+}
+```
+
+```diff
+  return (
+    <div>
+      <h1>PlayGround Conditional Rendering</h1>
+-      {(() => {
+-        switch (status) {
+-          case Status.Info:
+-            return <InfoNotificationComponent message={message} />;
+-          case Status.Warning:
+-            return <WarningNotificationComponent message={message} />;
+-          case Status.Error:
+-            return <ErrorNotificationComponent message={message} />;
+-          default:
+-            return null;
+-        }
+-      })()}
++   {{
++     [Status.Info]: <InfoNotificationComponent message={message} />,
++     [Status.Warning]: <WarningNotificationComponent message={message} />,
++     [Status.Error]: <ErrorNotificationComponent message={message} />,
++   }[status]}
+    </div>
+  );
+```
+
+Y ya que estamos podemos sacar esto como una función:
+
+```diff
++ const NOTIFICATION_STATES = (message: string) => ({
++  [Status.Info]: <InfoNotificationComponent message={message} />,
++  [Status.Warning]: <WarningNotificationComponent message={message} />,
++  [Status.Error]: <ErrorNotificationComponent message={message} />,
++ });
+
+export const PlayGround: React.FC = () => {
+```
+
+Y en el tsx
+
+```diff
+      <h1>PlayGround Conditional Rendering</h1>
+      {
+-        {
+-          [Status.Info]: <InfoNotificationComponent message={message} />,
+-          [Status.Warning]: <WarningNotificationComponent message={message} />,
+-          [Status.Error]: <ErrorNotificationComponent message={message} />,
+-        }[status]
++        NOTIFICATION_STATES(message)[status]
+      }
+    </div>
+```
+
