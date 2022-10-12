@@ -23,6 +23,7 @@ Tópicos de esta guía:
 - Importación de rutas relativas y aliases.
 - Nombrando y creando ficheros.
 - Distribución de contenido en ficheros.
+- Estructura de un pod.
 - Nombrando eventos y propiedades callbacks.
 - Principio de promoción.
 - Política de pruebas unitarias.
@@ -199,3 +200,85 @@ A veces nos puedes costar distinguir que debe entrar en la carpeta _common_ y la
 
 - La carpeta _common_ está más orientadas a componentes y funcionalidades independientes que podemos incrustar en la aplicación, estas funcionalidades actúan como cajas negras independientes.
 - La carpeta _core_ almacena funcionalidad que se usa y está cohesionada a nivel de aplicación, por ejemplo información de la aplicación que necesitamos consumir a diferentes niveles de la aplicación.
+
+## layout
+
+En layout definimos las páginas maestras, es decir el armazón de una página (wireframe), por ejemplo una ventana de aplicación puede tener la siguiente estructura:
+
+```txt
+---------------------------
+|       Header            |
+---------------------------
+|                         |
+|        body             |
+|                         |
+|                         |
+---------------------------
+|       Footer            |
+|                         |
+|                         |
+---------------------------
+```
+
+Otro layout puede ser el de la ventana de lógin en el que simplemente centramos el contenido en horizontal y vertical.
+
+Cada página de la aplicación (escena) elegirá que layout puede usar y en el area de body aparecerá el contenido de la escena.
+
+Esto se puede elaborar más:
+
+- Un layout podría tener más de una zona para poder incluir contenido de página.
+- Un layout podría tener sublayouts.
+
+Aconsejamos no entrar en este nivel de complejidad salvo que sea estríctamente necesario.
+
+También la elección de layout se puede realizar a nivel de página (escena), o se puede intentar hacer una agrupación de páginas por layout a nivel de router, pero esto depende mucho del router que estemos usando y la versión del mismo (por ejemplo React Router en unas versiones lo permite en otras
+no)
+
+## pods
+
+En un pods encapsulamos una funcionalidad rica e independiente, lo asemejamos a una isla de código, es estanca y sólo se comunica con el exterior
+mediante funcionalidad transversal que podemos encontrar en _core_ o usando componentes comunes (_common_, _common-app_).
+
+Un ejemplo de capetas de pod:
+
+```tsx
+my-app/
+├─ pods/
+│  ├─ patient/
+│  │  ├─ components/
+│  │  ├─ patient.api.ts
+│  │  ├─ patient.mapper.ts
+│  │  ├─ patient.business.ts
+│  │  ├─ patient.container.tsx
+│  │  ├─ patient.component.tsx
+│  │  ├─ patient.vm.ts
+│  │  ├─ index.ts
+```
+
+El concepto de pod lo cubriremos con más extensión cuando cubramos la seccción _estructura de un pod_
+
+### ¿Por qué no encapsulamos esto en páginas / escena?
+
+El objetivo de una escena (página) es:
+
+- Elegir que layout va a usar.
+- Manejar posibles parametros a nivel de query string que puedan llegar.
+- Elegir que pod o pods va visualizar.
+
+Queda fuera del alcance mezclar otros detalles de implementación.
+
+### ¿Por qué una isla de código?
+
+El objetivo del pod es que sea lo más independiente posible, de esta manera:
+
+- Cuando llega un desarrollador se puede centrar en un pod concreto y conocer la funcionalidad común y cross que le afecte, no tiene que conocer el proyecto completo.
+
+- Es más fácil de mantener ya que vamos tocando por islas estancas y un cambio en un pod no tiene porque afectar a otro.
+
+- Es más fácil orientarlo al lenguaje del dominio para ese pod, creando ViewModels específicos.
+
+- Todo lo que impacta al pod se encuentra cerca (mismo nivel de carpeta o inferiores) y el desarrollador no tiene que ir navegando por el proyecto para encontrarlo.
+
+## scenes
+
+## Un ejemplo con más niveles
