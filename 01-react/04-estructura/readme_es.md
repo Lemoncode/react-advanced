@@ -194,6 +194,7 @@ y que guardan información, por ejemplo:
 - Las rutas de navegación.
 - El perfil del usuario / roles de seguridad.
 - El tema de la aplicación.
+- Contextos y proveedores de la aplicación.
 - Cachés de datos comunes.
 
 A veces nos puedes costar distinguir que debe entrar en la carpeta _common_ y la _core_ como regla para distinguirlo:
@@ -281,4 +282,169 @@ El objetivo del pod es que sea lo más independiente posible, de esta manera:
 
 ## scenes
 
+Una forma de definir las páginas de la aplicación es usando la nomenclatura de escena, es decir, cada página de la aplicación es una escena,
+¿Por qué este termino? Bueno, es como si a finde cuentas sólo usaramos este elemento para hacer una composición de pods y layouts, intenta
+romper con el termino de _página_ que solemos asociar al concepto de _página web_ en la que metíamos un mazacote de funcionalidad.
+
+Si no estás cómodo con el termino, siempre puedes usar "pages" o "views", lo importante es ser consistente y que todo el equipo esté de
+acuerdo con el nombre que se usa.
+
 ## Un ejemplo con más niveles
+
+Conforme el proyecto crece y se va haciendo más complejo, se va haciendo necesario añadir más niveles de carpetas, salvo que tengamos claro
+desde un principio la dirección en la que va a crecer el mismo, es mejor ir añadiendo niveles de carpetas conforme se vaya necesitando.
+
+Un ejemplo de como puede quedar common:
+
+```txt
+common/
+├─ components/
+│  ├─ forms/
+├─ hooks/
+├─ validations/
+```
+
+Sobre este ejemplo:
+
+- Conforme el proyecto crece nos solemos encontrar que creamos varios componentes comunes reusables, si esto pasa es buena idea crear
+  una carpeta de components para tenerlo localizado.
+
+- Es muy normal que en un proyecto se acaba con una capa que haga de wrapper de los componentes comunes que se usen y que incluyan por ejemplo
+  la fontanería para trabajar con un motor de gestión de formularios o un tematizado dado, de ahí que se cree la subcarpeta _forms_ dentro de
+  _components_, esto sería candidato a promocionar a librería.
+
+- Lo mismo pasa con los hooks y las validaciones, temas genéricos merece la pena tenerlos localizados (por ejemplo una validación de NIF, o
+  de código HL7..., o un hook que realiza algo genérico como por ejemplo un hook que nos permite detectar si hemos hecho click fuera de un elemento.
+
+Esta ruta puede que no encaja en tu proyecto, también te puedes plantear organizarlo por característica funcional, todo depende de como crezca
+el proyecto.
+
+Un ejemplo para la carpeta _core_
+
+```txt
+core/
+├─ api-configuration/
+├─ auth/
+├─ constants/
+├─ router/
+├─ theme/
+```
+
+En este caso organizamos temas transversales que se pueden usar en toda la aplicación:
+
+- Configuración para nuestra api rest.
+- Autenticación (preguntar por usuario, roles...).
+- Constantes a nivel global.
+- Configuración de rutas de navegación de páginas.
+- El tema de la aplicación (colores, fuentes, tamaños...).
+
+Igual que en para la carpeta _common_ este nivel de subcarpeta se puede ajustar a tus necesidades o no, algo importante a evitar es terminar con un montón de niveles de carpetas que tengan uno o dos ficheros a lo sumo.
+
+Un ejemplo de la carpeta pod (en este caso con carpetas y ficheros):
+
+Aquí lo importante es tener claro cual es el punto de entrada e identificar los ficheros y carpeta por su tipo, de cara a saber donde tocar.
+
+```txt
+pod/
+├─ patient/
+│  ├─ api/
+│  ├─ components/
+│  ├─ patient.business.ts
+│  ├─ patient.component.tsx
+│  ├─ patient.container.tsx
+│  ├─ patient.hooks.ts
+│  ├─ patient.mapper.ts
+│  ├─ patient.vm.ts
+│  ├─ index.ts
+```
+
+En este caso podemos plantear en _api_ crear una carpeta si vamos a tener varios ficheros que monten la api para este pod.
+
+En components tenemos un caso parecido, si con el root container y component no tenemos suficiente, es buena idea crear
+una carpeta _components_ para agrupar los subcomponentes que se usen en el pod (y si hubieran muchos agruparlos a su vez
+por funcionalidad).
+
+A nivel de ficheros, dependiendo de la complejidad del pod, vamos creando ficheros o rompiendo en carpetas (sobre los ficheros
+lo cubriremos más adelante), no debemos crear ficheros porque si, si no porque realmente necesitamos agrupar funcionalidad.
+
+El objetivo aquí es que cuando abramos el pod podamos ir rápidamente al punto de entrada e identificar donde tenemos que
+acudir para tocar algo.
+
+Normalmente un pod no debería de crecer de forma desmesurada, en ese caso tendríamos que pensar si romper en más de un pod.
+
+## Importación de rutas relativas y aliases
+
+Un tema importante a la hora de importar módulos es tener en cuenta las rutas relativas y los aliases.
+
+Por ejemplo en un pod complejo nos podríamos encontrar con algo como:
+
+```tsx
+import { Calendar } from "../../../../common/components/calendar.component";
+```
+
+Esto presenta varios problemas:
+
+- Legibilidad: es difícil de leer y entender.
+- Mantenibilidad: si cambiamos la estructura de carpetas, tenemos que ir a todos los ficheros que importan este componente y cambiar la ruta (con suerte VSCode nos puede ayudar a hacerlo, pero no siempre es así).
+- Productividad: si las herramientas de VS Code no me sacan el importa de manera automática, tengo que ir probando subiendo carpeta por carpeta.
+
+Para evitar esto, aplicamos varias soluciones:
+
+- Por un lado con el uso de PODs los path relativos (código específico del POD) se quedan controlado dentro de la isla de PODS.
+- Por otro lado para acceso a carpetas globales (common, core, ...) usamos aliases que nos permitan importar esos modulos sin
+  usar rutas relativas largas y completas.
+
+Es decir se nos puede quedar con un alias de este tipo:
+
+```tsx
+import { Calendar } from "@common/components/calendar.component";
+```
+
+ó
+
+```tsx
+import { Calendar } from "common/components/calendar.component";
+```
+
+Si trabajas con webpack y typescript una forma cómoda de configurar esto es:
+
+- Le indicas en Typescript que el prefijo _@_ es un alias a la carpeta _src_, de esta manera creas un alias por cada carpeta que cuelgue justo de _src_ (common, core, scenes, pods, layout...).
+
+_tsconfig.json_
+
+```diff
+    "esModuleInterop": true,
++    "baseUrl": "src",
++    "paths": {
++      "@/*": ["*"]
++    }
+  },
+```
+
+Y para no repetir configuracíon y posibles errores en webpack, nos podemos bajar el plugin _tsconfig-paths-webpack-plugin_ que nos permite usar los mismos aliases que tenemos en typescript.
+
+```bash
+npm install tsconfig-paths-webpack-plugin --save-dev
+```
+
+Y consumirlo en webpack:
+
+```diff
+const HtmlWebpackPlugin = require("html-webpack-plugin");
++ const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
+const path = require("path");
+const basePath = __dirname;
+
+module.exports = {
+  context: path.join(basePath, "src"),
+  resolve: {
+    extensions: [".js", ".ts", ".tsx"],
++   plugins: [new TsconfigPathsPlugin()]
+  },
+```
+
+De esta manera los imports a carpetas raíz se nos quedan de esta manera:
+
+```tsx
+import { LoginPage } from "@/scenes/login";
+```
