@@ -230,7 +230,7 @@ Esto se puede elaborar más:
 - Un layout podría tener más de una zona para poder incluir contenido de página.
 - Un layout podría tener sublayouts.
 
-Aconsejamos no entrar en este nivel de complejidad salvo que sea estríctamente necesario.
+Aconsejamos no entrar en este nivel de complejidad salvo que sea estrictamente necesario.
 
 También la elección de layout se puede realizar a nivel de página (escena), o se puede intentar hacer una agrupación de páginas por layout a nivel de router, pero esto depende mucho del router que estemos usando y la versión del mismo (por ejemplo React Router en unas versiones lo permite en otras
 no)
@@ -528,3 +528,78 @@ También podemos comentar que hacer por contenido / tamaño del fichero:
 
 - Si un componente / función, está muy cohesionada a por ejemplo un componente de un fichero, y el mismo tienen un tamaño pequeño, podemos plantear dejar la funcionalidad en el mismo fichero, y más tarde extraerla si vemos que el fichero crece mucho o se puede reutilizar (aquí lo mismo comentarlo con el equipo, hay desarrolladores que prefieren tener un sólo fichero para cada cosa).
 - Si uno de los ficheros empieza a crecer demasiado, o si tiene sentido agrupar cierta funcionalidad o romperla, nos podemos plantear crear una subcarpeta y realizar la división del fichero por contenido, esto puede pasar si por ejemplo una _api_ crece mucho, o si un componente lo rompemos en subcomponentes.
+
+# Estructura de un pod.
+
+La solución de pods que usamos está inspirada en Ember, parte de que cuando desarrollamos en un proyecto medio/grande es complicado:
+
+- Encontrar el fichero que queremos editar.
+- Saber si un cambio en un fichero puede afectar a otra página / funcionalidad que lo use.
+- Hacernos con el conocimiento de la funcionalidad que queremos editar.
+- No impactar en el trabajo de otros compañeros (generar conflictos).
+- Detectar si algo es funcionalidad común o específica.
+
+Para ello planteamos utilizar el concepto de pod:
+
+**Un pod es un módulo de código que tiene todo lo necesario para funcionar.**
+
+Es decir salvo funcionalidad cross/común (que la movemos a carpetas raíz, como vimos en la sección de carpetas), cada pod tiene encapsulado todo lo necesario para funcionar, y no depende de nada más que de lo que está dentro de su carpeta (salvo carpetas comunes / transversales).
+
+Así pues (salvo funcionalidad común), un pod tiene:
+
+- Definidas a que API's va a acceder y que modelo de datos de api va a consumir.
+- Definidas que ViewModels va a usar.
+- Definido su contenedor, components y subcomponentes.
+- Definido su módelo y validaciones.
+
+Esto permita que un desarrollador que no conozca el proyecto, pueda en un tiempo razonable estudiar como funciona un pod en concreto y saber donde
+tocar para introducir una modificación.
+
+De esta manera:
+
+- El tiempo de entrada en un proyecto es menor.
+- Las colisiones otros compañeros son menores (cada uno toca su pod).
+- Con los viewModels enfocamos los datos a la vista.
+- En caso de hacer una migración es más fácil ir migrando por pods.
+- A la hora de añadir pruebas unitarias o plantear seguir TDD para ciertas partes del código, es más fácil ya que rompemos el código en piezas simples que hacen una cosa y sólo una cosa.
+
+Sobre la separación de ficheros, es como comentamos en la sección de "ficheros", la idea es separar el pod en piezas que hagan una cosa y una sóla cosa:
+
+- **.container.tsx**: para componentes contenedores, es decir que tienen lógica y presentación.
+
+- **.component.tsx**: para componentes tontos, es decir que solo tienen presentación (o al menos no el peso fuerte de lógica)
+
+- **.business.ts**: para fichero de con funciones puras que resuelvan problemas (también se pueden plantear con estado, pero todo lo que no tenga
+  que ver con React, código plano JS)
+
+- **.hook.ts**: para almacenar hooks (funciones que usan hooks de React).
+
+- **.api.ts**: aquí podemos almacenar código para gestionar llamadas a API's rest.
+
+- **.mapper.ts**: para convertir de modelo de API a ViewModel.
+
+- **.model.ts**: para definir modelos de datos (de API o global), depende del equipo se podría pensar en romper en más niveles de módelo (por ejemplo _api-model_, _domain-model_... un consejo aquí es no meter más complejidad si no es necesario).
+
+- **.validation.ts**: cuando extraemos la lógica de validación de un formulario a un fichero aparte, esto también es muy útil ya que es fácil de
+  probar y lo tenemos localizado y no esparcido por el árbol de componentes de UI.
+
+- **.vm.ts**: Aquí definimos el modelo de la vista, habrá ocasiones en que ese módulo sea un mapeo de uno a uno con lo que nos traemos con la API
+  (sobre todo si los que desarrollan la API son los mismos que desarrollan la aplicación), pero en otros casos puede ser que tengamos que mapear
+  valores y realizar transformaciones para que se ajusten a la vista (esa complejidad la sacamos del UI y la pasamos a una función pura JS, fácil de
+  probar).
+
+Un tema muy importante a la hora de definir los ViewModels, es que no puedo importar un ViewModel de otro pod, por muy parecido que sea tengo que
+volver a crearlo, ¿Por qué? Por no quiero tener acoplamientos entre pods, otro tema es un ViewModel que se use en todas la aplicación (por ejemplo
+un Lookup Id/Valor), en ese caso lo promociono a _core/model_ o _core/vm_ lo que mejor encaje con el equipo.
+
+Para aprender más sobre este tipo de solución, tenemos repositorios y formaciones específicas para esto.
+
+Desventajas de los pods:
+
+- Si el proyecto es pequeño puede ser un overkill.
+- Se fragmentan en muchos fichero y hay que entender que hace cada uno.
+- Hay que saber medir que funcionalidad es común / transversal y cual no.
+- Otro tema es muchas veces terminamos con un pod por escena, o un modelo de api muy parecido al de vm, con el trabajo adicional de fontanería que implica (mappers, vm, ...)
+
+¿Qué pasa si empiezo a tener muchos pods? Aquí me puedo plantear crear una carpeta superior de "module" y agrupar por funcionalidad (ver sección
+carpeta)
