@@ -22,7 +22,7 @@ Vamos a arrancarlo
 npm start
 ```
 
-Abrimos el fichero _app.tsx_ y crearemos un componente padre y uno hijo. El componente hijo sólo mostrará sus props mientras que el componente padre tiene dos variables de estado mostradas y dos botones (estos botones incrementan el valor de las variables);
+Abrimos el fichero _app.tsx_ y creamos un componente padre y uno hijo. El componente hijo sólo mostrará sus props mientras que el componente padre tiene dos variables de estado mostradas y dos botones (estos botones incrementan el valor de las variables);
 
 _./src/app.tsx_
 
