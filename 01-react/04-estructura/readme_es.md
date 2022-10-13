@@ -448,3 +448,83 @@ De esta manera los imports a carpetas raíz se nos quedan de esta manera:
 ```tsx
 import { LoginPage } from "@/scenes/login";
 ```
+
+# Nombrando y creando ficheros
+
+Otro tema importante es que convenciones seguimos para nombrar ficheros.
+
+En cuanto a casing nos quedamos con siempre usar _lowercase_ (minúsculas) para nombrar los ficheros, la razón es la misma que con las carpetas, en Windows los nombres de los ficheros no son case sensitive, en linux si, si tu equipo de desarrollo es Windows y tu entorno de CI/CD o producción
+es linux te puedes encontrar con problemas díficiles de detectar ya que en tu local la aplicación va a funcionar.
+
+¿Y si un fichero tiene varias palabras? Aquí cubrimos dos casos:
+
+- Lo que define al fichero a nivel de dominio / funcionalidad, lo separamos con guiones "-" (kebap-case).
+- Lo que define técnicamente al fichero, lo separamos con puntos "." (dot-case).
+
+¿Y está complejidad por qué?
+
+- Por un lado podemos identificar y leer fácilmente lo que define la parte funcional del fichero.
+- Por otro pasa lo mismo con la técnica, siempre nos la encontramos en el final del fichero, y además un fichero que tenga
+  varias partes relacionadas va a salir junto (ordenado por nombre).
+
+Por ejemplo:
+
+```tsx
+my - calendar.component.tsx;
+my - calendar.business.tsx;
+my - calendar.hooks.tsx;
+my - calendar.styles.css;
+```
+
+Sobre los sufijos a usar en la parte técnica del fichero, aquí depende de los que el equipo vea oportuno, los que solemos usar:
+
+- **.container.tsx**: para componentes contenedores, es decir que tienen lógica y presentación.
+
+- **.component.tsx**: para componentes tontos, es decir que solo tienen presentación (o al menos no el peso fuerte de lógica)
+
+- **.business.ts**: para fichero de con funciones puras que resuelvan problemas (también se pueden plantear con estado, pero todo lo que no tenga
+  que ver con React, código plano JS)
+
+- **.hook.ts**: para almacenar hooks (funciones que usan hooks de React).
+
+- **.api.ts**: aquí podemos almacenar código para gestionar llamadas a API's rest.
+
+- **.mapper.ts**: para convertir de modelo de API a ViewModel.
+
+- **.model.ts**: para definir modelos de datos (de API o global), depende del equipo se podría pensar en romper en más niveles de módelo (por ejemplo _api-model_, _domain-model_... un consejo aquí es no meter más complejidad si no es necesario).
+
+- **.validation.ts**: cuando extraemos la lógica de validación de un formulario a un fichero aparte, esto también es muy útil ya que es fácil de
+  probar y lo tenemos localizado y no esparcido por el árbol de componentes de UI.
+
+- **.vm.ts**: Aquí definimos el modelo de la vista, habrá ocasiones en que ese módulo sea un mapeo de uno a uno con lo que nos traemos con la API
+  (sobre todo si los que desarrollan la API son los mismos que desarrollan la aplicación), pero en otros casos puede ser que tengamos que mapear
+  valores y realizar transformaciones para que se ajusten a la vista (esa complejidad la sacamos del UI y la pasamos a una función pura JS, fácil de
+  probar).
+
+Un tema importante a definir es si debemos usar sólo singulares para definir los ficheros o admitimos plurales (en las carpetas lo hacíamos así),
+en los ficheros, el consejo es que normalmente no (aunque esto depende de lo que decida el equipo), una fuente de fallo común es tener los siguientes
+ficheros:
+
+```txt
+client.component.tsx
+clients.component.tsx
+```
+
+Es muy fácil que a la hora de importarlo o usar el componente / clase / función, se nos baile una _s_ y nos quedemos tontos pensando porque no funciona ese código (los fallos tontos son los que más duelen), en vez de esto se pueden usar la siguientes alternativas:
+
+```txt
+client.component.tsx
+client-collection.component.tsx
+```
+
+ó
+
+```txt
+client.component.tsx
+client-list.component.tsx
+```
+
+También podemos comentar que hacer por contenido / tamaño del fichero:
+
+- Si un componente / función, está muy cohesionada a por ejemplo un componente de un fichero, y el mismo tienen un tamaño pequeño, podemos plantear dejar la funcionalidad en el mismo fichero, y más tarde extraerla si vemos que el fichero crece mucho o se puede reutilizar (aquí lo mismo comentarlo con el equipo, hay desarrolladores que prefieren tener un sólo fichero para cada cosa).
+- Si uno de los ficheros empieza a crecer demasiado, o si tiene sentido agrupar cierta funcionalidad o romperla, nos podemos plantear crear una subcarpeta y realizar la división del fichero por contenido, esto puede pasar si por ejemplo una _api_ crece mucho, o si un componente lo rompemos en subcomponentes.
