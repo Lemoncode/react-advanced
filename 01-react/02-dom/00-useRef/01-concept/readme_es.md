@@ -4,16 +4,16 @@
 
 Este ejemplo toma como punto de partida el ejemplo _00-boiler-plate_.
 
-En este ejemplo vamos a ver como cambiar el foco a un componente para ello utilizaremos dos aproximaciones:
+En este ejemplo vamos a ver cómo cambiar el foco a un componente para ello utilizaremos dos aproximaciones:
 
-- Utilizando GetDocumentElementById.
-- Utilizando useRef
+- Utilizando *GetDocumentElementById*.
+- Utilizando *useRef*
 
-Discutiremos y entenderemos porque es mejor utilizar useRef.
+Discutiremos y entenderemos porque es mejor utilizar *useRef*.
 
 ## Paso a Paso
 
-- Primero copiamos el ejemplo boiler plate, y hacemos un _npm install_
+- Primero copiamos el ejemplo *boiler plate*, y hacemos un _npm install_
 
 ```bash
 npm install
@@ -50,14 +50,12 @@ export const App = () => {
 };
 ```
 
-Queremos cuando pulsemos en el botón se vaya el foco al primer input
-(en el mundo real esto nos podría servir para por ejemplo revisar
-el primer campo que tiene errores de validación)
+Queremos cuando pulsemos en el botón se vaya el foco al primer input (en el mundo real esto nos podría servir para por ejemplo revisar el primer campo que tiene errores de validación).
 
-¿Que podemos hacer?
+¿Qué podemos hacer?
 
-Vamos a por el sabor más clasico, le ponemos un id al input
-y accedemos por el dom...
+Vamos a por el sabor más clásico, le ponemos un *id* al *input*
+y accedemos por el *dom*...
 
 _./src/app.tsx_
 
@@ -78,20 +76,15 @@ _./src/app.tsx_
 
 Esto funciona, pero ¿Qué problemas me puedo encontrar?
 
-- Primero me estoy atando al DOM, si el día de mañana cambia
-  ese Id, o lo muevo de componente va a ser complicado de encontrar
-  el error.
+- Primero me estoy atando al DOM, si el día de mañana cambia ese Id, o lo muevo de componente va a ser complicado de encontrar el error.
+  
+- Por otro lado el *id* podría estar duplicado y me podría traer quebradores de cabeza, por ejemplo podría tener múltiples instancias del componente y buscando por *id* no tengo alcance restringido.
+  
+- Si a futuro me planteara una migración a *React Native*, también me encontraría problemas ya que esa *api* no existe.
 
-- Por otro lado el id podría estar duplicado y me podría traer
-  quebradores de cabeza, por ejemplo podría tener multiples instancias
-  del componente y buscando por id no tengo alcance restringido.
+Veamos como hacer esto con *refs*:
 
-- Si a futuro me planteara una migración a React Native, también
-  me encontraría problemas ya que esa api no existe.
-
-Veamos como hacer esto con refs:
-
-- Primero defino una variable y le asignado un useRef.
+- Primero defino una variable y le asignado un *useRef*.
 
 _./src/app.tsx_
 
@@ -102,7 +95,7 @@ export const App = () => {
   const handleButtonClick = () => {
 ```
 
-- Después lo emparejo con la etiqueta del input.
+- Después lo emparejo con la etiqueta del *input*.
 
 _./src/app.tsx_
 
@@ -114,8 +107,7 @@ _./src/app.tsx_
 
 ```
 
-- Finalmente lo reemplazo en el handler (fíjate que uso
-  la instancia mutable current)
+- Finalmente lo reemplazo en el *handler* (fíjate que uso la instancia mutable *current*)
 
 _./src/app.tsx_
 
@@ -133,8 +125,19 @@ Si probamos tenemos el mismo resultado.
 
 Que beneficios obtenemos con esta aproximación:
 
-- El useRef se queda en el ámbito del componente no puedo
-  salir fuera del mismo.
-- Ya no tengo problemas con ids repetidos.
-- Si un día tengo que migrar a React Native estoy usando
-  apis estándares (aunque tendría que hacer adaptaciones)
+- El *useRef* se queda en el ámbito del componente no puedo salir fuera del mismo.
+- Ya no tengo problemas con *ids* repetidos.
+- Si un día tengo que migrar a *React Native* estoy usando *apis* estándares (aunque tendría que hacer adaptaciones)
+
+# ¿Te apuntas a nuestro máster?
+
+Si te ha gustado este ejemplo y tienes ganas de aprender Front End
+guiado por un grupo de profesionales ¿Por qué no te apuntas a
+nuestro [Máster Front End Online Lemoncode](https://lemoncode.net/master-frontend#inicio-banner)? Tenemos tanto edición de convocatoria
+con clases en vivo, como edición continua con mentorización, para
+que puedas ir a tu ritmo y aprender mucho.
+
+También puedes apuntarte a nuestro Bootcamp de Back End [Bootcamp Backend](https://lemoncode.net/bootcamp-backend#inicio-banner)
+
+Y si tienes ganas de meterte una zambullida en el mundo _devops_
+apuntate nuestro [Bootcamp devops online Lemoncode](https://lemoncode.net/bootcamp-devops#bootcamp-devops/inicio)
