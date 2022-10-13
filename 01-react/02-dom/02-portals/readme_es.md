@@ -2,14 +2,14 @@
 
 ## Resumen
 
-Vamos a cubrir un concepto interesante de React, los Portales. Los Portales nos permiten renderizar un componente en un nodo del DOM que no es hijo del nodo donde se renderiza el componente padre. Estos fueron introducidos en React 16.
+Vamos a cubrir un concepto interesante de *React*, los Portales. Los Portales nos permiten renderizar un componente en un nodo del DOM que no es hijo del nodo donde se renderiza el componente padre. Estos fueron introducidos en *React 16*.
 
-¿Por qué quiero esto? Bueno, si tenemos un componente que renderiza un modal, y queremos que el modal se muestre en el DOM raíz, y no en el DOM del componente padre, podemos usar un portal, más usos, hover, tooltips etc...
+¿Por qué quiero esto? Bueno, si tenemos un componente que renderiza un modal, y queremos que el modal se muestre en el DOM raíz, y no en el DOM del componente padre, podemos usar un portal, más usos, *hover*, *tooltips* etc...
 
-Oye pero si esto ya lo puedo hacer yo con el z-index... Ehh ummm claro, z-index 9999,
+Oye pero si esto ya lo puedo hacer yo con el *z-index*... Ehh ummm claro, *z-index* 9999,
 ¿O era? 999999, o 99999999 :)
 
-Vamos a ver como funciona esto paso a paso, partiremos de un ejemplo muy simple e iremos
+Vamos a ver cómo funciona esto paso a paso, partiremos de un ejemplo muy simple e iremos
 añadiéndole funcionalidad encima hasta tener un component de diálogo modal.
 
 ## Paso a Paso
@@ -22,15 +22,13 @@ añadiéndole funcionalidad encima hasta tener un component de diálogo modal.
 npm install
 ```
 
-Para crear un component fuera del sitio donde se renderiza el componente padre (es
-decir fuera de su orden natural), _React Dom_ expone una función llamada
-_createPortal_, esta función acepta dos parámetros:
+Para crear un *component* fuera del sitio donde se renderiza el componente padre (es decir fuera de su orden natural), _React Dom_ expone una función llamada _createPortal_, esta función acepta dos parámetros:
 
 - El componente que queremos renderizar.
-- El nodo del DOM donde queremos renderizar el componente.
+- El nodo del *DOM* donde queremos renderizar el componente.
 
-Vamos a partir de un ejemplo muy simple, en el HTML vamos añadir un Div que será
-el último elemento del body (lo identificaremos con el id _lastnode_):
+Vamos a partir de un ejemplo muy simple, en el *HTML* vamos añadir un *Div* que será
+el último elemento del *body* (lo identificaremos con el id _lastnode_):
 
 _./index.html_
 
@@ -41,19 +39,20 @@ _./index.html_
   </body>
 ```
 
-Ya tenemos el nodo HTML, para que nuestro código quede más limpio, vamos a crearnos un wrapper que hará uso de _createPortal_ (este componente lo haremos crecer más adelante).
+Ya tenemos el nodo HTML, para que nuestro código quede más limpio, vamos a crearnos un *wrapper* que hará uso de _createPortal_ (este componente lo haremos crecer más adelante).
 
-Aceptamos como props:
+Aceptamos como *props*:
 
-- Children: el estándar de React.
-- wrapperId: el id del nodo donde queremos renderizar el componente.
+- ***Children***: el estándar de *React*.
+- ***wrapperId***: el *id* del nodo donde queremos renderizar el componente.
 
-Y el componente de vuelve un componente que se instancia en el nodo del DOM que
-cuyo id le hemos pasado como parámetro.
+Y el componente devuelve un componente que se instancia en el nodo del *DOM* que cuyo *id* le hemos pasado como parámetro.
 
 _./src/common/components/react-portal.component.tsx_
 
 ```tsx
+import ReactDOM from "react-dom";
+
 interface Props {
   children: React.ReactNode;
   wrapperId: string;
@@ -61,11 +60,13 @@ interface Props {
 
 export const ReactPortalComponent: React.FC<Props> = (props) => {
   const { children, wrapperId } = props;
-  return createPortal(children, document.getElementById(wrapperId));
+  return ReactDOM.createPortal(children, document.getElementById(wrapperId));
 };
 ```
 
 Vamos ahora a _app.tsx_, vamos a renderizar el siguiente contenido:
+
+*./src/app.tsx*
 
 ```diff
 import React from "react";
@@ -86,8 +87,9 @@ que el _h2_,
 
 > Abre el inspector y comprueba que esto es así en el HTML generado.
 
-¿Y si pudieramos decirle a React que lo renderizara en el nodo del DOM _lastnode_?
+¿Y si pudiéramos decirle a *React* que lo renderizara en el nodo del DOM _lastnode_?
 
+*./src/app.tsx*
 ```diff
 import React from "react";
 + import { ReactPortalComponent } from "./common/components/react-portal.component";
@@ -110,17 +112,9 @@ definido.
 
 > Abrir inspector y ver que el h3 está debajo del nodo lastnode.
 
-¿Para qué nos puede servir esto? fíjate que si renderizo en el último div de un body
-querrá decir que va a estar por encima de todo (no me haría falta tirar de z-index
-salvo que alguna librería o código legacy lo esté usando), es más podría hasta
-implementar de forma determinista el patrón malvado de UI de un modal sobre un modal.
+¿Para qué nos puede servir esto? fíjate que si renderizo en el último *div* de un *body* querrá decir que va a estar por encima de todo (no me haría falta tirar de *z-index* salvo que alguna librería o código *legacy* lo esté usando), es más podría hasta implementar de forma determinista el patrón malvado de *UI* de un modal sobre un modal.
 
-Antes de seguir implementando el _modal_ vamos a darle un poco de cariño a la función
-helper que hemos creado (ReactPortalComponent), lo primero eso de tener un div
-a fuego en el HTML para el último nodo no suena a algo muy mantenible, ¿Y si no
-hiciera falta ponerlo? Podíamos comprobar si existe, en ese caso tiramos de él, y
-si no lo creamos al vuelo, además así evitamos un castañazo bíblico si este tag
-no existe en el HTML.
+Antes de seguir implementando el _modal_ vamos a darle un poco de cariño a la función *helper* que hemos creado (*ReactPortalComponent*), lo primero eso de tener un *div* a fuego en el *HTML* para el último nodo no suena a algo muy mantenible, ¿Y si no hiciera falta ponerlo? Podíamos comprobar si existe, en ese caso tiramos de él, y si no lo creamos al vuelo, además así evitamos un castañazo bíblico si este *tag* no existe en el *HTML*.
 
 Vamos a crear una función de ayuda para crear elementos de forma dinámica:
 
@@ -139,8 +133,8 @@ interface Props {
 
 Y ahora vamos a darle uso en nuestro _ReactPortalComponent_:
 
-- Primero comprobamos si existe el nodo del DOM.
-- Si existe tiramos, pero si no lo creamos usando el helper.
+- Primero comprobamos si existe el nodo del *DOM*.
+- Si existe tiramos, pero si no lo creamos usando el *helper*.
 
 _./src/common/components/react-portal.component.tsx_
 
@@ -158,29 +152,26 @@ export const ReactPortalComponent: React.FC<Props> = (props) => {
 };
 ```
 
-Pero que pasa que si lo creamos al vuelo, lo suyo es eliminarlo cuando ya no esté
-en uso el componente (no queremos ir dejando basura especial), aquí vamos a
-aprovecharnos de la función _useEffect_ que nos ofrece React, ¿Podemos usar
-un effect dentro de esta función? La respuesta es si, ya que esto se invoca
-dentro de un componente de React, y por tanto podemos usar los hooks.
+Pero que pasa que si lo creamos al vuelo, lo suyo es eliminarlo cuando ya no esté en uso el componente (no queremos ir dejando basura especial), aquí vamos a aprovecharnos de la función _useEffect_ que nos ofrece React, ¿Podemos usar un *effect* dentro de esta función? La respuesta es sí, ya que esto se invoca dentro de un componente de *React*, y por tanto podemos usar los *hooks*.
 
-En este caso como vamos a manipular directamente el DOM,y queremos que el código
-se ejecute de forma síncrona antes de que el DOM se repinte, así que en vez
-de _useEffect_ vamos a usar _useLayooutEffect_, que vamos a hacer:
+En este caso como vamos a manipular directamente el *DOM*, y queremos que el código se ejecute de forma síncrona antes de que el DOM se repinte, así que en vez de _useEffect_ vamos a usar _useLayooutEffect_, que vamos a hacer:
 
 - Crear un estado para guardar una referencia al nodo del DOM (en caso de que se cree de forma dinámica)
-- En el _useLayoutEffect_, comprobamos si el nodo existe, en caso de que no
-  creamos el nodo y lo guardamos en el estado, después en el destructuro del _useEffectLayout_ lo eliminamos.
+- En el _useLayoutEffect_, comprobamos si el nodo existe, en caso de que no creamos el nodo y lo guardamos en el estado, después en el destructuro del _useEffectLayout_ lo eliminamos.
 
+_./src/common/components/react-portal.component.tsx_
 ```diff
++ import React from "react";
+import ReactDOM from "react-dom";
+....
 export const ReactPortalComponent: React.FC<Props> = (props) => {
 +  const [wrapperElement, setWrapperElement] = React.useState(null);
   const { children, wrapperId } = props;
 
-+ React.useLayoutEffect = (() => {
++ React.useLayoutEffect(() => {
   let element = document.getElementById(wrapperId);
 +  let createdOnTheFly = false;
-+
+
   if (!element) {
     element = createWrapperAndAppendToBody(wrapperId);
 +    createdOnTheFly = true;
@@ -202,9 +193,9 @@ export const ReactPortalComponent: React.FC<Props> = (props) => {
 };
 ```
 
-Ahora podemos eliminar el div del HTML y el código sigue funcionando.
+Ahora podemos eliminar el *div* del *HTML* y el código sigue funcionando.
 
-> IMPORTANTE DEPURAR ESTE CODIGO, y ver como funciona, que pasraría si pusieramos el wrapper
+> IMPORTANTE DEPURAR ESTE CODIGO, y ver cómo funciona, que pasraría si pusieramos el wrapper
 > en vez del wrapperId?
 
 _./src/index.html_
@@ -219,15 +210,15 @@ _./src/index.html_
 - Bueno, hasta aquí hemos hecho una alarde que "bonito es esto pero para que sirve", vamos a implementar
   un diálogo modal.
 
-Para ello creamos un nuevo componentes, va a aceptar tres propiedades:
+Para ello creamos un nuevo componente, va a aceptar tres propiedades:
 
-- isOpen: flag para saber si está abierto o cerrado el modal.
-- handleClose: función que se ejecuta cuando se cierra el modal.
-- children: contenido del modal.
+- ***isOpen***: *flag* para saber si está abierto o cerrado el modal.
+- ***handleClose***: función que se ejecuta cuando se cierra el modal.
+- ***children***: contenido del modal.
 
 Vamos a definir algo de estilado:
 
-- Para clase model no pondremos z-index (más adelante se lo añadiremos ya que nos podemos
+- Para clase modal no pondremos *z-index* (más adelante se lo añadiremos ya que nos podemos
   encontrar algún control que si lo use y nos juegue una mala pasada)
 
 _./src/common/components/modal/modal.css_
@@ -256,13 +247,25 @@ _./src/common/components/modal/modal.css_
   justify-content: center;
   font-size: 2rem;
 }
+
+.close-btn {
+  padding: 1rem;
+  border-radius: 0.25rem;
+  border: none;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  -webkit-border-radius: 0.25rem;
+  -moz-border-radius: 0.25rem;
+  -ms-border-radius: 0.25rem;
+  -o-border-radius: 0.25rem;
+}
 ```
 
 _./src/common/components/modal/modal.tsx_
 
 ```tsx
-import "./modal.css";
 import React from "react";
+import classes from "./modal.css";
 
 interface Props {
   children: React.ReactNode;
@@ -276,17 +279,17 @@ export const Modal: React.FC<Props> = (props) => {
   if (!isOpen) return null;
 
   return (
-    <div className="modal">
-      <button className="close-btn" onClick={handleClose}>
+    <div className={classes.modal}>
+      <button className={classes.closeBtn} onClick={handleClose}>
         Close
       </button>
-      <div className="modal-content">{children}</div>
+      <div className={classes.modalContent}>{children}</div>
     </div>
   );
 };
 ```
 
-Vamos a crear un barrel:
+Vamos a crear un *barrel*:
 
 _./src/common/components/modal/index.ts_
 
@@ -306,7 +309,7 @@ import { ReactPortalComponent } from "./common/components/react-portal.component
 + import {Modal} from './common/components/modal';
 ```
 
-Ahora vamos a añadir el flag de _isOpen_ y la función de _handleClose_ en nuestro app:
+Ahora vamos a añadir el *flag* de *isOpen* y la función de _handleClose_ en nuestro app:
 
 _./src/app.tsx_
 
@@ -351,14 +354,13 @@ Lo probamos:
 npm start
 ```
 
-Y bien,vamos ahora a por el martillo fino.
+Y bien, vamos ahora a por el martillo fino.
 
-Lo primero, SI le vamos a añadir un z-index elevado para evitar que algún componente de terceros que
-pueda usar este atributo muestre su componente por encima:
+Lo primero, si le vamos a añadir un *z-index* elevado para evitar que algún componente de terceros que pueda usar este atributo muestre su componente por encima:
 
 _./src/common/components/modal/modal.css_
 
-```css
+```diff
 .modal {
   position: fixed;
   inset: 0; /* inset sets all 4 values (top right bottom left) much like how we set padding, margin etc., */
@@ -369,17 +371,14 @@ _./src/common/components/modal/modal.css_
   justify-content: center;
   transition: all 0.3s ease-in-out;
   overflow: hidden;
-  z-index: 999;
++  z-index: 999;
   padding: 40px 20px 20px;
 }
 ```
 
 Después, ¿Qué pasa si queremos cerrar el modal con el teclado? Es muy normal que un usuario quiera que esto se cierre pulsando ESC:
 
-En este caso vamos a buscar una solución en el propio componente
-modal, en cuanto se cargue el componente y se asigne el handler
-de cierre coloco un event listener para escuchar el evento del teclado,
-y lo desmonto en cuanto se desmonte el componente:
+En este caso vamos a buscar una solución en el propio componente modal, en cuanto se cargue el componente y se asigne el *handler* de cierre coloco un *event listener* para escuchar el evento del teclado, y lo desmonto en cuanto se desmonte el componente:
 
 _./src/common/components/modal/modal.tsx_
 
@@ -387,7 +386,7 @@ _./src/common/components/modal/modal.tsx_
 export const Modal: React.FC<Props> = (props) => {
   const { children, isOpen, handleClose } = props;
 
-+  useEffect(() => {
++  React.useEffect(() => {
 +    const closeOnEscapeKey = e => e.key === "Escape" ? handleClose() : null;
 +    document.body.addEventListener("keydown", closeOnEscapeKey);
 +    return () => {
@@ -400,29 +399,23 @@ export const Modal: React.FC<Props> = (props) => {
   return (
 ```
 
-_Esta solución puede estar bien si tengo un sólo modal, pero si
-tuviera más de uno podría darme algún quebradero de cabeza, ya que
-no tenemos varios handlers escuchando el evento del teclado_
+_Esta solución puede estar bien si tengo un sólo modal, pero si tuviera más de uno podría darme algún quebradero de cabeza, ya que no tenemos varios handlers escuchando el evento del teclado_
 
-¿Y si queremos añadir una animación para que el modal se muestre de
-una forma más suave?
+¿Y si queremos añadir una animación para que el modal se muestre de una forma más suave?
 
-En nuestro caso queremos destruir el modal cuando se cierre, para
-ellos vamos a tirar por el render null (lo que tenemos ahora), esto
-hace que tengamos que usar una librería de ayuda para disparar las
-transiciones.
+En nuestro caso queremos destruir el modal cuando se cierre, para ello vamos a tirar por el *render null* (lo que tenemos ahora), esto hace que tengamos que usar una librería de ayuda para disparar las transiciones.
 
 ```bash
 npm install react-transition-group
 ```
 
-Y sus typings:
+Y sus *typings*:
 
 ```bash
 npm install @types/react-transition-group -D
 ```
 
-- Vamos a añadir el import a nuestro modal:
+- Vamos a añadir el *import* a nuestro modal:
 
 _./src/app.tsx_
 
@@ -433,9 +426,7 @@ import { Modal } from "./common/components/modal";
 + import { CSSTransition } from "react-transition-group";
 ```
 
-Y le indicamos que transición queremos aplicar, sobre
-que node, y que en cuanto termine la misma desmonte
-el componente:
+Y le indicamos que transición queremos aplicar, sobre qué nodo, y qué en cuanto termine la misma desmonte el componente:
 
 ```diff
 export const App = () => {
@@ -451,7 +442,7 @@ export const App = () => {
       <ReactPortalComponent wrapperId="lastnode">
 +        <CSSTransition
 +          in={isOpen}
-+          timeout={{ entry: 0, exit: 300 }}
++          timeout={{ enter: 0, exit: 300 }}
 +          unmountOnExit
 +          classNames="modal"
 +          nodeRef={nodeRef}
@@ -468,7 +459,7 @@ export const App = () => {
 };
 ```
 
-Y para la clase modal le añadimos algunos estados de transición en css:
+Y para la clase modal le añadimos algunos estados de transición en *css*:
 
 _./src/common/components/modal/modal.css_
 
@@ -500,7 +491,7 @@ _./src/common/components/modal/modal.css_
 
 # Ejercicio
 
-Y para finalizar pongamos un desafío... que pasaría si quisiéramos mostrar un modal dentro de otro modal?
+Y para finalizar pongamos un desafío... ¿qué pasaría si quisiéramos mostrar un modal dentro de otro modal?
 (ojo esto lo se puede considerar mala práctica, pero si te lo encuentras en un proyecto puede ser divertido
 de resolver):
 
@@ -508,14 +499,13 @@ Si lo intentamos ahora que pasaría:
 
 ¿Qué nos haría falta?
 
-- Una solución podría pasar por tener un generador de Ids e ir incrementando el id del wrapper cada vez que se crea.
+- Una solución podría pasar por tener un generador de *Ids* e ir incrementando el id del *wrapper* cada vez que se crea.
 
 ¿Lo intentas?
 
-Una posible solución (ojo no óptima, aquí se ve lo importante del martillo
-fino y o complicado que es sacar un componente reusable)
+Una posible solución (ojo no óptima, aquí se ve lo importante del martillo fino y o complicado que es sacar un componente reusable)
 
-En el portal component añadimos un generador de ids unico
+En el portal *component* añadimos un generador de *ids* unico.
 
 _./src/common/components/react-portal.component.tsx_
 
@@ -529,7 +519,7 @@ function addUniqueNumberSuffixToId(wrapperID: string): string {
 }
 ```
 
-Actualizamos el createWrapper
+Actualizamos el *createWrapper*
 
 _./src/common/components/react-portal.component.tsx_
 
@@ -570,7 +560,7 @@ export const ReactPortalComponent: React.FC<Props> = (props) => {
 };
 ```
 
-Y en el App:
+Y en el *App*:
 
 _./src/app.tsx_
 
@@ -604,10 +594,23 @@ Esto tiene un montón de flecos:
 - El estilado del modal habría que verlo.
 - La animación habría que meterla en un componente intermedio al menos.
 
-Fíjate que el botón de ESC si funciona, será por el bubble up de los eventos?
+Fíjate que el botón de *ESC* si funciona, será por el *bubble up* de los eventos?
 
-Aquí podemos ver como implementar componentes genéricos es tarea complicada.
+Aquí podemos ver cómo implementar componentes genéricos es tarea complicada.
 
 # Referencias
 
 Este ejemplo se base en el material expuesto en este post https://blog.logrocket.com/build-modal-with-react-portals/
+
+# ¿Te apuntas a nuestro máster?
+
+Si te ha gustado este ejemplo y tienes ganas de aprender Front End
+guiado por un grupo de profesionales ¿Por qué no te apuntas a
+nuestro [Máster Front End Online Lemoncode](https://lemoncode.net/master-frontend#inicio-banner)? Tenemos tanto edición de convocatoria
+con clases en vivo, como edición continua con mentorización, para
+que puedas ir a tu ritmo y aprender mucho.
+
+También puedes apuntarte a nuestro Bootcamp de Back End [Bootcamp Backend](https://lemoncode.net/bootcamp-backend#inicio-banner)
+
+Y si tienes ganas de meterte una zambullida en el mundo _devops_
+apuntate nuestro [Bootcamp devops online Lemoncode](https://lemoncode.net/bootcamp-devops#bootcamp-devops/inicio)
