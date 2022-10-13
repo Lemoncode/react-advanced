@@ -1,6 +1,5 @@
 import React from "react";
 import { ListComponent } from "./list.component";
-import { MemberEntity } from "./list.vm";
 import { useMemberListContext } from "./list.provider";
 
 export const ListContainer: React.FC = () => {

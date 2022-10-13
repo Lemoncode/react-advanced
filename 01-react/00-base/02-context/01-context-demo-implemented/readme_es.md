@@ -4,21 +4,22 @@
 
 Que vamos a implementar:
 
-- En el contexto de login vamos a hacer una separación de lo que es el contexto del provider.
-- Vamos a implementar un helper para traernos el contexto, y vamos a dejar interno el contexto en si.
-- Vamos a llevarnos la lista de usuarios de github a un contexto y veremos como podemos navegar y mostrar datos.
+- En el contexto de *login* vamos a hacer una separación de lo que es el contexto del *provider*.
+- Vamos a implementar un *helper* para traernos el contexto, y vamos a dejar interno el contexto en sí.
+- Vamos a llevarnos la lista de usuarios de *github* a un contexto y veremos cómo podemos navegar y mostrar datos.
 
 ## Pasos
 
 - Lo primero separamos contexto de proveedor:
 
-_./profile.context.ts_
+_./src/core/providers/profile/profile.context.ts_
 
 _Renombramos a ts_
 
 ```diff
 import React from "react";
-import { UserProfile, createEmptyUserProfile } from "./profile.vm";
+- import { UserProfile, createEmptyUserProfile } from "./profile.vm";
++ import { UserProfile } from "./profile.vm";
 
 export interface ProfileContextVm extends UserProfile {
   setUserProfile: (userProfile: UserProfile) => void;
@@ -56,12 +57,12 @@ export const ProfileContext = React.createContext<ProfileContextVm>({
 - };
 ```
 
-- Vamos a llevar el contenido al provider:
+- Vamos a llevar el contenido al *provider*:
 
-_./profile.provider.tsx_
+_./src/core/providers/profile/profile.provider.tsx_
 
 ```tsx
-import React fro m "react";
+import React from "react";
 import { UserProfile, createEmptyUserProfile } from "./profile.vm";
 import { ProfileContext } from "./profile.context";
 
@@ -89,10 +90,10 @@ export const ProfileProvider: React.FC<Props> = ({ children }) => {
 
 - Esta separación hace que sea más clara la separación entre contexto y proveedor.
 
-- Además de esto nos podemos hacer un helper para no tener que usar _useContext_ a
+- Además de esto nos podemos hacer un *helper* para no tener que usar _useContext_ a
   secas y controlar errores.
 
-_profile.provider.tsx_
+_./src/core/providers/profile/profile.provider.tsx_
 
 ```diff
     </ProfileContext.Provider>
@@ -108,7 +109,18 @@ _profile.provider.tsx_
 + };
 ```
 
-Ahora en el index sólo tenemos que exponer la parte del provider:
+Importamos _ProfileContextVm_ desde el contexto.
+
+_./src/core/providers/profile/profile.provider.tsx_
+
+```diff
+import React from "react";
+import { UserProfile, createEmptyUserProfile } from "./profile.vm";
+- import { ProfileContext } from "./profile.context";
++ import { ProfileContext, ProfileContextVm } from "./profile.context";
+```
+
+Ahora en el *index* sólo tenemos que exponer la parte del *provider*:
 
 _./src/core/providers/profile/index.ts_
 
@@ -118,17 +130,18 @@ _./src/core/providers/profile/index.ts_
 + export * from './profile.provider';
 ```
 
-- Vamos a utilizar el nuevo helper en _loginContainer_ y _appLayout_
+- Vamos a utilizar el nuevo *helper* en _loginContainer_ y _appLayout_
 
 _./src/pods/login/login.container.tsx_
 
 ```diff
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { routes } from "core";
+- import { ProfileContext } from "@/core/providers";
++ import { useProfileContext } from "@/core/providers";
 import { LoginComponent } from "./login.component";
 import { doLogin } from "./login.api";
-+ import { useProfileContext } from "core/providers";
 
 const useLoginHook = () => {
   const navigate = useNavigate();
@@ -141,7 +154,7 @@ _./src/layouts/appLayout.component.tsx_
 ```diff
 import React from "react";
 - import { ProfileContextVm } from "@/core/providers";
-+ import { useProfileContext } from "core/providers";
++ import { useProfileContext } from "@/core/providers";
 
 interface Props {
   children: React.ReactNode;
@@ -160,23 +173,21 @@ export const AppLayout: React.FC<Props> = ({ children }) => {
 };
 ```
 
-- Asi tenemos una clara separación entre contexto y provider y por otro lado, con la función
-  helper podemos controlar errores, y simplificar el uso del context.
+- Así tenemos una clara separación entre contexto y *provider* y por otro lado, con la función
+  *helper* podemos controlar errores, y simplificar el uso del *context*.
 
-- Ahora vamos a llevar la lista de usuarios de github a un contexto, ¿Por qué? Porque queremos
+- Ahora vamos a llevar la lista de usuarios de *github* a un contexto, ¿Por qué? Porque queremos
   mejorar la usabilidad de nuestra página:
-
   - Si navegamos a otra página, cuando volvemos queremos mostrar datos.
-  - Mientras en background la consulta se vuelve a ejecutar.
-
-- Para ver que problema resolvemos vamos a meterle un retraso de 3 segundos a la api que nos pide
-  datos de github
+  - Mientras en *background* la consulta se vuelve a ejecutar.
+  
+- Para ver qué problema resolvemos vamos a meterle un retraso de 3 segundos a la *api* que nos pide
+  datos de *github*.
 
 _./src/pods/list/list.api.ts_
 
 ```diff
 import { MemberEntityApi } from "./list.api-model";
-import { MemberEntity } from "./list.vm";
 
 - export const getMemberCollection = (): Promise<MemberEntityApi[]> =>
 -  fetch(`https://api.github.com/orgs/lemoncode/members`).then((response) =>
@@ -184,7 +195,7 @@ import { MemberEntity } from "./list.vm";
 -  );
 
 + export const getMemberCollection = (): Promise<MemberEntityApi[]> => {
-+  const promise = new Promise<MemberEntityApi[]>((resolve, reject) => {
++  const promise = new Promise<MemberEntityApi[]>((resolve) => {
 +    setTimeout(() => {
 +      fetch(`https://api.github.com/orgs/lemoncode/members`).then((response) =>
 +        resolve(response.json()));
@@ -195,10 +206,10 @@ import { MemberEntity } from "./list.vm";
 + }
 ```
 
-- En este caso podríamos plantear si poner el context y provider dentro de correo o dentro del pod en
-  el que se usa, en este caso lo vamos a poner dentro del pod ya que sólo lo usaremos allí, si más
-  adelante lo usáramos en más de una ventana podríamos plantear moverlo a creo (a nivel de imports
-  es más correcto tenerlo allí, a nivel de código es más correcto tenerlo en el pod).
+- En este caso podríamos plantear si poner el *context* y *provider* dentro de *core* o dentro del *pod* en
+  el que se usa, en este caso lo vamos a poner dentro del *pod* ya que sólo lo usaremos allí, si más
+  adelante lo usáramos en más de una ventana podríamos plantear moverlo a *core*(a nivel de *imports*
+  es más correcto tenerlo allí, a nivel de código es más correcto tenerlo en el *pod*).
 
 _./src/pods/list/list.context.ts_
 
@@ -221,7 +232,7 @@ export const MemberListContext = React.createContext<MemberListContextVm>({
 });
 ```
 
-_./src/pods/list/list.provider.ts_
+_./src/pods/list/list.provider.tsx_
 
 ```ts
 import React from "react";
@@ -262,20 +273,21 @@ export const useMemberListContext = () => {
 };
 ```
 
-Vamos a exponer el provider en el _index_
+Vamos a exponer el *provider* en el *index*:
+
+_./src/pods/list/index.ts_
 
 ```diff
 export * from "./list.container";
 + export * from "./list.provider";
 ```
 
-Vamos a definirlo por encima del router:
+Vamos a definirlo por encima del *router*:
 
 _./src/app.tsx_
 
 ```diff
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { RouterComponent } from "@/core";
 import { ProfileProvider } from "@/core/providers";
 + import { MemberListProvider } from "@/pods/list";
@@ -298,10 +310,8 @@ _./src/pods/list/list.container.tsx_
 ```diff
 import React from "react";
 import { ListComponent } from "./list.component";
-import { MemberEntity } from "./list.vm";
-import { getMemberCollection } from "./list.repository";
-import { mapMemberCollectionFromApiToVm } from "./list.mapper";
-import { MemberEntityApi } from "./list.api-model";
+- import { MemberEntity } from "./list.vm";
+- import { getMemberCollection } from "./list.repository";
 + import { useMemberListContext } from "./list.provider";
 
 export const ListContainer: React.FC = () => {
@@ -323,17 +333,24 @@ export const ListContainer: React.FC = () => {
 
 ```
 
-Si ahora ejecutamos podemos ver que la segunda vez que navegamos a la página, mostramos la lista
-que se cargo anteriormente mientras se carga la nueva, ofreciendo una mejor experiencia de usuario.
+Si ahora ejecutamos,
 
-Nos puede surgir una duda aquí y es ¿Y que hacemos con la primera carga? Sería buena idea mostrar
-un indicador de que la página está cargando.
+```bash
+npm start
+```
 
-Ahora seguro que se nos ha quedado una espinita clavada y eso ¿Como reporto al usuario de que
-estoy cargando datos y tiene que esperar un poco? Aquí podemos ver de jugar con flags, con
-react suspense... pero si podemos lanzar las consultas desde cualquier parte de la aplicación
-es algo que se nos puede terminar haciendo cuesta arriba, una microlibrería que nos puede ser
-de ayuda es React Promise Tracker:
+y nos logamos,
+
+```ts
+Username: admin;
+Password: test;
+```
+
+Podemos ver que la segunda vez que navegamos a la página, mostramos la lista que se cargó anteriormente mientras se carga la nueva, ofreciendo una mejor experiencia de usuario.
+
+Nos puede surgir una duda aquí y es ¿Y qué hacemos con la primera carga? Sería buena idea mostrar un indicador de que la página está cargando.
+
+Ahora seguro que se nos ha quedado una espinita clavada y eso ¿Cómo reporto al usuario de que estoy cargando datos y tiene que esperar un poco? Aquí podemos ver de jugar con *flags*, con *react suspense*... pero si podemos lanzar las consultas desde cualquier parte de la aplicación es algo que se nos puede terminar haciendo cuesta arriba, una microlibrería que nos puede ser de ayuda es *React Promise Tracker*:
 
 Vamos a instalar la librería:
 
@@ -348,7 +365,7 @@ _./src/common/components/loading-indicator.tsx_
 ```tsx
 import React from "react";
 
-export const LoadingIndicator = (props) => {
+export const LoadingIndicator = () => {
   return <h1>Hey some async call in progress ! </h1>;
 };
 ```
@@ -365,14 +382,14 @@ export const LoadingIndicator = (props) => {
 +  const {promiseInProgress} = usePromiseTracker();
 
 -  return <h1>Hey some async call in progress ! </h1>;
-+   promiseInProgress &&
++   return promiseInProgress &&
 +    <h1>Hey some async call in progress ! </h1>
 };
 ```
 
 > Una opción más mantenible sería separar esto del loading indicator para poder aprovecharlo en otros proyectos.
 
-Añadimos un barrel bajo components
+Añadimos un *barrel* bajo *components*
 
 _./src/common/components/index.ts_
 
@@ -404,7 +421,7 @@ export const App = () => {
 ```
 
 Ahora vamos al contexto donde lanzamos la llamada asíncrona, en este caso sólo queremos mostrar
-el spinner si es la primera vez que hacemos la petición.
+el *spinner* si es la primera vez que hacemos la petición.
 
 _./src/pods/list/list.provider.tsx_
 
@@ -422,16 +439,18 @@ interface Props {
 export const MemberListProvider: React.FC<Props> = ({ children }) => {
   const [memberList, setMemberList] = React.useState<MemberEntity[]>([]);
 
-  const loadMemberList = () =>
+-  const loadMemberList = () =>
++  const loadMemberList = () => {
 -    getMemberCollection().then((memberCollection) =>
 +    const promise = getMemberCollection().then((memberCollection) => {
 
       setMemberList(memberCollection)
-    );
+-    );
++    });
 +   if(memberList.length === 0) {
 +     trackPromise(promise);
 +   }
-+ }
++ };
 ```
 
 Vamos a darle un poco de estilo al componente de indicador de carga en progreso.
@@ -449,12 +468,12 @@ _./src/common/components/loading-indicator.tsx_
 ```diff
 import React from "react";
 import { usePromiseTracker } from "react-promise-tracker";
-+ import Loader from "react-loader-spinner";
++ import { ThreeDots } from "react-loader-spinner";
 
 export const LoadingIndicator = (props) => {
 ```
 
-Y vamos a darle uso (añadimos un estilado temporal en un proyecto real, extraeríamos a un fichero css el estilado):
+Y vamos a darle uso (añadimos un estilado temporal en un proyecto real, extraeríamos a un fichero *css* el estilado):
 
 _./src/common/components/loading-indicator.tsx_
 
@@ -486,10 +505,18 @@ export const LoadingIndicator = (props) => {
 npm start
 ```
 
-React Promise Tracker se encarga de llevar un contador interno con todas las promesas que se hayan lanzado.
+*React Promise Tracker* se encarga de llevar un contador interno con todas las promesas que se hayan lanzado.
 
 Extras que tienes con esta librería:
 
-- Puedes definir el tracker por areas de tu UI.
-- Puedes añadir un delay para que se muestra el indicador de carga, así en conexiones rápidas
+- Puedes definir el *tracker* por áreas de tu *UI*.
+- Puedes añadir un *delay* para que se muestra el indicador de carga, así en conexiones rápidas
   evitas parpadeos innecesarios.
+
+# ¿Te apuntas a nuestro máster?
+
+Si te ha gustado este ejemplo y tienes ganas de aprender Front End
+guiado por un grupo de profesionales ¿Por qué no te apuntas a
+nuestro [Máster Front End Online Lemoncode](https://lemoncode.net/master-frontend#inicio-banner)? Tenemos tanto edición de convocatoria
+con clases en vivo, como edición continua con mentorización, para
+que puedas ir a tu ritmo y aprender mucho.

@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { routes } from "core";
 import { ProfileContext } from "@/core/providers";
 import { LoginComponent } from "./login.component";
