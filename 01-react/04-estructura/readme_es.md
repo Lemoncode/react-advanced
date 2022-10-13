@@ -1,19 +1,3 @@
-# TODO
-
-Nomenclatura ficheros.
-
-- minúsculas y porque
-- separación kebab case y . tipo fichero
-
-- Estructura carpetas: preparados para crecer.
-
-Estructurando en ficheros:
-
-- Mismo fichero vs ficheros separados, reglas para romperlo.
-- Barrel.
-- Solución alias universal.
-  Nombrando eventos y propiedades callbacks.
-
 # Sumario
 
 Tópicos de esta guía:
@@ -27,6 +11,7 @@ Tópicos de esta guía:
 - Nombrando eventos y propiedades callbacks.
 - Principio de promoción.
 - Política de pruebas unitarias.
+- Herramientas
 
 # Nombrando y creando carpetas
 
@@ -196,6 +181,7 @@ y que guardan información, por ejemplo:
 - El tema de la aplicación.
 - Contextos y proveedores de la aplicación.
 - Cachés de datos comunes.
+- ...
 
 A veces nos puedes costar distinguir que debe entrar en la carpeta _common_ y la _core_ como regla para distinguirlo:
 
@@ -603,3 +589,7 @@ Desventajas de los pods:
 
 ¿Qué pasa si empiezo a tener muchos pods? Aquí me puedo plantear crear una carpeta superior de "module" y agrupar por funcionalidad (ver sección
 carpeta)
+
+# Nombrando funciones, eventos callbacks...
+
+Nombrar elementos de código, es una tarea complicada y la base para que un desarrollador (o el propio programador una semana después) pueda entender ese código o seguirlo, para ello es importante que el equipo esté de acuerdo en seguir una serie de reglas
