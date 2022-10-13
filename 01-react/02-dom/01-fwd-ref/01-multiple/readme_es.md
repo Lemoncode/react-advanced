@@ -2,7 +2,7 @@
 
 ## Resumen
 
-Hemos visto un ejemplo con Fwd Ref simple, en este ejemplo veremos como hacerlo con múltiples elementos.
+Hemos visto un ejemplo con *Fwd Ref* simple, en este ejemplo veremos cómo hacerlo con múltiples elementos.
 
 Este ejemplo toma como punto de partida el ejemplo _00-boiler-plate_.
 
@@ -64,7 +64,7 @@ export function App() {
 
   return (
     <div className="App">
-      <TwoInputComponent
+      <TwoInput
         labelA="First name"
         valueA={firstName}
         onChangeA={setFirstName}
@@ -79,8 +79,8 @@ export function App() {
 }
 ```
 
-En esta ocasión queremos obtener una referencia al primer input, y otra al segundo para poder hacer focus sobre ellos, para ellos vamos a seguir la misma aproximación que nos encontramos en Material UI, crearemos
-dos propiedades pero les daremos nombres custom.
+En esta ocasión queremos obtener una referencia al primer input, y otra al segundo para poder hacer *focus* sobre ellos, para ellos vamos a seguir la misma aproximación que nos encontramos en *Material UI*, crearemos
+dos propiedades pero les daremos nombres *custom*.
 
 _./src/common/twoinput.component.tsx_
 
@@ -157,8 +157,7 @@ export function App() {
       />
 ```
 
-Y vamos a añadir el comportamiento para que los botones pongan
-el foco en cada uno:
+Y vamos a añadir el comportamiento para que los botones pongan el foco en cada uno:
 
 ```diff
     <button
@@ -174,16 +173,28 @@ el foco en cada uno:
 
 # Otras aproximaciones
 
-Se puede extender / jugar con Forward Ref
+Se puede extender / jugar con *Forward Ref*
 
 https://thewebdev.info/2021/11/14/how-to-forward-multiple-refs-with-react/
 
 https://fettblog.eu/typescript-react-generic-forward-refs/
 
-useMergedRef
+*useMergedRef*
 
 https://github.com/jaredLunde/react-hook/tree/master/packages/merged-ref#readme
 https://codesandbox.io/s/uhj08
 
-Pueden estar bien si queremos tratar un array de elementos iguales, también te van
-a dar quebradores de cabeza con el tipado en TypeScript
+Pueden estar bien si queremos tratar un array de elementos iguales, también te van a dar quebradores de cabeza con el tipado en *TypeScript*.
+
+# ¿Te apuntas a nuestro máster?
+
+Si te ha gustado este ejemplo y tienes ganas de aprender Front End
+guiado por un grupo de profesionales ¿Por qué no te apuntas a
+nuestro [Máster Front End Online Lemoncode](https://lemoncode.net/master-frontend#inicio-banner)? Tenemos tanto edición de convocatoria
+con clases en vivo, como edición continua con mentorización, para
+que puedas ir a tu ritmo y aprender mucho.
+
+También puedes apuntarte a nuestro Bootcamp de Back End [Bootcamp Backend](https://lemoncode.net/bootcamp-backend#inicio-banner)
+
+Y si tienes ganas de meterte una zambullida en el mundo _devops_
+apuntate nuestro [Bootcamp devops online Lemoncode](https://lemoncode.net/bootcamp-devops#bootcamp-devops/inicio)
