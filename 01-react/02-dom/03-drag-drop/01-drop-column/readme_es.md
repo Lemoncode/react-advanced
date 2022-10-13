@@ -10,12 +10,12 @@ En este ejemplo vamos a poner en práctica un parte importante de lo que hemos a
 
 Además de esto:
 
-- Vamos a establecer una guía para elegir librería de third parties.
-- No iremos por el happy path, veremos errores de diseño/implementación
-  y como ir haciendo refactor.
-- Iremos haciendo refactors para llegar a una base de código mantenible.
+- Vamos a establecer una guía para elegir librería de *third parties*.
+- No iremos por el *happy path*, veremos errores de diseño/implementación
+  y como ir haciendo *refactor*.
+- Iremos haciendo *refactors* para llegar a una base de código mantenible.
 
-Vamos a implementar una tablero de kanban con drag and drop
+Vamos a implementar un tablero de *kanban* con *drag and drop*.
 
 ## Resumen
 
@@ -33,32 +33,23 @@ En React tenemos varias librerías que los implementan, las más populares:
 
 Lo primero ¿Qué librería elegimos?
 
-Esta un decisión complicada, para que nos sirve para siguientes decisiones vamos a ver que factores nos pueden ayudar a tomar la decisión
-(ninguno de estos es determinante per se pero si nos pueden guiar a tomar la decisión menos mala):
+Esta un decisión complicada, para que nos sirve para siguientes decisiones vamos a ver qué factores nos pueden ayudar a tomar la decisión (ninguno de estos es determinante pero si nos pueden guiar a tomar la decisión menos mala):
 
-- El primero que debemos de ver es la licencia del proyecto ¿Es licencia MIT? Aquí nos podemos encontrar con un problema si esa librería
-  tiene una licencia restrictiva (podría ser que no permitiera el uso comercial o que tuviéramos que publicar nuestro código fuente como open source)
+- El primero que debemos de ver es la licencia del proyecto ¿Es licencia MIT? Aquí nos podemos encontrar con un problema si esa librería tiene una licencia restrictiva (podría ser que no permitiera el uso comercial o que tuviéramos que publicar nuestro código fuente como open source)
 
-- Uno obvio es el número de estrellas que tiene el proyecto, un proyecto con un buen número de estrellas suele quere decir que es un proyecto
-  que lo ha usado bastante gente y que seguramente encontramos bastante ayuda en StackOverflow.
+- Uno obvio es el número de estrellas que tiene el proyecto, un proyecto con un buen número de estrellas suele querer decir que es un proyecto que lo ha usado bastante gente y que seguramente encontramos bastante ayuda en *StackOverflow*.
 
-- Otro factor importante ¿Cómo de actualizado está el proyecto? Vamos a ver cuando se hizo la última release y como de actualizado está el
-  proyecto, ya que igual en su día fue muy popular, pero ahora se encuentra abandonado (igual no es compatible con la última versión de React,
-  o tiene fallos de seguridad que no se han corregido...).
+- Otro factor importante ¿Cómo de actualizado está el proyecto? Vamos a ver cuándo se hizo la última *release* y cómo de actualizado está el proyecto, ya que igual en su día fue muy popular, pero ahora se encuentra abandonado (igual no es compatible con la última versión de React, o tiene fallos de seguridad que no se han corregido...).
 
-- Otro tema interesante es comparar el flujo de descargas de npm trends, aquí sacamos una grafica de descargas (por cierto muy divertido
-  ver el bajón de descargas en el periodo navideño), aquí podemos descargar cual es la que más descargas tienes y como evoluciona a lo
-  largo del tiempo (que no quiere decir que sea la mejor...)
+- Otro tema interesante es comparar el flujo de descargas de *npm trends*, aquí sacamos una gráfica de descargas (por cierto muy divertido ver el bajón de descargas en el periodo navideño), aquí podemos descargar cual es la que más descargas tienes y cómo evoluciona a lo largo del tiempo (que no quiere decir que sea la mejor...)
 
 - Es buena idea fijarnos en el autor y grupo que ha desarrollado la librería:
 
   - Si es un autor de otras librerías de renombre podemos esperar que la librería tenga cierta calidad.
-  - Si es pertenece a un grupo de autores y además cuenta con un buen sponsorship, podemos esperar que la librería tenga su mantenimiento.
-  - Si es de una empresa (Facebook, Microsoft, Google, Air Bnb) podemos esperar un código supuestamente de calidad, y en cuanto a mantenimiento
-    depende, puede que mientras le haga falta tenga una evolución perfecta, en cuanto no puede entrar en vía muerta.
+  - Si pertenece a un grupo de autores y además cuenta con un buen *sponsorship*, podemos esperar que la librería tenga su mantenimiento.
+  - Si es de una empresa (*Facebook*, *Microsoft*, *Google*, *Air Bnb*) podemos esperar un código supuestamente de calidad, y en cuanto a mantenimiento depende, puede que mientras le haga falta tenga una evolución perfecta, en cuanto no puede entrar en vía muerta.
 
-- Después de ver estos temas rápidos, toca ponernos con el readme y ver que ofrece, igual nos encontramos de primeras que el proyecto
-  ya no tiene mantenimiento oficial.
+- Después de ver estos temas rápidos, toca ponernos con el readme y ver que ofrece, igual nos encontramos de primeras que el proyecto ya no tiene mantenimiento oficial.
 
 - Seguimos con temas técnicos, evaluar que funcionalidad ofrece, y que queremos implementar.
 
@@ -69,20 +60,19 @@ Esta un decisión complicada, para que nos sirve para siguientes decisiones vamo
   - Posts de terceros.
   - ...
 
-- Otro tema a tener en cuenta es hacer un audit de la librería y ver si tiene dependencias anticuadas etc..
+- Otro tema a tener en cuenta es hacer un audit de la librería y ver si tiene dependencias anticuadas etc...
 
-- Esto nos puede servir para descartar alguna opción, el último paso es construir una prueba de concepto con los desafíos más comunes que necesitamos
-  y probarlo, es importante pedir tiempo en un sprint para hacer un spike ya que una decisión erronea puede tener un coste a largo plazo muy alto.
+- Esto nos puede servir para descartar alguna opción, el último paso es construir una prueba de concepto con los desafíos más comunes que necesitamos para probarlo, es importante pedir tiempo en un sprint para hacer un *spike* ya que una decisión errónea puede tener un coste a largo plazo muy alto.
 
 Vamos a ponernos manos a la obra evaluando las librerías que hemos visto antes:
 
 - React Draggable:
   - Licencia MIT
   - El proyecto tiene 7900 estrellas
-  - El autor y grupo son los creadores de React Grid Layout.
+  - El autor y grupo son los creadores de *React Grid Layout*.
   - Nos encontramos que es líder en descargas.
-  - El sistema de releases no tiene tags (en la página de git dicen que no sacan desde 2016, pero mirando commit en abril se saco la 4.4.5)
-  - En el readme no hablan de compatibilidad con React 18
+  - El sistema de *releases* no tiene *tags* (en la página de git dicen que no sacan desde 2016, pero mirando commit en abril se sacó la 4.4.5)
+  - En el *readme* no hablan de compatibilidad con React 18
   - No cuenta con página de documentación.
 
 La impresión que da es que fue un proyecto popular, tiene una solución simple, pero esta mantenido a medias.
@@ -92,21 +82,21 @@ La impresión que da es que fue un proyecto popular, tiene una solución simple,
   - 18K estrellas
   - Tiene página de documentación oficial
   - La última release fue el 5 de abril de 22 (la versión 16)
-  - El proyecto parece tener movimiento, el ultimo issue con actividad de los autores es de finales de julio del 22.
-  - Su proyecto principal es React DND
+  - El proyecto parece tener movimiento, el último *issue* con actividad de los autores es de finales de julio del 22.
+  - Su proyecto principal es *React DND*
   - En el readme no se indica que el proyecto esté discontinuado
-  - Mirando la documentación tiene implementación con hooks
-  - El proyecto está escrito con TypeScript
+  - Mirando la documentación tiene implementación con *hooks*
+  - El proyecto está escrito con *TypeScript*
 
 Parece que es un proyecto popular, con una buena documentación, con un mantenimiento activo.
 
 - React-beautiful-dnd
   - Licencia Apache 2.0 (no es MIT, pero en principio es bastante permisiva, habría que verlo en detalle por si acaso)
   - 28K estrellas
-  - Hay un video tutorial pero es antiguo (de antes de los React Hooks)
-  - En la página principal comentan que el proyecto tienen un mantenimiento mínimo correctivo, pero no hay planes de desarrollo
+  - Hay un video tutorial pero es antiguo (de antes de los *[React Hooks]()*)
+  - En la página principal comentan que el proyecto tienen un mantenimiento mínimo correctivo, pero no hay planes de desarrollo.
   - Detrás del proyecto hay una empresa (Atlassian -> Trello :))
-  - Leyendo la documentación (not for everyone) se indica que es una especialización de Drag & Drop para listas, es decir una abstracción
+  - Leyendo la documentación (i) se indica que es una especialización de Drag & Drop para listas, es decir una abstracción
     comparado con React Dnd
   - El proyecto está escrito con JavaScript
   - La última release es de agosto de 22
@@ -115,97 +105,92 @@ Parece un proyecto popular, que resuelve un problema concreto, pero cuyo manteni
 
 Ahora vendría la prueba más importante:
 
-- Estudiar en que casos de uso se va a usar el drag a drop.
+- Estudiar en qué casos de uso se va a usar el *drag and drop*.
 - Elegir un par de librerías.
-- Montar un spike y ir probando ambas.
+- Montar un *spike* e ir probando ambas.
 - Documentar los resultados.
 - Decidir con cual nos quedamos.
 
-En nuestro caso esta prueba que es la más importante (power point no compila), nos la saltamos por razones de tiempo y porque esto
-es un curso, vamos a tirar con React Dnd, que en la primera fase salió como ganadora
-(al ser un kanban esto podría ser un error de bulto ya que la librería de
-Atlassian esta justo especializada en eso pero así jugamos a más bajo nivel).
+En nuestro caso esta prueba que es la más importante (*power point* no compila), nos la saltamos por razones de tiempo y porque esto es un curso, vamos a tirar con *React Dnd*, que en la primera fase salió como ganadora(al ser un *kanban* esto podría ser un error de bulto ya que la librería de *Atlassian* está justo especializada en eso pero así jugamos a más bajo nivel).
 
 ### Boilerplate
 
-- Primero copiamos el ejemplo anterior, y hacemos un _npm install_
+- Primero copiamos _00-boiler-plate_, y hacemos un _npm install_
 
 ```bash
 npm install
 ```
 
-- Antes de ponernos con el Drag & Drop vamos a definir nuestro componente de
-  kanban, para ello:
+- Antes de ponernos con el *Drag & Drop* vamos a definir nuestro componente de *kanban*, para ello:
 
-  - Vamos a crear un proyecto de prueba (si lo que hemos hecho está bien
-    montado podremos pasarlo al proyecto real y conectarlo), de esta manera:
+  - Vamos a crear un proyecto de prueba (si lo que hemos hecho está bien montado podremos pasarlo al proyecto real y conectarlo), de esta manera:
     - Avanzamos de forma ligera (hay veces que proyectos grandes tardan en
       transpilar o meten ruido con otros temas).
-    - Nos centramos en la funcionalidad y tenemos un arbol de ficheros
+    - Nos centramos en la funcionalidad y tenemos un árbol de ficheros
       más pequeño.
-  - Creamos una carpeta en la encapsular esta funcionalidad (más adelante
+  - Creamos una carpeta para encapsular esta funcionalidad (más adelante
     si es necesario refactorizaremos la estructura de carpetas si hace falta.)
-  - Pensamos en que modelo de datos nos hace falta.
-  - Creamos una fuente de datos mock y un api de datos mock que cumpla con
+  - Pensamos en qué modelo de datos nos hace falta.
+  - Creamos una fuente de datos *mock* y una *api* de datos *mock* que cumpla con
     el contrato real y sea fácilmente sustituible por el real.
   - Empezamos a crear el árbol de componentes, preocupándonos más de funcionalidad
     que de diseño (ya habrá tiempo de ajustarlo).
   - Una vez que lo tenemos armado, podemos empezar a refactorizar para sacar
     funcionalidad fuera de los componentes, o podemos seguir implementando, en
-    este caso decidimos implementar la funcionalidad de drag & drop.
-  - Para Drag & Drop analizamos las estrategias que tenemos en este caso
+    este caso decidimos implementar la funcionalidad de *drag & drop*.
+  - Para *Drag & Drop* analizamos las estrategias que tenemos en este caso
     y apostamos por una.
-  - Arrancamos la funcionalidad de drag & drop, y empieza la fiesta.
+  - Arrancamos la funcionalidad de *drag & drop*, y empieza la fiesta.
   - Nos encontramos con un montón de casos arista, que iremos resolviendo
-    (algunos con dolor y tirando de stackoverflow :))
+    (algunos con dolor y tirando de *stackoverflow* :))
   - Mientras implementamos detectamos ciertos métodos que son pura lógica
     de negocios (algoritmos / funciones de ayuda que no tienen que ver con React),
     si las tenemos claramente definidas las sacamos de los componentes e implementamos
     pruebas unitarias (incluso podemos seguir TDD).
   - ¿Y en los componentes seguimos TDD o metemos prueba? Ahora mismo tenemos un
-    problema y es que no sabemos bien que hacer y nuestro kanban puede sufrir
+    problema y es que no sabemos bien que hacer y nuestro *kanban* puede sufrir
     cambios drásticos, en este caso, yo abogaría por jugar y entender la librería,
     y ya plantear pruebas unitarias cuando sepamos que aproximación vamos a tomar
     (incluso cuando pasemos al proyecto real reescribir con pruebas unitarias en la
     cabeza).
-  - Otro tema importante en cuanto ponga el boilerplate y haga install toca crear
-    un repo de git local, ¿Y eso porqué?
-    - Vamos guardando commits de hitos que vamos alcanzando.
-    - Me permite jugar con el código y si la lio parda puedo hacer un discard
-      changes.
+  - Otro tema importante en cuanto ponga el *boilerplate* y haga *install* toca crear
+    un repo de git local, ¿Y eso por qué?
+    - Vamos guardando *commits* de hitos que vamos alcanzando.
+    - Me permite jugar con el código y si la lío parda puedo hacer un *discard*
+      *changes*.
     - Ya tenemos un primer paso dado, si quisiéramos compartir la prueba
       con un compañero sólo tendríamos que hacer un set origin y subirlo a algún
       proveedor (github, gitlab, bitbucket, etc)...
 
 ¿Por qué seguir este proceso?
 
-1. No sabemos como resolver este problema, así que es bueno hacer un solución
-   aparte (spike) para jugar con plastilina y no tener la presión de que estoy
+1. No sabemos cómo resolver este problema, así que es bueno hacer un solución
+   aparte (*spike*) para jugar con plastilina y no tener la presión de que estoy
    con el proyecto real y que tengo que subir algo ya.
 
-2. No sabemos como funciona la librería de drag & drop, seguramente tengamos
+2. No sabemos cómo funciona la librería de *drag & drop*, seguramente tengamos
    que cambiar muchas cosas en este prueba.
 
 3. Nos obliga a pensar en una solución más genérica que no esté atada a
    la arquitectura y dominio de la solucíon real (por supuesto tenemos que
    chequear que lo que estamos implementando se integre bien).
 
-4. Es más fácil poder extraer un pedazo de código o incluso montar un codesandbox
+4. Es más fácil poder extraer un pedazo de código o incluso montar un *codesandbox*
    y preguntar dudas en la comunidad sin exponer piezas de código o datos confidenciales.
 
-4.Una vez que tenemos "la mierda prueba" lista ya si podemos empezar a
+4. Una vez que tenemos "la mierda prueba" lista ya si podemos empezar a
 implementarla en la solución real, teniendo en la cabeza pruebas unitarias
-y de ensamblaje (descubriremos casos arista que no hemos probado), refactors,
+y de ensamblaje (descubriremos casos arista que no hemos probado), *refactors*,
 y adaptación al dominio.
 
 ### Modelo de datos y api
 
 Vamos a empezar por ver que estructura de datos nos va a hacer falta:
 
-- Un tablero de kanban va a tener una lista de columnas.
+- Un tablero de *kanban* va a tener una lista de columnas.
 - Una lista de columnas va a tener una lista de tareas/historias (podemos llamarle
   cards)
-- Una card la vamos a definir simple de momento, con un id y un título.
+- Una card la vamos a definir simple de momento, con un *id* y un título.
 
 Oye pero en mi aplicación real tengo más campos o campos diferentes
 ¿Qué hacemos?
@@ -213,21 +198,21 @@ Oye pero en mi aplicación real tengo más campos o campos diferentes
 - De primeras queremos probar la librería, nos podemos preocupar de esto
   más adelante.
 
-- Una vez que nos toque lo primero es crear un mapper, es decir una función
-  que transforme del dominio de mi aplicación al dominio de entidades del kanban
-  y viceversa, de esta manera no manchamos la implementación del kanban con
+- Una vez que nos toque lo primero es crear un *mapper*, es decir una función
+  que transforme del dominio de mi aplicación al dominio de entidades del *kanban*
+  y viceversa, de esta manera no manchamos la implementación del *kanban* con
   temas específicos de mi aplicación, que después hagan más difícil de
-  usarlo en otras aplicaciones o incluso en la misma app con otras entidades.
+  usarlo en otras aplicaciones o incluso en la misma *app* con otras entidades.
 
 - Nos toca plantearnos escenarios:
 
-  - Igual tenemos claro que queremos tener titulo, descripción del card y poco más, en este caso mapeamos entidades y a lo sumo añadimos un campo "object" o
-    "data" en el que tenemos la entidad original (esto se podría mirar de tipar
+  - Igual tenemos claro que queremos tener título, descripción del *card* y poco más, en este caso mapeamos entidades y a lo sumo añadimos un campo "*object*" o
+    "*data*" en el que tenemos la entidad original (esto se podría mirar de tipar
     con genéricos).
 
   - Igual queremos una edición rica en la carta o flexible, una opción podría
-    ser pasarle como children o en props el componente que queremos pintar en el
-    card en concreto.
+    ser pasarle como *children* o en props el componente que queremos pintar en el
+    *card* en concreto.
 
 > Mucho cuidado con el Meta Meta y el irnos a super genéricos, cuanto más nos
 > dirigimos en esa dirección la curva de complejidad del componente se dispara a
@@ -236,8 +221,7 @@ Oye pero en mi aplicación real tengo más campos o campos diferentes
 > mi consejo aquí siempre es "hacer varios jarrones" antes de "intentar hacer el
 > molde".
 
-Así pues de momento creamos el siguiente modelo, primero definimos un item
-(card):
+Así pues de momento creamos el siguiente modelo, primero definimos un *item* (*card*):
 
 _./src/kanban/model.ts_
 
@@ -268,8 +252,7 @@ export interface CardContent {
 + }
 ```
 
-Y ahora definimos la entidad de _Kanban_ que de momento ponemos como
-una lista de columnas.
+Y ahora definimos la entidad de _Kanban_ que de momento ponemos como una lista de columnas.
 
 _./src/kanban/model.ts_
 
@@ -290,11 +273,7 @@ export interface Column {
 + }
 ```
 
-- Y para terminar, es _KanbanContent_ será la entidad de punto de entrada
-  que instanciemos en nuestro componente, así que mejor tener una función
-  para instanciar un kanban vacío que sirva como punto de entrada seguro
-  (creamos un factory), de esta manera nos ahorramos ir haciendo chequeos
-  de campo nulo etc...
+- Y para terminar, _KanbanContent_ será la entidad de punto de entrada que instanciaremos en nuestro componente, así que mejor tener una función para instanciar un *kanban* vacío que sirva como punto de entrada seguro(creamos un *factory*), de esta manera nos ahorramos ir haciendo chequeos de campo nulo etc...
 
 _./src/kanban/model.ts_
 
@@ -308,32 +287,23 @@ export interface KanbanContent {
 + });
 ```
 
-Toca crear una api simulada para cargar los datos, así como datos de prueba,
-a tener en cuenta:
+Toca crear una api simulada para cargar los datos, así como datos de prueba, a tener en cuenta:
 
 - La api debe tener la misma firma que si estuviéramos cargando datos
-  desde una API Rest (async y promesas), así cuando reemplacemos el mock
+  desde una *API Rest* (async y promesas), así cuando reemplacemos el *mock*
   por datos reales sólo vamos a tener que tocar en la API.
 
-- Los datos mock los definimos en un fichero aparte, así es más fácil de
+- Los datos *mock* los definimos en un fichero aparte, así es más fácil de
   eliminar y no metemos ruido.
 
-De momento tanto api como mock lo vamos a definir dentro del componente kanban,
-en la implementación final seguramente lo saquemos fuera de la carpeta
-(sea directamente la página de aplicación la que pida los datos a un servidor
-le pasemos un mapper y lo convirtamos a entidades de la aplicación), pero de
-momento no nos metemos aquí, mejor no meter más elementos de complejidad
-en la ecuación, primero gateamos, después andamos y finalmente corremos
-(es importante que esto sea un spike y que tengamos 2/3 semanas para jugar
-sin presión).
+De momento tanto api como *mock* lo vamos a definir dentro del componente *kanban*, en la implementación final seguramente lo saquemos fuera de la carpeta (sea directamente la página de aplicación la que pida los datos a un servidor le pasemos un *mapper* y lo convirtamos a entidades de la aplicación), pero de momento no nos metemos aquí, mejor no meter más elementos de complejidad en la ecuación, primero gateamos, después andamos y finalmente corremos (es importante que esto sea un *spike* y que tengamos 2/3 semanas para jugar sin presión).
 
-Los datos mock (estamos simulando en cards el proceso de creación del Kanban,
-toma inception :))
+Los datos *mock* (estamos simulando en *cards* el proceso de creación del Kanban, toma *inception* :))
 
 _./src/kanban/mock-data.ts_
 
 ```ts
-import { CardContent, KanbanContent } from "./model";
+import { KanbanContent } from "./model";
 
 export const mockData: KanbanContent = {
   columns: [
@@ -400,7 +370,7 @@ export const mockData: KanbanContent = {
 _./src/kanban/kanban.api.ts_
 
 ```ts
-import { CardContent, KanbanContent } from "./model";
+import { KanbanContent } from "./model";
 import { mockData } from "./mock-data";
 
 export const loadKanbanContent = async (): Promise<KanbanContent> => {
@@ -408,23 +378,21 @@ export const loadKanbanContent = async (): Promise<KanbanContent> => {
 };
 ```
 
-¿Por qué no empotramos los datos directamente en el container y a tirar
-millas? Es importante que la parte de UI se quede con el menor ruido
-posible, y es buena práctica sacar todo el código que se pueda que no tenga
+¿Por qué no empotramos los datos directamente en el *container* y a tirar millas? Es importante que la parte de UI se quede con el menor ruido posible, y es buena práctica sacar todo el código que se pueda que no tenga
 que ver con UI a ficheros TS planos, de esta manera:
 
 - Ayudamos a evitar que el componente se vuelva un monstruo: el típico
-  con 5000 lineas de código, con un sphaguetti.
+  con 5000 lineas de código, con un *sphaguetti*.
 - Al aislar código en TS ya sabemos que no es dependiente de React y un
   compañero que no sepa React puede trabajar en ese código sin problemas.
-- Es más fácil de testear, tenemos piezas que hacen una cosa y una sóla
+- Es más fácil de testear, tenemos piezas que hacen una cosa y una sola
   cosa.
 
 ### Componentes
 
 Vamos empezar a trabajar en el UI
 
-- Definamos el contenedor del kanban, lo primero un poco de estilado:
+- Definamos el contenedor del *kanban*, lo primero un poco de estilado:
 
 El div contenedor:
 
@@ -457,17 +425,10 @@ A tener en cuenta:
   (cuando la prueba sea un éxito, nos preocuparemos de darle estilo con el
   martillo fino, rem, media queries, etc...).
 - Lo mismo con los colores, tematización, ya aplicaremos esto cuando integremos
-  (aquí tocará decidir si aplicar directamente harcodear estilos o si exponer
+  (aquí tocará decidir si aplicar directamente *harcodear* estilos o si exponer
   una api de tematización)
 
-Si te fijas hay un montón de decisiones que podrían añadir ruido a nuestra
-prueba de concepto, nuestro objetivo como desarrolladores / arquitectos
-software es retrasar todas las decisiones que no sean indispensable y
-centrarnos en el núcleo de nuestra prueba de concepto (no está de más
-ir apuntando todo lo que va saliendo por el camino, tanto para tenerlo en
-cuenta más adelante, como para enumerarlo en la demo del spike y añadirlo
-a la user story de implementación real, es muy peligroso mostrar una demo
-que todo funcione y que el perfil no técnico piense que ya está todo hecho).
+Si te fijas hay un montón de decisiones que podrían añadir ruido a nuestra prueba de concepto, nuestro objetivo como desarrolladores / arquitectos software es retrasar todas las decisiones que no sean indispensable y centrarnos en el núcleo de nuestra prueba de concepto (no está de más ir apuntando todo lo que va saliendo por el camino, tanto para tenerlo en cuenta más adelante, como para enumerarlo en la demo del *spike* y añadirlo a la *user story* de implementación real, es muy peligroso mostrar una demo que todo funcione y que el perfil no técnico piense que ya está todo hecho).
 
 Vamos a definir el componente contenedor:
 
@@ -478,7 +439,6 @@ import React from "react";
 import {
   KanbanContent,
   createDefaultKanbanContent,
-  CardContent,
 } from "./model";
 import { loadKanbanContent } from "./kanban.api";
 import classes from "./kanban.container.css";
@@ -512,14 +472,11 @@ En este momento podemos elegir entre dos aproximaciones:
 - Nos ponemos a crear el componente columna y después el card y integramos
   en la aplicación principal a ver si se monta todo.
 - Integramos cuanto antes en el contenedor principal y empezamos a tener
-  feedback visual de que todo va conectando.
+  *feedback* visual de que todo va conectando.
 
-Mi consejo aquí es siempre ir a por la segunda solución, en cuanto antes podamos
-sacar cosas por la UI antes detectaremos problemas y será más fácil de arreglar,
-ya que hay menos código y menos componentes para ver si son los responsables
-de generar el fallo.
+Mi consejo aquí es siempre ir a por la segunda solución, en cuanto antes podamos sacar cosas por la UI antes detectaremos problemas y será más fácil de arreglar, ya que hay menos código y menos componentes para ver si son los responsables de generar el fallo.
 
-Así que vamos a crear un barrel dentro del kanban para exportar nuestro contenedor:
+Así que vamos a crear un *barrel* dentro del *kanban* para exportar nuestro contenedor:
 
 _./src/kanban/index.ts_
 
@@ -541,8 +498,7 @@ export const App = () => {
 };
 ```
 
-Es hora de probar que esto funciona (se tiene que ver un rectángulo grande
-vacio)... parece poca cosa pero con menos código he metido fallos grandes :).
+Es hora de probar que esto funciona (se tiene que ver un rectángulo grande vacío)... parece poca cosa pero con menos código he metido fallos grandes :).
 
 ```bash
 npm start
@@ -553,16 +509,14 @@ npm start
 Vamos a definir el componente de columnas:
 
 - Vamos a por el estilado.
-- En nuestro caso el componente columna va a recibir del contenedor el nombre de la misma y una lista de tareas (lo llamaremos content, aquí con el naming
-  tendríamos mucha discusión, quizás un nombre más apropiado podría ser
-  _cardContentCollection_).
+- En nuestro caso el componente columna va a recibir del contenedor el nombre de la misma y una lista de tareas (lo llamaremos *content*, aquí con el *naming* tendríamos mucha discusión, quizás un nombre más apropiado podría ser *cardContentCollection*).
 
 Sobre el estilado:
 
 - La columna va a ser otro contenedor flex.
 - Para la prueba va a tener un ancho fijo (apuntar martillo fino para después
   si añadir media queries para poner un ancho relativo o por porcentajes).
-- Le pondremos overflow por si hubiera más cards que espacio en la columna
+- Le pondremos *overflow* por si hubiera más *cards* que espacio en la columna
   (martillo fino todo, resolver esto cuando se integre en real)
 - Le añadimos un color de fondo a cada columna (TODO martillo fino aquí, o bien
   en la aplicación real usar los colores que vengan, o bien exponer una API de
@@ -584,16 +538,14 @@ _./src/kanban/column/column.component.css_
 }
 ```
 
-- Hora de tocar el código, como en el contenedor, montamos el mínimo, y
-  simplemente mostramos el nombre de cada card para probar que tenemos
-  un mínimo.
+- Hora de tocar el código, cómo en el contenedor, montamos el mínimo, y simplemente mostramos el nombre de cada *card* para probar que tenemos un mínimo.
 
 _./src/kanban/column/column.component.tsx_
 
 ```tsx
 import React from "react";
 import classes from "./column.component.css";
-import { CardContent } from "./model";
+import { CardContent } from "../model";
 
 interface Props {
   name: string;
@@ -616,8 +568,7 @@ export const Column: React.FC<Props> = (props) => {
 
 > Pregunta aquí... ¿Merecería la pena exponer la columna en el barrel?
 
-- Ya nos falta tiempo para probarlo :), vamos a integrarlo en nuestro
-  contenedor de Kanban:
+- Ya nos falta tiempo para probarlo :), vamos a integrarlo en nuestro contenedor de *Kanban*:
 
 _./src/kanban/kanban.container.tsx_
 
@@ -629,7 +580,7 @@ import {
   CardContent,
 } from "./model";
 import { loadKanbanContent } from "./container.api";
-+ import { Column } from "./column.component";
++ import { Column } from "./column/column.component";
 import classes from "./container.css";
 
 ```
@@ -653,19 +604,16 @@ import classes from "./container.css";
 npm start
 ```
 
-✅ Somos capaces de mostrar las columnas del kanban...
+✅ Somos capaces de mostrar las columnas del *kanban*...
 
-Esto empieza a tener buena pinta, ahora vamos a por el componente de card:
+Esto empieza a tener buena pinta, ahora vamos a por el componente de *card*:
 
 En cuanto estilado vamos a definir:
 
 - Una clase para estilar el card (ancho, borde...).
-- Una clase para estilar el handler sobre el que se hará drag
-  (podríamos haber elegido poder hacer drag en toda la card, pero mejor
-  delimitarlo a un área).
+- Una clase para estilar el *handler* sobre el que se hará *drag* (podríamos haber elegido poder hacer *drag* *en* toda la *card*, pero mejor delimitarlo a un área).
 
-El diseño es mínimo, más adelante habría que aplicar _martillo fino_ para
-dejar una card con aspecto profesional.
+El diseño es mínimo, más adelante habría que aplicar _martillo fino_ para dejar una *card* con aspecto profesional.
 
 _./src/kanban/card.component.css_
 
@@ -721,7 +669,7 @@ _./src/kanban/column/column.component.tsx_
 import React from "react";
 import classes from "./column.component.css";
 import { CardContent } from "./model";
-+ import {Card} from './card.component';
++ import {Card} from '../card.component';
 ```
 
 _./src/kanban/column/column.component.tsx_
@@ -739,22 +687,22 @@ _./src/kanban/column/column.component.tsx_
   );
 ```
 
-- A ver que tal sale :)
+- A ver qué tal sale :)
 
 ```bash
 npm start
 ```
 
-✅ Somos capaces de mostrar las cards...
+✅ Somos capaces de mostrar las *cards*...
 
-- Ya tenemos nuestro tablero montado, es hora de ver como va quedando
+- Ya tenemos nuestro tablero montado, es hora de ver cómo va quedando
   nuestra carpeta _kanban_ parece que hay muchos ficheros, sería buena idea
   organizar un poco, vamos a crear dos carpetas:
 - _components_: donde meteremos los componentes que no son contenedores.
 - _api_: donde meteremos los ficheros que se encargan de la comunicación
-  con el backend (que en este caso son mock).
+  con el *backend* (que en este caso son *mock*).
 
-Vamos a crear un barrel para cada una de ellas:
+Vamos a crear un *barrel* para cada una de ellas:
 
 _./src/kanban/components/index.ts_
 
@@ -769,7 +717,7 @@ _./src/kanban/api/index.ts_
 export * from "./kanban.api";
 ```
 
-Y arreglamos los imports de:
+Y arreglamos los *imports* de:
 
 - api
 - components
@@ -777,18 +725,15 @@ Y arreglamos los imports de:
 
 ### Drag & Drop
 
-Es hora de ir a por el _cogollo_ de la demo, vamos a implementar la funcionalidad
-de drag and drop entre columnas.
+Es hora de ir a por el _cogollo_ de la demo, vamos a implementar la funcionalidad de *drag and drop* entre columnas.
 
-- Vamos a instalar la librería _react-dnd_ que le hace falta
-  un _backend_ (ojo no es backend de servidor) para trabajar con drag & drop
-  en este caso elegimos la librería _react-dnd-html5-backend_.
+- Vamos a instalar la librería _react-dnd_ que le hace falta un _backend_ (ojo no es *backend* de servidor) para trabajar con *drag & drop* en este caso elegimos la librería _react-dnd-html5-backend_.
 
 ```bash
 npm install react-dnd react-dnd-html5-backend
 ```
 
-- Vamos a habilitar el proveedor de drag and drop a nivel de aplicación.
+- Vamos a habilitar el proveedor de *drag and drop* a nivel de aplicación.
 
 _./src/app.tsx_
 
@@ -808,9 +753,9 @@ export const App = () => {
 };
 ```
 
-- Siguiente paso, tenemos que definir que tipos de items vamos a habilitar para arrastrar:
-  - En este caso añadimos sólo las cards (a futuro podríamos también dar la opción de arrastrar columnas).
-  - La definición de _itemTypes_ la vamos a colocar debajo de _kanban_, si fuéramos a usarlo a nivel de aplicación global y kanban estuviera dentro de un panel de la ventana podríamos pensar en promocionar _ItemTypes_ a un nivel superior (de nuevo, martillo fino, igual con el drag and drop, ¿Lo dejamos a nivel de contenedor de kanban?).
+- Siguiente paso, tenemos que definir qué tipos de *items* vamos a habilitar para arrastrar:
+  - En este caso añadimos sólo las *cards* (a futuro podríamos también dar la opción de arrastrar columnas).
+  - La definición de _itemTypes_ la vamos a colocar debajo de _kanban_, si fuéramos a usarlo a nivel de aplicación global y *kanban* estuviera dentro de un panel de la ventana podríamos pensar en promocionar _ItemTypes_ a un nivel superior (de nuevo, martillo fino, igual con el *drag and drop*, ¿Lo dejamos a nivel de contenedor de *kanban*?).
 
 _./src/kanban/model.ts_
 
@@ -825,14 +770,14 @@ export interface CardContent {
 }
 ```
 
-- Siguiente paso, vamos a definir la acción de drag en el componente de card, para ello:
+- Siguiente paso, vamos a definir la acción de *drag* en el componente de *card*, para ello:
   - Hacemos uso del hook _useDrag_ de _react-dnd_.
   - Esto nos devuelve un array con tres entradas:
     - Item 0: aquí recibimos una serie de propiedades que nos ayudan a definir el comportamiento del drag.
-    - Item 1: un ref del objeto que queremos arrastrar (en este caso la card)
-    - Item 2: un ref del objeto que vamos a usar para poner como preview cuando arrastremos (aquí
+    - Item 1: un *ref* del objeto que queremos arrastrar (en este caso la *card*)
+    - Item 2: un *ref* del objeto que vamos a usar para poner como *preview* cuando arrastremos (aquí
       podemos también cambiar y usar una imagen).
-  - Las ref las tenemos que asociar:
+  - Las *ref* las tenemos que asociar:
     - Al componente que queremos arrastrar.
     - Al rectángulo verde sobre el que haremos drag
 
@@ -876,7 +821,7 @@ export const Card: React.FC<Props> = (props) => {
 };
 ```
 
-- Nos queda sólo un detalle, vamos a mostrar el card con una opacidad para marcar que es el elemento que se está arrastrando.
+- Nos queda sólo un detalle, vamos a mostrar el *card* con una opacidad para marcar que es el elemento que se está arrastrando.
 
 _./src/kanban/components/card.component.css_
 
@@ -892,22 +837,22 @@ _./src/kanban/components/card.component.css_
 npm start
 ```
 
-- De momento parece que todo va genial :), ahora toca el drop, de primeras podría parece algo fácil,vamos a partir por la opción más lógica definir las diferentes columnas (backlog, doing, done) cómo áreas de drop (después volveremos sobre esto), de primeras sólo ponemos un console.log para ver que llega el evento de drop.
+- De momento parecer que todo va genial :), ahora toca el *drop*, de primeras podría parece algo fácil, vamos a partir por la opción más lógica definir las diferentes columnas (*backlog*, *doing*, *done*) cómo áreas de *drop* (después volveremos sobre esto), de primeras sólo ponemos un *console.log* para ver que llega el evento de *drop*.
 
 ✅ Somos capaces de hacer drag (bueno no va fino del todo peeerooo)...
 
 Cómo funciona este _useDrop_:
 
-- Nos devuelve un array con dos entradas:
-  - Item 0: aquí recibimos una serie de propiedades que nos ayudan a definir el comportamiento del drop.
-  - Item 1: un ref del objeto que queremos que sea el área de drop (en este caso la columna)
-- Las ref las tenemos que asociar:
+- Nos devuelve un *array* con dos entradas:
+  - Item 0: aquí recibimos una serie de propiedades que nos ayudan a definir el comportamiento del *drop*.
+  - Item 1: un *ref* del objeto que queremos que sea el área de *drop* (en este caso la columna)
+- Las *ref* las tenemos que asociar:
   - Al componente que queremos que sea el área de drop.
 
 Dentro del _useDrop_ definimos un objeto con las siguientes entradas:
 
-- accept: aquí definimos que tipo de items vamos a aceptar, en este caso sólo las cards.
-- drop: aquí definimos la acción que vamos a realizar cuando se produzca el drop, en este caso sólo vamos a mostrar un mensaje, fijate que en esta funcion devolvemos información acerca de donde se ha soltado el item, esta info la recibe el EndDrag.
+- accept: aquí definimos que tipo de *items* vamos a aceptar, en este caso sólo las *cards*.
+- drop: aquí definimos la acción que vamos a realizar cuando se produzca el *drop*, en este caso sólo vamos a mostrar un mensaje, fíjate que en esta función devolvemos información acerca de donde se ha soltado el *item*, esta *info* la recibe el *EndDrag*.
 
 _./src/kanban/components/column.component.css_
 
@@ -952,21 +897,21 @@ export const Column: React.FC<Props> = (props) => {
 };
 ```
 
-- Si probamos y vemos la consola vemos que se ejecuta tanto el drop como el drag... seguimos en racha :), ahora toca que se realiza la operación "de verdad".
+- Si probamos y vemos la consola vemos que se ejecuta tanto el *drop* como el *drag*... seguimos en racha :), ahora toca que se realiza la operación "de verdad".
 
-- En teoría añadir la card a la columna destino es sencillo, en el drop tenemos el punto de entrada y el item, que vamos a hacer:
+- En teoría añadir la card a la columna destino es sencillo, en el *drop* tenemos el punto de entrada y el *item*, que vamos a hacer:
 
-  - El componente column no tiene el estado de las listas, sólo ve el contenido de su card.
-  - Creamos una prop de tipo callback para informar al componente de tipo kanba container.
-  - El kanban container se encarga de actualizar la lista y ya la información fluye hacia abajo.
+  - El componente column no tiene el estado de las listas, sólo ve el contenido de su *card*.
+  - Creamos una *prop* de tipo *callback* para informar al componente de tipo *kanba* *container*.
+  - El *kanban container* se encarga de actualizar la lista y ya la información fluye hacia abajo.
 
 Varios detalles aquí:
 
-- Empezamos a sufrir de "drill prop" subiendo y bajando datos y callbacks por las props, empieza a oler a que usar un contexto podría ser de ayuda (otro TODO para la lista de "martillo fino") y este es el momento en que te pueden preguntar _¿Pero si funciona para que lo vas a tocar? tampoco está tan mal..._ ese es el problema que si empezamos así y sumamos un montón de _tampoco está tan mal_ acabamos con un _esto está muy mal y no hay quien lo mantenga_, así que más adelante evaluaremos si centralizar en un contexto a aporta o no.
+- Empezamos a sufrir de "*drill prop*" subiendo y bajando datos y *callbacks* por las *props*, empieza a oler a que usar un contexto podría ser de ayuda (otro TODO para la lista de "*martillo fino*") y este es el momento en que te pueden preguntar _¿Pero si funciona para qué lo vas a tocar? tampoco está tan mal..._ ese es el problema que si empezamos así y sumamos un montón de _tampoco está tan mal_ acabamos con un _esto está muy mal y no hay quien lo mantenga_, así que más adelante evaluaremos si centralizar en un contexto a aporta o no.
 
-- De momento vamos a añadir la card al final de la lista, si has usado herramientas como trello te habrás dado cuenta de que cuando haces drop te inserta la tarjeta entre las tarjetas en las que lo hayas soltado, esto, apuntado para el TODO de "martillo fino", y lo resolveremos más adelante (este es de los "detalles" que nos va a llevar bastante trabajo de arreglar).
+- De momento vamos a añadir la *card* al final de la lista, si has usado herramientas como *trello* te habrás dado cuenta de que cuando haces *drop* te inserta la tarjeta entre las tarjetas en las que lo hayas soltado, esto, apuntado para el TODO de "*martillo fino*", y lo resolveremos más adelante (este es de los "*detalles*" que nos va a llevar bastante trabajo de arreglar).
 
-Empezamos por el componente column (zona de drop), añadimos una propiedad de tipo callback para informar al componente padre que se ha producido el drop, y la ejecutamos en el _useDrop_.
+Empezamos por el componente column (zona de *drop*), añadimos una propiedad de tipo *callback* para informar al componente padre que se ha producido el *drop*, y la ejecutamos en el _useDrop_.
 
 _./src/kanban/components/column.component.tsx_
 
@@ -999,9 +944,9 @@ export const Column: React.FC<Props> = (props) => {
     },
 ```
 
-- Vamos a implementar el handler en el kanban container.
+- Vamos a implementar el *handler* en el *kanban container*.
 
-En esta caso tenemos que insertar un card en la lista que toque, tenemos que hacerlo de forma inmutable para asegurarnos que todo se actualiza correctamente, no nos vale un _push_, podemos por ejemplo usar el spread operator para crear una nueva lista con el nuevo card, pero como vamos a tener que manejar inmutabilidad en varios sitios, vamos a hacer uso de _immer_ una librería que nos permita trabajar de manera mutable en una _caja de arena_ y después lo convierte todo a inmutable.
+En esta caso tenemos que insertar un *card* en la lista que toque, tenemos que hacerlo de forma inmutable para asegurarnos que todo se actualiza correctamente, no nos vale un _push_, podemos por ejemplo usar el *spread operator* para crear una nueva lista con el nuevo *card*, pero como vamos a tener que manejar inmutabilidad en varios sitios, vamos a hacer uso de _immer_ una librería que nos permita trabajar de manera mutable en una _caja de arena_ y después lo convierte todo a inmutable.
 
 - Instalamos la librería:
 
@@ -1045,14 +990,13 @@ _./src/kanban/kanban.container.tsx_
         <Column key={column.id}
                 name={column.name}
                 content={column.content}
-+               onAddCard={handleAddCard} />
++               onAddCard={handleAddCard}
         />
       ))}
     </div>
 ```
 
-Hasta aquí bien, nos hace falta saber la columna en la que tenemos que hacer el drop, aquí podíamos ver si añadir esa información al card, peeerooo... esa información ya la tenemos, si te fijas en el propio kanban container cuando le pasamos las card en el map del componente _column_ ya sabemos a que columna
-pertenece, ¿Qué podemos hacer? utilizar curry.
+Hasta aquí bien, nos hace falta saber la columna en la que tenemos que hacer el drop, aquí podíamos ver si añadir esa información al *card*, peeerooo... esa información ya la tenemos, si te fijas en el propio *kanban container* cuando le pasamos las *card* en el map *del* componente _column_ ya sabemos a qué columna pertenece, ¿Qué podemos hacer? utilizar curry.
 
 _./src/kanban/kanban.container.tsx_
 
@@ -1092,22 +1036,22 @@ _./src/kanban/kanban.container.tsx_
 npm start
 ```
 
-- ¡ Bueeeenoooo ! Este es el momento en el que te vienes arriba y piensas que esto de drag & drop es pan comido... vamos a empezar a meternos en el fango, primero completemos el drop...
+- ¡Bueeeenoooo! Este es el momento en el que te vienes arriba y piensas que esto de *drag & drop* es pan comido... vamos a empezar a meternos en el fango, primero completemos el *drop*...
 
 - Añadimos una tarjeta a la columna destino, pero necesitamos eliminarla de la columna origen, podemos seguir dos aproximaciones:
 
-  - En la card tenemos un evento "end" del drag en el que podemos comprobar que todo ha ido bien y eliminar la tarjeta de la columna origen.
+  - En la *card* tenemos un evento "*end*" del *drag* en el que podemos comprobar que todo ha ido bien y eliminar la tarjeta de la columna origen.
 
-  - En la columna destino podríamos en el AddCard del container hacer las dos operaciones: borrar la antigua de la columna que toque y añadir la nueva.
+  - En la columna destino podríamos en el *AddCard* del *container* hacer las dos operaciones: borrar la antigua de la columna que toque y añadir la nueva.
 
-¿Qué opcíon tomarías? ... esta decisión tan inocente vamos a ver que nos va a llevar a más de un quebradero de cabeza :).
+¿Qué opción tomarías? ... esta decisión tan inocente vamos a ver que nos va a llevar a más de un quebradero de cabeza :).
 
 Vamos a arrancar por la primera, tenemos dos puntos de entrada:
 
-- El evento "end" del drag, donde eliminamos la card antigua.
-- El evento "drop" del drop, donde la añadimos a la columna que toque.
+- El evento "*end*" del drag, donde eliminamos la *card* antigua.
+- El evento "*drop*" del *drop*, donde la añadimos a la columna que toque.
 
-El drop ya lo tenemos implementado, vamos a por el end drag, en principio podría ser algo así como
+El *drop* ya lo tenemos implementado, vamos a por el *end drag*, en principio podría ser algo así como
 
 _./src/kanban/components/card.component.tsx_
 
@@ -1135,7 +1079,7 @@ _./src/kanban/components/card.component.tsx_
   }));
 ```
 
-Y vamos a burbujear esto hacía la columna y hacía el container (esto ya empieza a oler a contexto :),
+Y vamos a *burbujear* esto hacía la columna y hacía el *container* (esto ya empieza a oler a contexto :),
 apuntar martillo fino :))
 
 _./src/kanban/components/column.component.tsx_
@@ -1150,7 +1094,7 @@ interface Props {
 
 export const Column: React.FC<Props> = (props) => {
 -  const { name, content, onAddCard  } = props;
-+  const { name, content, onAddCard, onRemoveCard  } = props;
++  const { name, content, onAddCard, onRemoveCard } = props;
 ```
 
 _./src/kanban/components/column.component.tsx_
@@ -1162,14 +1106,14 @@ _./src/kanban/components/column.component.tsx_
       {content.map((card) => (
         <Card key={card.id}
               content={card}
-+             onRemoveCard={onRemoveCard} />
++             onRemoveCard={onRemoveCard}
               />
       ))}
     </div>
   );
 ```
 
-Vámonos al kanban container y vamos a implementar el remove card, vamos a currificar el id de la columna ¿Me decís vosotros como funcionaría?
+Vámonos al *kanban container* y vamos a implementar el *remove* *card*, vamos a *currificar* el *id* de la columna ¿Me decís vosotros cómo funcionaría?
 
 _./src/kanban/kanban.container.tsx_
 
@@ -1223,23 +1167,23 @@ _./src/kanban/kanban.container.tsx_
   );
 ```
 
-- Si nos paramos este código empieza a oler a que hace falta un refactor, empezamos a tener un _bombazo_ de código en el componente, pero bueno vamos a probar y ver nuestro drag & drop en acción:
+- Si nos paramos este código empieza a oler a que hace falta un *refactor*, empezamos a tener un _bombazo_ de código en el componente, pero bueno vamos a probar y ver nuestro *drag & drop* en acción:
 
 ```bash
 npm start
 ```
 
-En este momento nos entra el modo pánico... ¡ Esto ha dejado de funcionar y tiene un comportamiento caótico !
+En este momento nos entra el modo pánico... ¡Esto ha dejado de funcionar y tiene un comportamiento caótico !
 
 ✅ La hemos cagado...
 
-Prueba a arrastrar y soltar tarjetas y ver que pasa:
+Prueba a arrastrar y soltar tarjetas y ver qué pasa:
 
 - La primera vez que arrastras una tarjeta, desaparece de la columna origen y no aparece en la destino.
 - La segunda vez que arrastras una tarjeta, aparece la anterior en la columna origen y no aparece en la
   de destino :).
 
-Esto es un indicador de que nuestro código se está convirtiendo en una _castaña_,empieza a alcanzar el status de _spaghetti code_ y que es hora de refactorizar.
+Esto es un indicador de que nuestro código se está convirtiendo en una _castaña_, empieza a alcanzar el status de _spaghetti code_ y que es hora de refactorizar.
 
 Lo primero vamos a investigar porque pasa esto, os dejo un tiempo para que lo investiguéis, y me digáis que puede ser (iré dando pistas).
 
@@ -1247,17 +1191,16 @@ Lo primero vamos a investigar porque pasa esto, os dejo un tiempo para que lo in
 
 Pistas:
 
-- Estamos tratando con un callback, ¿que puede pasar con el estado si no tenemos cuidado?.
-- Comenta la linea en la que se borra el card.
+- Estamos tratando con un *callback*, ¿qué puede pasar con el estado si no tenemos cuidado?
+- Comenta la línea en la que se borra el *card*.
 
-**_SOLUCION_**
+**_SOLUCIÓN_**
 
-Lo que está pasando aquí es que al hacer un setState en el callback estamos tirando del valor antiguo que tenía la función (¿os acordáis del ejemplo de async closure?), entonces cuando hacemos un setState lo estamos haciendo con los valores de la columna antigua antes de hacer el drop (primero se ejecuta el
-drop después el end drag), de ahí el glitch que tenemos.
+Lo que está pasando aquí es que al hacer un *setState* en el *callback* estamos tirando del valor antiguo que tenía la función (¿os acordáis del ejemplo de *async closure*?), entonces cuando hacemos un *setState* lo estamos haciendo con los valores de la columna antigua antes de hacer el *drop* (primero se ejecuta el *drop* después el *end drag*), de ahí el *glitch* que tenemos.
 
 Vamos primero a poner un parche para que funcione, y luego toca pararse y refactorizar antes de que esto se nos vaya de las manos.
 
-La solución es tocar en una sola línea de código, en el setState del callback, vamos a pasarle una función en vez del nuevo valor, en está función se nos alimenta el último estado, no el que se quedó colgado en el closure:
+La solución es tocar en una sola línea de código, en el *setState* del *callback*, vamos a pasarle una función en vez del nuevo valor, en esta función se nos alimenta el último estado, no el que se quedó colgado en el *closure*:
 
 _./src/kanban/kanban.container.ts_
 
@@ -1265,7 +1208,7 @@ _./src/kanban/kanban.container.ts_
     if (columnIndex !== -1) {
 -      setKanbanContent(
 +      setKanbanContent((kanbanContentLatest) =>
--        produce(kanbanContentLatest, (draft) => {
+-        produce(kanbanContent, (draft) => {
 +        produce(kanbanContentLatest, (draft) => {
 -          draft.columns[columnIndex].content = kanbanContent.columns[
 +          draft.columns[columnIndex].content = kanbanContentLatest.columns[
@@ -1279,43 +1222,43 @@ _./src/kanban/kanban.container.ts_
 ✅ Funciona, volvemos a sentirnos dios peeeroooo...
 
 - Vale con esto las cosas vuelven a funcionar, pero nos deja mal sabor de boca:
-  - El código que se ha quedado es un galimatias.
-  - Partimos de que controlamos el orden, primero drop después end drag (tendríamos que añadir lo mismo en el EndDrag).
+  - El código que se ha quedado es un galimatías.
+  - Partimos de que controlamos el orden, primero *drop* después *end drag* (tendríamos que añadir lo mismo en el *EndDrag*).
   - Tenemos riesgo de introducir más condiciones de carrera.
   - Todavía no hemos empezado a _rascar casos arista_, por ejemplo:
-    - Que pasa si arrastro y suelto una card en la misma columna.
-    - Que pasa si quiero insertar una card siguiendo un orden.
+    - Qué pasa si arrastro y suelto una card en la misma columna.
+    - Qué pasa si quiero insertar una card siguiendo un orden.
     - ...
 
 Ahora mismo toca parar y refactorizar, que un código funcione no quiere decir que sea una solución aceptable, vamos a plantear este escenario, podemos pensar en varias aproximaciones:
 
-- Una podría ser utilizar useReducer, tener el estado en el reducer y las acciones AddCard y RemoveCard,de esta manera sacamos estado fuera y nos quitamos el problema del closure hell. Este caso podría ser útil si la zona de drag y la de drop no se hablaran, pero en este caso tenemos un container comun.
+- Una podría ser utilizar *useReducer*, tener el estado en el *reducer* y las acciones *AddCard* y *RemoveCard*,de esta manera sacamos estado fuera y nos quitamos el problema del *closure hell*. Este caso podría ser útil si la zona de *drag* y la de *drop* no se hablaran, pero en este caso tenemos un *container* común.
 
-- La segunda es dejar que el drop se encarga de todo, de esta manera:
+- La segunda es dejar que el *drop* se encargue de todo, de esta manera:
   - Tenemos un único punto de entrada (no hay condiciones de carrera).
-  - Simplificamos código (al menos la parte de drag y el burbujeo hacia arriba).
+  - Simplificamos código (al menos la parte de *drag* y el burbujeo hacia arriba).
 
-De momento vamos a por la segunda opción, dejando al puerta a utilizar useReducer a futuro (por ejemplo se complica la cosa y ahora queremos distinguir entre drag y eliminar y drag y copiar, etc...)
+De momento vamos a por la segunda opción, dejando la puerta a utilizar *useReducer* a futuro (por ejemplo se complica la cosa y ahora queremos distinguir entre *drag* y eliminar y *drag* y copiar, etc...)
 
 Qué solución podemos darle:
 
-- En vez de AddCard vamos a llamar a este evento MoveCard (tienen más sentido, a futuro seguramente pongamos un AddCard para crear una tarjeta en blanco).
+- En vez de *AddCard* vamos a llamar a este evento *MoveCard* (tienen más sentido, a futuro seguramente pongamos un *AddCard* para crear una tarjeta en blanco).
 
-- Se va originar en el columnDrop, y la información que va a tener va a ser:
+- Se va originar en el *columnDrop*, y la información que va a tener va a ser:
 
   - Columna Origen.
-  - Item.
+  - *Item*.
 
 - La columna destino la podemos seguir sacando con el curry (también podríamos plantearnos pasarla para abajo).
 
 Esto origina un evento en el que se burbujea al contenedor esta información y se hace todo de una tacada, eliminar el elemento y añadir el nuevo.
 
-Que es lo positivo de esto... que además de quedarnos el código más claro, resolvemos el caso arista de arrastro
+Qué es lo positivo de esto... que además de quedarnos el código más claro, resolvemos el caso arista de arrastro
 y suelto en la misma columna.
 
-¡ Manos a la obra !
+¡Manos a la obra!
 
-- Lo primero vamos a añadir a la estructura del drag el column Id al que pertenece la tarjeta (podríamos
+- Lo primero vamos a añadir a la estructura del *drag* el *column Id* al que pertenece la tarjeta (podríamos
   iterar por las mismas, pero si ya sabemos de partida la columna origen, nos ahorramos ese paso)
 
 _./src/kanban/model.ts_
@@ -1336,9 +1279,9 @@ export const createDefaultKanbanContent = (): KanbanContent => ({
 + });
 ```
 
-- En el container vamos a pasar el columnId para que lo recoja la card:
+- En el *container* vamos a pasar el *columnId* para que lo recoja la *card*:
 
-_./src/kanban/kanbanContainer.tsx_
+_./src/kanban/kanban-container.tsx_
 
 ```diff
   return (
@@ -1392,7 +1335,7 @@ _./src/kanban/components/column.components.tsx_
     </div>
 ```
 
-> ¿Es buena idea pasar el columnId de forma separada? ¿ Deberíamos pasar el card? ¿Y si creamos una entidad VM para pasar el card con el valor del columnId (de hecho seguramente en servidor tendríamos el id de la columna a la que pertenece cada card)? Si almacenamos el columnId en el card también podríamos tener un sólo array de cards... todas estas opciones tienen sus pros y sus contras, en este caso vamos a pasar el columnId de forma separada.
+> ¿Es buena idea pasar el columnId de forma separada? ¿Deberíamos pasar el card? ¿Y si creamos una entidad VM para pasar el card con el valor del columnId (de hecho seguramente en servidor tendríamos el id de la columna a la que pertenece cada card)? Si almacenamos el columnId en el card también podríamos tener un sólo array de cards... todas estas opciones tienen sus pros y sus contras, en este caso vamos a pasar el columnId de forma separada.
 
 _./src/kanban/components/card.components.tsx_
 
@@ -1423,7 +1366,7 @@ _./src/kanban/components/card.components.tsx_
 +    item: createDragItemInfo(columnId,content),
 ```
 
-Eliminamos la parte del drop:
+Eliminamos la parte del *drop*:
 
 ```diff
   const [{ opacity }, drag, preview] = useDrag(() => ({
@@ -1444,7 +1387,7 @@ Eliminamos la parte del drop:
   }));
 ```
 
-Y vamos a gestionar el bubble up desde la columna:
+Y vamos a gestionar el *bubble up* desde la columna:
 
 _./src/kanban/components/column.component.tsx_
 
@@ -1510,13 +1453,7 @@ _./src/kanban/components/column.component.tsx_
   );
 ```
 
-Y vamos a realizar los cambios en el container:
-
-_./src/kanban/kanban.container.tsx_
-
-```diff
-
-```
+Y vamos a realizar los cambios en el *container*:
 
 _./src/kanban/kanban.container.tsx_
 
@@ -1607,29 +1544,29 @@ _./src/kanban/kanban.container.tsx_
   );
 ```
 
-✅ Codigo un poquito más claro, sigamos...
+✅ Código un poquito más claro, sigamos...
 
-- Bueno ya lo tenemos algo más estable, nos queda un último escollo que es en vez de añadir la carta al final siempre que hacemos drop, que la inserte en medio si la soltamos en mitad de la columna, esto no va a ser fácil ya que tenemos que calcular la posición en la que cae la card y ver sobre que card destino se ha posado y calcular el indice del array...
+- Bueno ya lo tenemos algo más estable, nos queda un último escollo que es en vez de añadir la carta al final siempre que hacemos *drop*, que la inserte en medio si la soltamos en mitad de la columna, esto no va a ser fácil ya que tenemos que calcular la posición en la que cae la *card* y ver sobre que *card* destino se ha posado y calcular el índice del array...
 
 Antes de empezar con esto vamos a hacer limpia de código, que pasos vamos a tomar:
 
 - Simplificar los componentes (_vaciar el cangrejo_).
-- Evitar el prop drill hell usando Contexto o useReducer.
+- Evitar el *prop drill hell* usando Contexto o *useReducer*.
 
 ### Simplificar los componentes
 
 Lo primero, vamos a _vaciar el cangrejo_ tenemos componentes con mucho código, podemos:
 
 - Extraer parte del código a lógica de negocios (le podemos añadir tests).
-- Podemos sacarlo a custom hooks (aquí le podríamos añadir tests, o esperar a ver si el tema de insertar en medio impacta mucho en el código).
+- Podemos sacarlo a *custom hooks* (aquí le podríamos añadir tests, o esperar a ver si el tema de insertar en medio impacta mucho en el código).
 
-Vamos a ir evaluando componentes, empezamos por el kanban container:
+Vamos a ir evaluando componentes, empezamos por el *kanban container*:
 
-- La parte en la que creamos el kanbanContent y hacemos la carga inicial la podíamos envolver en un custom hook.
+- La parte en la que creamos el *kanbanContent* y hacemos la carga inicial la podíamos envolver en un *custom hook*.
 
-- El HandleMoveCard tiene logica que se puede pasar a funciones de negocio sin estado que sean fácilmente testeables.
+- El *HandleMoveCard* tiene lógica que se puede pasar a funciones de negocio sin estado que sean fácilmente testeables.
 
-- Creamos el custom hook (lo vamos a dejar dentro del fichero del container, pero lo podríamos sacar a un fichero aparte):
+- Creamos el *custom hook* (lo vamos a dejar dentro del fichero del *container*, pero lo podríamos sacar a un fichero aparte):
 
 _./src/kanban/kanban.container.tsx_
 
@@ -1662,9 +1599,9 @@ export const KanbanContainer: React.FC = () => {
 -  }, []);
 ```
 
-- Vamos a extraer la lógica de búsqueda de columna, añadir y eliminar card a un método de negocio, de primeras en bruto (aquí sería buena idea añadir tests para ver que funciona como esperamos), vamos a ponerlo tal cual y después lo optimizamos.
+- Vamos a extraer la lógica de búsqueda de columna, añadir y eliminar *card* a un método de negocio, de primeras en bruto (aquí sería buena idea añadir tests para ver que funciona como esperamos), vamos a ponerlo tal cuál y después lo optimizamos.
 
-_./src/kanban.business.ts_
+_./src/kanban/kanban.business.ts_
 
 ```ts
 import { CardContent, KanbanContent } from "./model";
@@ -1715,7 +1652,7 @@ Arrancamos en modo test en otro terminal:
 npm run test:watch
 ```
 
-_./src/kanban.business.spec.ts_
+_./src/kanban/kanban.business.spec.ts_
 
 ```ts
 import { moveCardColumn } from "./kanban.business";
@@ -1947,9 +1884,9 @@ describe("Kanban business", () => {
 
 > Podríamos haber usado jest.each: https://www.npmjs.com/package/jest-each
 
-El fichero business podríamos dejarlo más simple, iremos a por él más tarde (otro item para la lista de _martillo fino_)
+El fichero *business* podríamos dejarlo más simple, iremos a por él más tarde (otro *item* para la lista de _martillo fino_)
 
-Ahora que funciona vamos a hacer el refactor en el container:
+Ahora que funciona vamos a hacer el *refactor* en el *container*:
 
 _./src/kanban/kanban.container.tsx_
 
@@ -2014,45 +1951,45 @@ export const KanbanContainer: React.FC = () => {
 
 ✅ Nos sentimos un poco más limpios :)...
 
-- No está mal como se ha quedado, a futuro si el tema de drag & drop crece (se añade más funcionalidad), podríamos plantearnos encapsularla todo en un hook.
+- No está mal como se ha quedado, a futuro si el tema de *drag & drop* crece (se añade más funcionalidad), podríamos plantearnos encapsularla todo en un *hook*.
 
 - Vamos ahora a por la columna:
   - Este componente tal y como esta no haría falta refactorizarlo.
-  - Si empieza a llenarse de código, podríamos plantearnos sacar la funcionalidad de drop a u custom hook que podría llamarse _useCardDrop_ y le pasamos por parametro el callback de onMoveCard y pasamos como return del hook el ref que hay que poner en el elemento que queremos que sea dropable.
+  - Si empieza a llenarse de código, podríamos plantearnos sacar la funcionalidad de *drop* a un *custom hook* que podría llamarse _useCardDrop_ y le pasamos por parámetro el *callback* de *onMoveCard* y pasamos como *return* del *hook* el ref *que* hay que poner en el elemento que queremos que sea *dropable*.
 
-De momento no lo vamos a hacer, aquí tenemos una regla y es la de "recojo carrete":
+De momento no lo vamos a hacer, aquí tenemos una regla y es la de "*recojo carrete*":
 
-- Vamos haciendo refactors hasta que el código se vea limpio y entendible.
+- Vamos haciendo *refactors* hasta que el código se vea limpio y entendible.
 - Esperamos que hayan cambios a futuro que puede que hagan más complejo ese código, entonces refactorizamos.
-- A veces me puedo pasar refactorizando, en ese caso hago como alguien que practica la pesca "recojo carrete" y tiro a la versión anterior.
+- A veces me puedo pasar refactorizando, en ese caso hago como alguien que practica la pesca "*recojo carrete*" y tiro a la versión anterior.
 
 Vamos a por la card:
 
-- En card pasa algo parecido, podríamos extraer el drag en un hook, pero en principio no lo vamos a hacer ya que el componente de momento es simple.
-- Podría ser buena idea extraerlo para implementar pruebas unitarias del hook en concreto.
+- En card pasa algo parecido, podríamos extraer el *drag* en un *hook*, pero en principio no lo vamos a hacer ya que el componente de momento es simple.
+- Podría ser buena idea extraerlo para implementar pruebas unitarias del *hook* en concreto.
 
 ### Pasar a contexto o useReducer
 
 Aunque hemos hecho limpia, seguimos teniendo un código un poco lioso:
 
-- Hay propiedades que viajan de container a card.
-- Hay callbacks que viajan de card a container.
+- Hay propiedades que viajan de *container* a *card*.
+- Hay *callbacks* que viajan de *card* a *container*.
 
 Esto es complicado de seguir, además que en el container tenemos mucho estado metido y lógica de actualización metida, podríamos plantear:
 
-- Almacenar en un contexto el estado de las columnas/cards y exponerlo a nivel de container con un provider.
-- Utilizar useReducer a nivel de container y pasar el dispatch, creando una acción para la carga inicial y otra para la actualización de la posición de la card.
+- Almacenar en un contexto el estado de las columnas/cards y exponerlo a nivel de *container* con un *provider*.
+- Utilizar *useReducer* a nivel de *container* y pasar el *dispatch*, creando una acción para la carga inicial y otra para la actualización de la posición de la *card*.
 
-Ambas opciones tienen sus pros y su contras:
+Ambas opciones tienen sus pros y sus contras:
 
-- El contexto es interesante, pero metemos getContext por mitad de la jerarquía.
-- El Reducer añade mucho orden pero tenemos que ir pasando dispatch de padre a hijo aunque un componente de la jerarquía no lo use.
+- El contexto es interesante, pero metemos *getContext* por mitad de la jerarquía.
+- El *Reducer* añade mucho orden pero tenemos que ir pasando *dispatch* de padre a hijo aunque un componente de la jerarquía no lo use.
 
 En este caso nos vamos a quedar con la solución del contexto:
 
 - Vamos a definir el contexto del kanban:
 
-_./src/kanban/provider/kanban.context.tsx_
+_./src/kanban/providers/kanban.context.tsx_
 
 ```tsx
 import React from "react";
@@ -2078,7 +2015,7 @@ export const KanbanContext = React.createContext<KanbanContextModel>({
 });
 ```
 
-_./src/kanban/provider/kanban.provider.tsx_
+_./src/kanban/providers/kanban.provider.tsx_
 
 ```tsx
 import React from "react";
@@ -2131,9 +2068,7 @@ export const KanbanProvider: React.FC<Props> = ({ children }) => {
 };
 ```
 
-- Vamos a colocar el context en el app donde se instancia el kanban, así
-  si creamos más de un kanban no compartirán estado (también, podríamos
-  haber creado un componente wrapper dentro de la carpeta kanban).
+- Vamos a colocar el *context* en el *app* donde se instancia el *kanban*, así si creamos más de un *kanban* no compartirán estado (también, podríamos haber creado un componente *wrapper* dentro de la carpeta *kanban*).
 
 _./src/kanban/index.ts_
 
@@ -2146,11 +2081,10 @@ _./src/app.tsx_
 
 ```diff
 import React from "react";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import { DndProvider } from "react-dnd";
 - import { KanbanContainer } from "./kanban";
 + import { KanbanContainer, KanbanProvider } from "./kanban";
-
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { DndProvider } from "react-dnd";
 
 export const App = () => {
   return (
@@ -2163,9 +2097,7 @@ export const App = () => {
 };
 ```
 
-- Vamos a hacer limpia de _kanban.container_ y añadir nuestro contexto
-  (vemos que lo dejamos todo funcionando y después empezaremos a quitar
-  propiedades en los columns y cards para tirar de contexto).
+- Vamos a hacer limpia de _kanban.container_ y añadir nuestro contexto (vemos que lo dejamos todo funcionando y después empezaremos a quitar propiedades en los *columns* y *cards* para tirar de contexto).
 
 _./src/kanban/kanban.container.tsx_
 
@@ -2173,10 +2105,10 @@ _./src/kanban/kanban.container.tsx_
 import React from "react";
 - import produce from "immer";
 import {
-  KanbanContent,
+-  KanbanContent,
 -  createDefaultKanbanContent,
 -  CardContent,
--  DragItemInfo,
+   DragItemInfo,
 } from "./model";
 import { loadKanbanContent } from "./api";
 import { Column } from "./components";
@@ -2210,7 +2142,7 @@ export const KanbanContainer: React.FC = () => {
 
   const handleMoveCard =
     (columnDestinationId: number) => (dragItemInfo: DragItemInfo) => {
-      const { columnId: columnOriginId, content } = dragItemInfo;
+-      const { columnId: columnOriginId, content } = dragItemInfo;
 
 +      moveCard(columnDestinationId, dragItemInfo);
 -      setKanbanContent((kanbanContentLatest) =>
@@ -2241,9 +2173,16 @@ export const KanbanContainer: React.FC = () => {
 };
 ```
 
-- Primer paso del refactor dado, ahora vamos a quitar drill prop de la column
-  y la card (podríamos eliminar más propiedades y añadir helpers en el contexto,
-  ¿Merece la pena? ¿Qué opinas?).
+- Primer paso del *refactor* dado, ahora vamos a quitar *drill prop* de la *column* y la card *(*podríamos eliminar más propiedades y añadir *helpers* en el contexto, ¿Merece la pena? ¿Qué opinas?
+
+_./src/kanban/kanban.container.tsx_
+
+```diff
+import React from "react";
+- import { DragItemInfo } from "./model";
+import { loadKanbanContent } from "./api/kanban.api";
+import { Column } from "./components/column.component";
+```
 
 _./src/kanban/kanban.container.tsx_
 
@@ -2312,54 +2251,47 @@ export const Column: React.FC<Props> = (props) => {
   }));
 ```
 
-- En la card no tenemos callback drill props.
+- En la *card* no tenemos *callback drill props*.
 
-De momento nos quedamos así con el refactor, vamos a hacer una prueba
-rápida y ver que todo sigue funcionando.
+De momento nos quedamos así con el refactor, vamos a hacer una prueba rápida y ver que todo sigue funcionando.
 
 ¿Qué hemos ganado?
 
-- Simplificado drill prop.
+- Simplificado *drill prop*.
 - Separador contenedor de estado.
-- Eliminado curry al asignar el callback de move column.
+- Eliminado *curry* al asignar el *callback* de *move column*.
 
 ### Insertar cards
 
-Hasta ahora hemos estado haciendo drops de las cartas al final de la columna,
-pero cuando yo arrastro y suelto normalmente quiero intercalar la card en una
-posición determinada.
+Hasta ahora hemos estado haciendo *drops* de las cartas al final de la columna, pero cuando yo arrastro y suelto normalmente quiero intercalar la *card* en una posición determinada.
 
 Para esto podemos optar por dos aproximaciones:
 
-- Cuando hago drop, itero por los _divs_ de cada card y veo donde cae el
-  la coordenada drop con respecto a mi card y con eso calculo el indice para
+- Cuando hago *drop*, itero por los _divs_ de cada *card* y veo donde cae en
+  la coordenada *drop* con respecto a mi *card* y con eso calculo el índice para
   insertar.
 
-- Otra opción es que las cards se conviertan en areas de drop y añada una card vacía
+- Otra opción es que las *cards* se conviertan en áreas de *drop* y añada una *card* vacía
   oculta que ocupe el resto de la columna.
 
-La segunda opción parece un poco "hack", pero en teoría podría ser la que menos
+La segunda opción parece un poco "*hack*", pero en teoría podría ser la que menos
 quebraderos de cabeza podría dar (te animo a que pruebes a implementarla).
 
 Pero... ¿Por qué la primera opción nos va a dar guerra?
 
-- Nuestra area de drop es la columna.
-- A priori ReactDnd no sabe que coordenada tiene cada card en esa columna destino.
-- Tenemos que buscar una forma de calcularla... aquí podríamos pensar: usamos ref :)... bien pero no tenemos un card, tenemos un array de cards, nos haría falta un
-  ref por cada card, es decir un array de refs, y además estas ref son dinámicas,
-  puedo añadir y quitar cards de una columna.
+- Nuestra área de *drop* es la columna.
+- A priori *ReactDnd* no sabe que coordenada tiene cada *card* en esa columna destino.
+- Tenemos que buscar una forma de calcularla... aquí podríamos pensar: usamos *ref* :)... bien pero no tenemos un *card*, tenemos un array de *cards*, nos haría falta un *ref* por cada *card*, es decir un array de *refs*, y además estas *ref* son dinámicas, puedo añadir y quitar *cards* de una columna.
 
 ¿Cómo podemos hacer esto?
 
-- Vamos a crear un registro de refs (uno por cada card de la columna), usaremos un array (se pueden mirar [optimizaciones](https://stackoverflow.com/questions/54633690/how-can-i-use-multiple-refs-for-an-array-of-elements-with-hooks)).
+- Vamos a crear un registro de *refs* (uno por cada *card* de la columna), usaremos un *array* (se pueden mirar [optimizaciones](https://stackoverflow.com/questions/54633690/how-can-i-use-multiple-refs-for-an-array-of-elements-with-hooks)).
 
-- Este registro de refs lo vamos a recalcular en cada render
-  (los elementos han podido cambiar), se podía optimizar para recalcular
-  sólo si han cambiado ciertas props.
+- Este registro de *refs* lo vamos a recalcular en cada render (los elementos han podido cambiar), se podía optimizar para recalcular sólo si han cambiado ciertas *props*.
+  
+- El registro de *refs* lo enlazo con el listado de *Cards*.
 
-- El registro de refs lo enlazo con el listado de Cards.
-
-- Vamos a empezar por definir el tipo de registro de refs.
+- Vamos a empezar por definir el tipo de registro de *refs*.
 
 Vamos a crear la lista de refs que se asociaran al repintar el componente.
 
@@ -2373,8 +2305,7 @@ _./src/kanban/components/column.tsx_
   return (
 ```
 
-- Y ahora vamos a asociar cada ref a cada card (para el nombre de la propiedad
-  accedo por el operador de array).
+- Y ahora vamos a asociar cada *ref* a cada *card* (para el nombre de la propiedad accedo por el operador de array).
 
 _./src/kanban/components/column.tsx_
 
@@ -2395,11 +2326,7 @@ _./src/kanban/components/column.tsx_
   );
 ```
 
-Esto nos falla, ¿Por qué? Los ref de primeras sólo los podemos usar
-en componentes primitivos, ¿Qué tenemos que hacer para usar un ref en
-un componente custom? Los _forwardRef_, vamos a definirlo en el card
-(añadimos un div más para nuevo ref, podríamos estudiar si podemos asignar
-más de un ref... martillo fino :))):
+Esto nos falla, ¿Por qué? Los *ref* de primeras sólo los podemos usar en componentes primitivos, ¿Qué tenemos que hacer para usar un *ref* en un componente *custom*? Los forwardRef, vamos a definirlo en el *card* (añadimos un div más para nuevo ref*,* podríamos estudiar si podemos asignar más de un *ref*... *martillo fino* :))):
 
 _./src/kanban/components/card.component.tsx_
 
@@ -2432,10 +2359,9 @@ _./src/kanban/components/card.component.tsx_
 + });
 ```
 
-Ya parece que lo tengo, vamos a implementar un método que teniendo en cuenta la coordenada X,Y del drop, me lo compare con las X,Y de las card y si encuentra una que este en esa zona me devuelva el indice en el array de cards (se podría hacer algo más fino y si cae en la mitad superior que de el indice anterior y si es la mitad inferior que de el indice siguiente... esto para la lista de martillo fino :)).
+Ya parece que lo tengo, vamos a implementar un método que teniendo en cuenta la coordenada X,Y del *drop*, me lo compare con las X,Y de las *card* y si encuentra una que este en esa zona me devuelva el índice en el array de *cards* (se podría hacer algo más fino y si cae en la mitad superior que del índice anterior y si es la mitad inferior que del índice siguiente... esto para la lista de *martillo fino* :)).
 
-Este método esta propio para añadirle pruebas unitarias y ver que funciona
-como esperamos y en diferentes casos arista...
+Este método esta propio para añadirle pruebas unitarias y ver que funciona cómo esperamos y en diferentes casos arista...
 
 _./src/kanban/components/column.business.ts_
 
@@ -2480,7 +2406,7 @@ import { KanbanContext } from "../providers/kanban.context";
 + import {getArrayPositionBasedOnCoordinates} from "./column.business";
 ```
 
-Y vamos a sacar un console.log con la posición a ver que tal funciona:
+Y vamos a sacar un console.log con la posición a ver qué tal funciona:
 
 _./src/kanban/components/column.tsx_
 
@@ -2507,8 +2433,7 @@ Vamos a probarlo:
 npm start
 ```
 
-- Vamos a eliminar el console.log, para ello vamos a añadir un parámetro
-  más a moveCard.
+- Vamos a eliminar el console.log, para ello vamos a añadir un parámetro más a *moveCard*.
 
 _./src/kanban/components/column.tsx_
 
@@ -2608,9 +2533,7 @@ _./src/kanban/kanban.business.ts_
   }
 ```
 
-Vamos a arreglar las pruebas que se han roto (añadimos el parámetro
-para que pase e inserte al final, tendríamos que añadir más
-casos y probar inserciones):
+Vamos a arreglar las pruebas que se han roto (añadimos el parámetro para que pase e inserte al final, tendríamos que añadir más casos y probar inserciones):
 
 _./src/kanban/kanban.business.spec.ts_
 
