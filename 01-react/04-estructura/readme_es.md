@@ -667,4 +667,29 @@ De esta manera nos ahorramos crear falsos reusables, y los componentes/funciones
 
 # Política de pruebas unitarias
 
+El tema del testing es muy controvertido, aquí el equipo debe llegar a un acuerdo en el qué estén cómodos y se pueda llevar a cabo.
+
+En nuestro caso, la decisión que tomamos es:
+
+- Trabajar con componentes UI a nivel de aplicación e incluir pruebas unitarias es complicad, ya que se suelen realizar muchos cambios, y se pierde parte de agilidad (refactors etc...), si detectamos un componente que sea crítico a nivel de aplicación si le añadimos pruebas unitarias, si no delegamos en e2e.
+- Lo bueno es que esos componentes los solemos dejar lo más vacio posible (_vaciar el cangrejo_), es decir si aplicamos Unit Testing en los siguientes elementos a nivel de aplicación (de ahí la importancia de vaciar los componentes):
+  - Hooks.
+  - Funciones puras y negocio (aquí podemos aplicar TDD)
+  - Mappers (aquí aplicamos TDD)
+  - API.
+- También aconsejamos realizar pruebas unitarias de _common_ y _core_, ya que es base de código que se va a usar de forma pesada en la aplicación.
+- El resto lo cubrimos con e2e testing el resto (cypress).
+
 # Herramientas
+
+Aquí cada equipo decide que herramientas usar y ser consistente con la elección.
+
+El mínimo con el que trabajamos es Prettier y el plugin para evitar que se haga un push sin haber aplicado prettier a los ficheros.
+
+Por otro lado utilizamos la herramienta para gestionar PR del proveedor de _Git_ que estamos usando, normalmente _Github_.
+
+Después se pueden añadir herramientas tanto en local y/o _CI/CD_:
+
+- Linting: Esto es decisión personal del equipo, a veces puede ser fuente de discusión sobre que reglas aplicar o no.
+- Herramientas para detección de malos olores en el código (por ejemplo SonarQube)
+- Herramientas para detección de vulnerabilidades y librerías que necesitan actualización (por ejemplo SonarQube).
