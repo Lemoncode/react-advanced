@@ -1,6 +1,6 @@
 import React from "react";
 
-interface InputProps {
+export interface InputProps {
   label: string;
   value: string;
   onChange: (newValue: string) => void;
