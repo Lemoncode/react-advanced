@@ -592,4 +592,79 @@ carpeta)
 
 # Nombrando funciones, eventos callbacks...
 
-Nombrar elementos de código, es una tarea complicada y la base para que un desarrollador (o el propio programador una semana después) pueda entender ese código o seguirlo, para ello es importante que el equipo esté de acuerdo en seguir una serie de reglas
+Nombrar elementos de código, es una tarea complicada y la base para que un desarrollador (o el propio programador una semana después) pueda entender ese código o seguirlo, para ello es importante que el equipo esté de acuerdo en seguir una serie de reglas.
+
+## Nombrando componentes, hooks, funciones
+
+Sobre los nombres de componentes:
+
+- Como estamos con React siempre tienen que empezar por mayusculas (los que empiezan por minúsculas están reservados para elementos básicos de HTML).
+- Hay que estudiar si añadir sufijos, si es un contenedor añadir al nombre del componente "Container", si es componente "Componente", esta decisión no es clara, tienes sus pros y cons:
+  - Por un lado cuando usamos un componente sabemos que lo es "patientComponent" porque lo tiene en el nombre (por ejenmplo no se confunda con la entidad \_Patient).
+  - Por otro lado es muy pesado arrastrar "Component" para cada componente.
+
+Sobre los nombres en entidades (model y vm), aquí el equipo debe de plantear si añadir sufijo _entity_ o _vm_ para distinguir: es buena idea añadir _vm_ a una entidad de Viewmodel, ya que así evitamos confusiones cuando importamos de forma automática entidades (no puede traer un nombre con entidad de api model y se nos puede complicar darnos cuenta de ese fallo tonto).
+
+Sobre los nombre de hooks, aquí seguir las recomendaciones del equipo de Facebook, es decir que empiecen por "use" y que sean verbos.
+
+Sobre los nombres de funciones, aquí hay que tener en cuenta que las funciones puras son muy fáciles de testear, por lo que es muy recomendable que sean verbos y que describan.
+
+## Eventos y callbacks
+
+Un tema importante cuando gestionamos eventos es saber de forma fácil que función maneja un evento en nuestro componente, y cual se burbujea con una
+props.
+
+Aquí es bueno que el equipo este de acuerdo en seguir una aproximación consistente.
+
+En nuestro caso proponemos nombrar lo manejadores de evento locales con el prefijo _handle_ y los que se burbujean con props, con el prefijo _on_,
+un ejemplo:
+
+```tsx
+export const App = () =>  {
+  const [value, setValue] = React.useState("");
+  const handleValueChange = (newValue : string) => {
+    setValue(newValue);
+  }
+
+  return (
+    <div>
+      <NameEdit onValueChange={handleValueChange}/>
+    </div>
+  );
+  )
+}
+
+interface Props {
+  value : string;
+  onValueChange : (value : string) => void;
+}
+
+export const NameEdit : React.FC<Props> = (props) => {
+
+  const handleInputChange = (e) => {
+    onValueChange(e.target.value);
+  }
+
+  return (
+    <input value={value} onChange={handleInputChange}/>
+  );
+}
+```
+
+# Principio de promoción
+
+Hay ocasiones en las que está claro que un componente / función / hook... va a ser reutilizable, en ese caso directamnete podemos
+colocarlo en la carpeta que toque.
+
+En otros, dicha funcionalidad sigue el siguiente camino:
+
+- Empieza a ser implementada, puede ser dentro del mismo componente, o en el mismo fichero.
+- Si vemos que gana peso se puede extraer a un fichero aparte.
+- Si vemos que es reutilizable se puede promocionar a la carpeta que toque (_common_, _core_, _common-app_).
+- Si este componente demuestra valía y se puede usar en otros proyectos, lo promocionamos a librería.
+
+De esta manera nos ahorramos crear falsos reusables, y los componentes/funciones/hooks se quedan en le nivel que toque.
+
+# Política de pruebas unitarias
+
+# Herramientas
