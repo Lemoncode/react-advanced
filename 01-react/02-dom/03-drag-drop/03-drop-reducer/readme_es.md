@@ -452,6 +452,57 @@ export const Card = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
 ```
 
 - Vale el drag entre cards perfecto, nos queda el drag cuando suelto en el espacio
-libre de una columna:
+  libre de una columna:
 
+_./src/kanban/components/empty-space-drop-zone.tsx_
 
+```diff
+import React from "react";
+import { useDrop } from "react-dnd";
+- import { DragItemInfo, ItemTypes } from "../model";
++ import { DragItemInfo, ItemTypes, ActionTypes } from "../model";
+import { KanbanContext } from "../providers/kanban.context";
+```
+
+_./src/kanban/components/empty-space-drop-zone.tsx_
+
+```diff
+export const EmptySpaceDropZone: React.FC<Props> = (props) => {
+  const { columnId } = props;
+-  const { moveCard, kanbanContent } = React.useContext(KanbanContext);
++ const { kanbanContent, dispatch } = React.useContext(KanbanContext);
+
+  const [collectedProps, drop] = useDrop(
+    () => ({
+      accept: ItemTypes.CARD,
+      drop: (item: DragItemInfo, monitor) => {
+-        moveCard(columnId, -1, item);
++       dispatch({
++         type: ActionTypes.MOVE_CARD,
++         payload: {
++           columnDestinationId: columnId,
++           dropCardId: -1,
++           dragItemInfo: item,
++         },
++       });
+
+        return {
+          name: `DropColumn`,
+        };
+      },
+      collect: (monitor: any) => ({
+        isOver: monitor.isOver(),
+        canDrop: monitor.canDrop(),
+      }),
+    }),
+    [kanbanContent]
+  );
+```
+
+# Ejercicio
+
+Vamos a práctica con useReducer:
+
+- Añadimos un botón al card para borrar un card.
+- Esa acción la creamos en el use reducer.
+- Lo conectamos todo.
