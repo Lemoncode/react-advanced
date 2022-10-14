@@ -6,7 +6,7 @@ export const createClient = () => {
 };
 
 export const App = () => {
-  const [myClient, setMyClient] = React.useState(() => createClient());
+  const [myClient, setMyClient] = React.useState(createClient());
 
   return (
     <>

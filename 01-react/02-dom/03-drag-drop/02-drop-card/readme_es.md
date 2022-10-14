@@ -1,9 +1,9 @@
 # 01 Refactor :)
 
-El ejemplo anterior fue una buena excusa para _pincharnos pan rallao_ y sacar una solución definiendo el área de drop
+El ejemplo anterior fue una buena excusa para _pincharnos pan rallao_ y sacar una solución definiendo el área de *drop*
 en la columna...
 
-Vamos ahora a cambiar la aproximación y definir cada card como área drop y veremos que el código se simplifica :D.
+Vamos ahora a cambiar la aproximación y definir cada *card* como área *drop* y veremos que el código se simplifica :D.
 
 Partimos del ejemplo anterior.
 
@@ -77,7 +77,7 @@ export const Column: React.FC<Props> = (props) => {
 };
 ```
 
-- Comprobamos que no hemos roto nada :) (bueno el drop no funciona).
+- Comprobamos que no hemos roto nada :) (bueno el *drop* no funciona).
 
 ```bash
 npm start
@@ -87,7 +87,7 @@ npm start
 
 - Vamos ahora a implementar el drop en las card:
 
-_./src/kanban/components/cards.tsx_
+_./src/kanban/components/card.component.tsx_
 
 ```diff
 import React from "react";
@@ -104,14 +104,14 @@ interface Props {
 }
 ```
 
-Vamos a añadir el useDrop
+Vamos a añadir el *useDrop*
 
-_./src/kanban/components/cards.tsx_
+_./src/kanban/components/card.component.tsx_
 
 ```diff
 export const Card = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
   const { content, columnId } = props;
-+ const { moveCard } = React.useContext(KanbanContext);
++ const { moveCard, kanbanContent } = React.useContext(KanbanContext);
 // (...)
 +  const [collectedProps, drop] = useDrop(() => ({
 +    accept: ItemTypes.CARD,
@@ -127,7 +127,7 @@ export const Card = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
 +      canDrop: monitor.canDrop(),
 +    }),
 +  }),
-    [kanbanContent]);
++    [kanbanContent]);
 
   return (
 +   <div ref={drop}>
@@ -142,10 +142,9 @@ export const Card = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
 });
 ```
 
-- En Movecard tenemos que hacer un refactor, vamos a pasarle el id de la
-  card y pasamos a buscar el indice en el contenedor.
+- En *Movecard* tenemos que hacer un *refactor*, vamos a pasarle el id de la *card* y pasamos a buscar el índice en el contenedor.
 
-_./src/kanban/components/cards.tsx_
+_./src/kanban/components/card.component.tsx_
 
 ```diff
   const [collectedProps, drop] = useDrop(() => ({
@@ -210,14 +209,8 @@ _./src/providers/kanban.provider.ts_
   };
 ```
 
-- Vamos a probar a ver que tal funciona :)... pues va bien siempre y cuando
-  soltemos encima de una carta.... Pero que pasa el trozo de columna que sale
-  en blanco? Vamos a hacer un truco, en el column aprovechamos que tenemos un
-  container flexbox y vamos a añadir un elemento que ocupa todo el espacio
-  restante y que sea area de drop, en cuanto se suelte algo allí le pasamos
-  como id -1 y en movecard añadimos el elemento al final del array
-  (lo marcamos en azul para ternelo localizado :), despues lo eliminaremos).
-
+- Vamos a probar a ver qué tal funciona :)... pues va bien siempre y cuando soltemos encima de una carta.... Pero ¿qué pasa con el trozo de columna que sale en blanco? Vamos a hacer un truco, en el *column* aprovechamos que tenemos un *container* *flexbox* y vamos a añadir un elemento que ocupa todo el espacio restante y que sea área de *drop*, en cuanto se suelte algo allí le pasamos como *id* -1 y en *movecard* añadimos el elemento al final del *array* (lo marcamos en azul para tenerlo localizado :), después lo eliminaremos).
+  
 - Creamos un elemento que llamaremos _EmptySpaceDropZone_
 
 _./src/kanban/components/empty-space-drop-zone.component.tsx_
@@ -234,7 +227,7 @@ interface Props {
 
 export const EmptySpaceDropZone: React.FC<Props> = (props) => {
   const { columnId } = props;
-  const { moveCard } = React.useContext(KanbanContext);
+  const { moveCard, kanbanContent } = React.useContext(KanbanContext);
 
   const [collectedProps, drop] = useDrop(
     () => ({
@@ -263,7 +256,7 @@ export const EmptySpaceDropZone: React.FC<Props> = (props) => {
 };
 ```
 
-_./src/kanban/components/column.tsx_
+_./src/kanban/components/column.component.tsx_
 
 ```diff
 + import { EmptySpaceDropZone } from "./empty-space-drop-zone.component";
@@ -281,12 +274,11 @@ _./src/kanban/components/column.tsx_
 +     <EmptySpaceDropZone columnId={columnId}/>
 ```
 
-- Vamos ahora a modificar el moveCard para tratar el caso en que cardId
-  es -1
+- Vamos ahora a modificar el *moveCard* para tratar el caso en que *cardId* es -1
+  
+- Vamos a añadir el *useDrop*
 
-- Vamos a añadir el useDrop
-
-_./src/kanban/components/column.tsx_
+_./src/kanban/components/column.component.tsx_
 
 ```diff
 export const Column: React.FC<Props> = (props) => {
@@ -302,43 +294,42 @@ Ahora tocaría refactorizar y hacer limpia.
 
 ## Refactor Card
 
-El componente _Card_ se ha quedado muy cargado, ¿Y si refactorizamos y creamos un hooks que englobe el useDrag y el useDrop?
-¿Lo sacamos a un fichero que se llama card-dnd.hook.tsx?
+El componente _Card_ se ha quedado muy cargado, ¿Y si refactorizamos y creamos un hooks que englobe el *useDrag* y el *useDrop*?
+¿Lo sacamos a un fichero que se llama *card-dnd.hook.tsx*?
 
 ## Borrar card
 
-¿Cómo implementarias el borrad una card?
+¿Cómo implementarías el borrar una *card*?
 
-- Podemos añadir icono (o boton sin diseño) en cada card.
+- Podemos añadir icono (o botón sin diseño) en cada *card*.
 - Podemos implementar borrar ¿Pasamos a context la operación?
-- Jugamos con immer y borramos.
+- Jugamos con *immer* y borramos.
 
 ## Mover columnas
 
 Otra opción interesante sería poder mover columnas de sitio, que podrías hacer:
 
-- Podríamos definir un tipo de item droppable columna.
-- Podríamos añadir un handler de drag en el título de la columna.
+- Podríamos definir un tipo de *item droppable* columna.
+- Podríamos añadir un *handler* de *drag* en el título de la columna.
 - Podemos definir la columna o una cabecera como zona de drop de columnas.
-- En cuanto se haga el drop calcular la posición y recolocar la columna usando immer.
+- En cuanto se haga el *drop* calcular la posición y recolocar la columna usando *immer*.
 
 ## Diseñar... como hacerlo más genérico.
 
-¿Hasta donde interesa hacer este control más genérico? Vamos a pensar en retos y soluciones:
+¿Hasta dónde interesa hacer este control más genérico? Vamos a pensar en retos y soluciones:
 
-- Ahora mismos tenemos la carga dentro del componente, ¿Como podríamos sacarlo? Y que pasa con las entidades que
-  no encajan con la card.
-
-- ¿Y si queremos poner un contenido custom en la card?
-  - Podríamos jugar con la propiedad children o pasarle un React Element como prop.
-  - Podríamos mirar de usarlo dentro de un map.
-  - Tendríamos que ver si usar any para los datos o si se pueden usar genéricos para pasar el tipo de datos.
+- Ahora mismo tenemos la carga dentro del componente, ¿Cómo podríamos sacarlo? Y que pasa con las entidades que no encajan con la *card*.
+  
+- ¿Y si queremos poner un contenido custom en la *card*?
+  - Podríamos jugar con la propiedad *children* o pasarle un *React Element* como *prop*.
+  - Podríamos mirar de usarlo dentro de un *map*.
+  - Tendríamos que ver si usar *any* para los datos o si se pueden usar genéricos para pasar el tipo de datos.
   - Si te fijas este caso es en el que empieza a subir la complejidad de forma exponencial a medida que hacemos
     esto más genérico.
 
 # Y...
 
-Después de este dolor, toca ver esta demo de React Beatiful Dnd
+Después de este dolor, toca ver esta demo de *React Beatiful Dnd*
 
 https://react-beautiful-dnd.netlify.app/
 
