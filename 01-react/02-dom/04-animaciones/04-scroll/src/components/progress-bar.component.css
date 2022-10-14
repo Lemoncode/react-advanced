@@ -3,3 +3,18 @@
   transform-origin: 0%;
   height: 10px;
 }
+
+circle {
+  stroke-dashoffset: 0;
+  stroke-width: 15%;
+  fill: none;
+}
+
+.background-circle {
+  stroke: Aquamarine;
+  opacity: 0.4;
+}
+
+.indicator-circle {
+  stroke: Aquamarine;
+}
