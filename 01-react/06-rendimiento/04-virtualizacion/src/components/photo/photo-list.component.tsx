@@ -27,9 +27,9 @@ export const PhotosList: React.FC<Props> = (props) => {
             itemCount={photos.length}
             itemSize={200}
           >
-            {({ index }) => {
+            {({ index, style }) => {
               const photo = photos[index];
-              return <PhotoCard key={photo.id} photo={photo} />;
+              return <PhotoCard key={photo.id} photo={photo} style={style} />;
             }}
           </FixedSizeList>
         )}

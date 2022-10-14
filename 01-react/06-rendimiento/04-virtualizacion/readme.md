@@ -1,28 +1,17 @@
 # Resumen
 
-En un cliente nos pueden pedir cargar listas con muchas filas
-de un tirón en una página, sin paginación ni nada...
+En un cliente nos pueden pedir cargar listas con muchas filas de un tirón en una página, sin paginación ni nada...
 
-Si vamos del tirón a montarlas en el DOM nos vamos a meter
-en problemas, la aplicación va a ir muy mal de rendimiento
-y esto va a penalizar tanto en experiencia de usuario, como
-en posicionamiento (mal rendimiento de la página).
+Si vamos del tirón a montarlas en el DOM nos vamos a meter en problemas, la aplicación va a ir muy mal de rendimiento y esto va a penalizar tanto en experiencia de usuario, como en posicionamiento (mal rendimiento de la página).
 
-Para evitar esto, existe un truco, que es sólo montar en el
-DOM las filas que estén visibles en ese momento (más unas
-cuantas por arriba y por abajo por si el usuario hacer scroll
-que sea rápido), e ir creando filas bajo demanda, de esta manera
-el usuario tiene la ilusión de que todos las filas están cargadas
-en el DOM.
+Para evitar esto, existe un truco, que es sólo montar en el DOM las filas que estén visibles en ese momento (más unas
+cuantas por arriba y por abajo por si el usuario hacer *scroll* que sea rápido), e ir creando filas bajo demanda, de esta manera el usuario tiene la ilusión de que todos las filas están cargadas en el DOM.
 
-A esta técnica se le llama _virtualización_, hace años había una
-librería que se llamaba _react-virtualized_, pero el mismo autor
-saco una nueva versión llamada _react-window_ vamos a montar
-un ejemplo con esto.
+A esta técnica se le llama _virtualización_, hace años había una librería que se llamaba _react-virtualized_, pero el mismo autor saco una nueva versión llamada _react-window_ vamos a montar un ejemplo con esto.
 
 # Manos a la obra
 
-- Partimos de 00-boilerplate.
+- Partimos de *00-boilerplate*.
 
 - Vamos a leer de una api una lista de 1000 fotos de una api de pruebas:
   https://jsonplaceholder.typicode.com/photos?_limit=1000
@@ -40,9 +29,9 @@ export interface Photo {
 }
 ```
 
-- Para ello vamos a definir un hook para cargar la lista de fotos:
+- Para ello vamos a definir un *hook* para cargar la lista de fotos:
 
-_./src/components/photo/use-photos.hook.ts_
+_./src/components/photo/use-photo.hook.ts_
 
 ```tsx
 import { useEffect, useState } from "react";
@@ -65,9 +54,9 @@ export const usePhotos = () => {
 };
 ```
 
-Vamos a crear un componente que muestre la lista de fotos tal cual:, para ello:
+Vamos a crear un componente que muestre la lista de fotos tal cual, para ello:
 
-- Creamos un componente card que muestre cada foto:
+- Creamos un componente *card* que muestre cada foto:
 
 _./src/components/photo/photo-card.component.css_
 
@@ -94,11 +83,12 @@ import classes from "./photo-card.component.css";
 
 interface Props {
   photo: Photo;
+  style?: React.CSSProperties;
 }
 
-export const PhotoCard: FunctionComponent<Props> = ({ photo }) => {
+export const PhotoCard: FunctionComponent<Props> = ({ photo, style }) => {
   return (
-    <div className={classes.container}>
+    <div className={classes.container} style={style}>
       <a href={photo.url}>
         <img src={photo.thumbnailUrl} alt={photo.title} />
       </a>
@@ -127,7 +117,6 @@ _./src/components/photo/photo-list.component.tsx_
 
 ```tsx
 import React from "react";
-import { usePhotos } from "./use-photos.hook";
 import { PhotoCard } from "./photo-card.component";
 import classes from "./photo-list.component.css";
 import { Photo } from "./photo.model";
@@ -153,14 +142,14 @@ export const PhotosList: React.FC<Props> = (props) => {
 };
 ```
 
-Vamos a añadir un barrel:
+Vamos a añadir un *barrel*:
 
 _./src/components/photo/index.ts_
 
 ```ts
 export * from "./photo-list.component";
 export * from "./photo.model";
-export * from "./use-photos.hook";
+export * from "./use-photo.hook";
 ```
 
 Vamos a darle uso en la App:
@@ -179,12 +168,12 @@ export const App = () => {
 };
 ```
 
-- Si estoy pasamos el light house podemos ver que tiene un rendimiento muy malo.
+- Si estoy pasamos el *light house* podemos ver que tiene un rendimiento muy malo.
 
 - Si incrementamos la consulta a 5000 elementos puedes ver que ya a la aplicación
-  le cuesta y que light house nos un numero bastante malo.
+  le cuesta y que *light house* nos un numero bastante malo.
 
-- Vamos a ver como podemos mejorar esto con react-window.
+- Vamos a ver cómo podemos mejorar esto con *react-window*.
 
 Aquí lo que hacemos es sólo pintas los elementos visible (y alguno más
 por si el usuario hace scroll), el resto se va creando bajo demanda.
@@ -195,8 +184,7 @@ por si el usuario hace scroll), el resto se va creando bajo demanda.
 npm install react-window @types/react-window
 ```
 
-- Como los elementos que estamos usando tienen todos el mismo
-  tamaño podemos usar el componente _FixedSizeList_.
+- Como los elementos que estamos usando tienen todos el mismo tamaño podemos usar el componente _FixedSizeList_.
 
 _./src/components/components/photo-list.component.tsx_
 
@@ -218,9 +206,9 @@ _./src/components/components/photo-list.component.tsx_
 -        <PhotoCard key={photo.id} photo={photo} />
 -      ))}
 +    <FixedSizeList width={800} height={800}  itemCount={photos.length} itemSize={200}>
-+      {({ index }) => {
++      {({ index, style }) => {
 +        const photo = photos[index];
-+        return <PhotoCard key={photo.id} photo={photo}/>;
++        return <PhotoCard key={photo.id} photo={photo} style={style} />;
 +      }}
 +    </FixedSizeList>
     </div>
@@ -236,7 +224,7 @@ _./src/components/components/photo-list.component.tsx_
 npm install react-virtualized-auto-sizer @types/react-virtualized-auto-sizer
 ```
 
-Vamos a modificar el estilado de la lista para que tome el 100% del viewport.
+Vamos a modificar el estilado de la lista para que tome el 100% del *viewport*.
 
 _./src/components/photo/photo-list.component.css_
 
@@ -253,7 +241,7 @@ _./src/components/photo/photo-list.component.css_
 }
 ```
 
-- Y vamos a incrustar autosizer en la lista:
+- Y vamos a incrustar *autosizer* en la lista:
 
 _./src/components/photo/photo-list.component.tsx_
 
@@ -282,9 +270,9 @@ _./src/components/photo/photo-list.component.tsx_
           itemCount={photos.length}
           itemSize={200}
         >
-          {({ index }) => {
+          {({ index, style }) => {
             const photo = photos[index];
-            return <PhotoCard key={photo.id} photo={photo} />;
+            return <PhotoCard key={photo.id} photo={photo} style={style} />;
           }}
         </FixedSizeList>
 +      )}
