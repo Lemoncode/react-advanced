@@ -1,4 +1,4 @@
-import { CardContent, KanbanContent } from "./model";
+import { CardContent, KanbanState } from "./model";
 import produce from "immer";
 
 interface MoveInfo {
@@ -10,8 +10,8 @@ interface MoveInfo {
 
 export const moveCardColumn = (
   moveInfo: MoveInfo,
-  kanbanContent: KanbanContent
-): KanbanContent => {
+  kanbanContent: KanbanState
+): KanbanState => {
   const { columnOriginId, columnDestinationId, content, cardIndex } = moveInfo;
   let newKanbanContent = kanbanContent;
 
@@ -30,7 +30,11 @@ export const moveCardColumn = (
         columnIndexOrigin
       ].content.filter((c) => c.id !== content.id);
       // add at index
-      draft.columns[columnIndexDestination].content.splice(cardIndex, 0, content);
+      draft.columns[columnIndexDestination].content.splice(
+        cardIndex,
+        0,
+        content
+      );
     });
   }
 

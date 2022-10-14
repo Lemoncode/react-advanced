@@ -1,6 +1,6 @@
-import { CardContent, KanbanContent } from "../model";
+import { CardContent, KanbanState } from "../model";
 
-export const mockData: KanbanContent = {
+export const mockData: KanbanState = {
   columns: [
     {
       id: 1,

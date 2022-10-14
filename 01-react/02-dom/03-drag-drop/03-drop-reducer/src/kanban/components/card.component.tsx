@@ -5,6 +5,7 @@ import {
   ItemTypes,
   createDragItemInfo,
   DragItemInfo,
+  ActionTypes,
 } from "../model";
 import classes from "./card.component.css";
 import { KanbanContext } from "../providers/kanban.context";
@@ -16,7 +17,7 @@ interface Props {
 
 export const Card = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
   const { content, columnId } = props;
-  const { moveCard, kanbanContent } = React.useContext(KanbanContext);
+  const { kanbanContent, dispatch } = React.useContext(KanbanContext);
 
   const [{ opacity }, drag, preview] = useDrag(() => ({
     type: ItemTypes.CARD, // Definimos que es de tipo CARD esto lo usaremos en el drop
@@ -33,7 +34,14 @@ export const Card = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
     () => ({
       accept: ItemTypes.CARD,
       drop: (item: DragItemInfo, monitor) => {
-        moveCard(columnId, content.id, item);
+        dispatch({
+          type: ActionTypes.MOVE_CARD,
+          payload: {
+            columnDestinationId: columnId,
+            dropCardId: content.id,
+            dragItemInfo: item,
+          },
+        });
 
         return {
           name: `DropColumn`,

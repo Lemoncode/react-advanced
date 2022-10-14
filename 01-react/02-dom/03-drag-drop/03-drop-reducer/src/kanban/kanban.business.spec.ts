@@ -1,9 +1,9 @@
 import { moveCardColumn } from "./kanban.business";
-import { KanbanContent } from "./model";
+import { KanbanState } from "./model";
 
 describe("Kanban business", () => {
   it("should move card from one column to another", () => {
-    const kanbanContent: KanbanContent = {
+    const kanbanContent: KanbanState = {
       columns: [
         {
           id: 1,
@@ -75,7 +75,7 @@ describe("Kanban business", () => {
   });
 
   it("should move card from first column to third column", () => {
-    const kanbanContent: KanbanContent = {
+    const kanbanContent: KanbanState = {
       columns: [
         {
           id: 1,
@@ -158,7 +158,7 @@ describe("Kanban business", () => {
   });
 
   it("should return same state if destination does not exists", () => {
-    const kanbanContent: KanbanContent = {
+    const kanbanContent: KanbanState = {
       columns: [
         {
           id: 1,
@@ -193,7 +193,7 @@ describe("Kanban business", () => {
   });
 
   it("should return same state if origin does not exists", () => {
-    const kanbanContent: KanbanContent = {
+    const kanbanContent: KanbanState = {
       columns: [
         {
           id: 1,

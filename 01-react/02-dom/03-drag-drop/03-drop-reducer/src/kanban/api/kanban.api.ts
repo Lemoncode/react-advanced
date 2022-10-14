@@ -1,6 +1,6 @@
-import { CardContent, KanbanContent } from "../model";
+import { CardContent, KanbanState } from "../model";
 import { mockData } from "./mock-data";
 
-export const loadKanbanContent = async (): Promise<KanbanContent> => {
+export const loadKanbanContent = async (): Promise<KanbanState> => {
   return mockData;
 };

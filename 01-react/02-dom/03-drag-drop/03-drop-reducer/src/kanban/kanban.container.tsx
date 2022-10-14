@@ -1,16 +1,17 @@
 import React from "react";
-import { DragItemInfo } from "./model";
 import { loadKanbanContent } from "./api";
 import { Column } from "./components";
 import classes from "./kanban.container.css";
+import { ActionTypes } from "./model";
 import { KanbanContext } from "./providers/kanban.context";
 
 export const KanbanContainer: React.FC = () => {
-  const { kanbanContent, setKanbanContent, moveCard } =
-    React.useContext(KanbanContext);
+  const { kanbanContent, dispatch } = React.useContext(KanbanContext);
 
   React.useEffect(() => {
-    loadKanbanContent().then((content) => setKanbanContent(content));
+    loadKanbanContent().then((content) =>
+      dispatch({ type: ActionTypes.SET_KANBAN_CONTENT, payload: content })
+    );
   }, []);
 
   return (
