@@ -1,6 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { getTodoList, updateTodoItem, appendTodoItem } from "./todo.api";
-import { TodoItem } from "./todo.model";
 import { todoKeys } from "./todo-key-queries";
 
 export const useTodoListQuery = () => {
