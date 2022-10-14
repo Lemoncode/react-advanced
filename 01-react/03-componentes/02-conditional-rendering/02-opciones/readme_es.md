@@ -2,35 +2,34 @@
 
 ## Resumen
 
-En un formulario real es muy normal mostrar u ocultar markup dependiendo de que opcones
-elijamos, es más es normal que tengamos condiciones anidadas, si no llevamos cuidado
-esto puede hacer que nuestra aplicación se convierta en un caso de markup y que
+En un formulario real es muy normal mostrar u ocultar *markup* dependiendo de qué opciones
+elijamos, es más, es normal que tengamos condiciones anidadas, si no llevamos cuidado
+esto puede hacer que nuestra aplicación se convierta en un caso de *markup* y que
 sea muy difícil de mantener, el proceso que sigo cuando me encuentro con estos escenarios:
 
 - Primero entender el problema.
 - Segundo empezar implementando sin preocuparme de optimizar, salvo que en ese paso
   este muy claro.
 - Conforme implemento y voy encontrando problemas o posibles mejoras, voy refactorizando, para ello:
-  - Componentizo.
-  - Veo que patrón de conditional rendering es el que mejor aplica.
-  - Estudio si alguno de los componente se empieza a llenar de JS y complejidad y
-    en ese caso estudio si merece la pena extraer a custom hooks funcionalidad bien
+  - *Componentizo*.
+  - Veo que patrón de *conditional* *rendering* es el que mejor aplica.
+  - Estudio si alguno de los componentes se empieza a llenar de JS y complejidad y
+    en ese caso estudio si merece la pena extraer a *custom hooks* funcionalidad bien
     delimitada.
-  - Estudio si tanto en el componente como en el hook hay código que puedo sacar
-    a ficheros TS planos (lo llamo lógica de negocio, el nombre el que mejor veais).
+  - Estudio si tanto en el componente como en el *hook* hay código que puedo sacar
+    a ficheros TS planos (lo llamo lógica de negocio, el nombre el que mejor veáis).
   - Sigo iterando.
-- Una vez que tengo la solución final, vuelvo a revisar y refactoizar lo que sea
-  necesario
+- Una vez que tengo la solución final, vuelvo a revisar y refactorizar lo que sea necesario.
 
 Como resultado espero:
 
-- Un markup que pueda leer como un libro.
-- Un markup que me de un nivel de abstracción y puede navegar al detalle de cada funcionalidad y me la encuentre encapsulada en un componente, y a su vez ese componente en subcomponentes.
-- Unos custom hooks que tengan cada uno bien delimitada su responsabilidad, pueda probar,
+- Un *markup* que pueda leer como un libro.
+- Un *markup* que me dé un nivel de abstracción y puede navegar al detalle de cada funcionalidad y me la encuentre encapsulada en un componente, y a su vez ese componente en subcomponentes.
+- Unos *custom hooks* que tengan cada uno bien delimitada su responsabilidad, pueda probar,
   e incluso puede que alguno pueda promocionar a común.
-- Un código plano en TS cn
+- Un código plano en TS.
 
-En este ejemplo vamos a estudiar las opciones que tenemos para aplicar rendering
+En este ejemplo vamos a estudiar las opciones que tenemos para aplicar *rendering*
 condicional, más allá de la básica de _&&_
 
 ## Paso a Paso
@@ -43,12 +42,12 @@ Este ejemplo toma como punto de partida el ejemplo _00-boiler-plate_.
 npm install
 ```
 
-- Vamos a ver problemas de usar _&&_, a vuela pluma
-  - Manchamos el markup y añadimos complejidad para leerlo.
+- Vamos a ver problemas de usar *&&*, a vuela pluma
+  - Manchamos el *markup* y añadimos complejidad para leerlo.
   - Si necesitamos anidarlo se nos complica el tema.
-  - Hay que tener cuidado que esa condición se evalua..
+  - Hay que tener cuidado que esa condición se evalúa.
 
-¿ Que quiere decir esto de que es "evalua"? Vamos a por un caso divertido:
+¿Qué quiere decir esto de que es "evalúa"? Vamos a por un caso divertido:
 
 _./src/components/playground/playground.tsx_
 
@@ -70,7 +69,7 @@ export const PlayGround: React.FC = () => {
 };
 ```
 
-- Vamos a crear un barrel:
+- Vamos a crear un *barrel*:
 
 _./src/components/playground/index.ts_
 
@@ -91,7 +90,7 @@ export const App = () => {
 };
 ```
 
-- Si ejecutamos esto verás algo divertido... en el markup aparece un cero :-@
+- Si ejecutamos esto verás algo divertido... en el *markup* aparece un cero :-@
 
 ¿Por qué pasa esto? Porque la expresión se evalúa y es un cero, entonces se muestra.
 
@@ -109,16 +108,15 @@ export const PlayGround: React.FC = () => {
 -      {clientNameCollection.length &&
 +      {clientNameCollection.length ?
           (clientNameCollection.map((name) => <h2 key={name}>{name}</h2>)
-        :
-           null
++        :
++           null
       }
     </div>
   );
 };
 ```
 
-Otra opción es encapsular el código en un método de la función
-y usar _if_ _else_
+Otra opción es encapsular el código en un método de la función y usar _if_ _else_.
 
 ```diff
 export const PlayGround: React.FC = () => {
@@ -140,7 +138,7 @@ export const PlayGround: React.FC = () => {
 -      {clientNameCollection.length
 -        ? clientNameCollection.map((name) => <h2 key={name}>{name}</h2>)
 -        : null}
-+        {renderclientNameCollection()}
++        {renderClientNameCollection()}
     </div>
   );
 };
@@ -224,8 +222,9 @@ export const PlayGround: React.FC = () => {
 };
 ```
 
-- Vamos a por otro ejemplo, que pasa si tenemos varios casos que sean
-  "hermano", por ejemplo (ojo esto se podía hacer en un componente :)):
+- Vamos a por otro ejemplo, que pasa si tenemos varios casos que sean "*hermano*", por ejemplo (ojo esto se podía hacer en un componente :)):
+
+_./src/components/playground/playground.tsx_
 
 ```tsx
 import React from "react";
@@ -261,7 +260,9 @@ const ErrorNotificationComponent: React.FC<ErrorProps> = ({ message }) => (
 );
 ```
 
-- Vamos a ver como quedaría esto con ternarios...
+- Vamos a ver cómo quedaría esto con ternarios...
+
+_./src/components/playground/playground.tsx_
 
 ```ts
 export const PlayGround: React.FC = () => {
@@ -292,6 +293,8 @@ export const PlayGround: React.FC = () => {
 - Vamos a encapsularlo en una función e ir evolucionándolo:
 
 Paso 1:
+
+_./src/components/playground/playground.tsx_
 
 ```diff
   React.useEffect(() => {
@@ -324,8 +327,10 @@ Paso 1:
 };
 ```
 
-No esta mal, pero el if y elseif sigue siendo un galimatías, ¿Qué podemos usar?
+No está mal, pero el *if* y *elseif* sigue siendo un galimatías, ¿Qué podemos usar?
 Aquí viene el amigo _switch/case_ al rescate:
+
+_./src/components/playground/playground.tsx_
 
 ```diff
   function renderNotification() {
@@ -349,11 +354,12 @@ Aquí viene el amigo _switch/case_ al rescate:
   }
 ```
 
-Si quisiéramos incluso podríamos sacar la función fuera del componente y alimentarle
-por parámetro el status y el mensaje.
+Si quisiéramos incluso podríamos sacar la función fuera del componente y alimentarle por parámetro el status y el mensaje.
 
-Vale.. pero nosotros queremos tener eso dentro del markup, ¿Qué podemos hacer?
-Utilizar una función autoinvocada:
+Vale.. pero nosotros queremos tener eso dentro del *markup*, ¿Qué podemos hacer?
+Utilizar una función *autoinvocada*:
+
+_./src/components/playground/playground.tsx_
 
 ```diff
   }, []);
@@ -392,9 +398,9 @@ Utilizar una función autoinvocada:
 };
 ```
 
-Esto de la función autoinvocada no tiene mala pinta, pero vamos a ver si podemos
-dejarlo más claro en el JSX, vamos a crear un objeto con keys para notificacion state
-(se podría automatizar con TypeScript, habría que darle una vuelta).
+Esto de la función *autoinvocada* no tiene mala pinta, pero vamos a ver si podemos dejarlo más claro en el JSX, vamos a crear un objeto con *keys* para *notification state* (se podría automatizar con *TypeScript*, habría que darle una vuelta).
+
+_./src/components/playground/playground.tsx_
 
 ```diff
 import React from "react";
@@ -435,6 +441,8 @@ enum Status {
 ```
 
 Y ya que estamos podemos sacar esto como una función:
+
+_./src/components/playground/playground.tsx_
 
 ```diff
 + const NOTIFICATION_STATES = (message: string) => ({
