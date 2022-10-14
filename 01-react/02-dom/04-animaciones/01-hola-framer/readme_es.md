@@ -2,14 +2,12 @@
 
 ## Resumen
 
-Meter las animaciones justas y elegantes en una aplicación le da un toque de fluidez y profesionalidad, pasarte de animaciones o meterlas sin sentido
-un tufo a hortera.
+Meter las animaciones justas y elegantes en una aplicación le da un toque de fluidez y profesionalidad, pasarte de animaciones o meterlas sin sentido pasa de ser un tufo a hortera.
 
-En este ejemplo vamos a ver como meter animaciones en una aplicación de React usando Framer Motion: esta librería es curiosa ya que nos oculta mucha
-complejidad (creamos animaciones añadiendo wrappers de componentes primitivos)
-y además usa la aproximación Spring (aplica leyes de la física en los movimientos para hacerlos más realistas y suaves).
+En este ejemplo vamos a ver como meter animaciones en una aplicación de React usando *Framer Motion*: esta librería es curiosa ya que nos oculta mucha complejidad (creamos animaciones añadiendo *wrappers* de componentes primitivos)
+y además usa la aproximación *Spring* (aplica leyes de la física en los movimientos para hacerlos más realistas y suaves).
 
-Pongámonos manos a la obra, vamos a hacer nuestro "hola mundo" con Framer.
+Pongámonos manos a la obra, vamos a hacer nuestro "hola mundo" con *Framer*.
 
 ## Paso a Paso
 
@@ -21,10 +19,10 @@ Este ejemplo toma como punto de partida el ejemplo _00-boiler-plate_.
 npm install
 ```
 
-- Vamos a instalar la librería de Framer Motion
+- Vamos a instalar la librería de *Framer Motion*
 
 ```bash
-npm install framer-motion
+npm install framer-motion --save
 ```
 
 - Vamos a crear un estilo que llamaremos _caja_
@@ -63,8 +61,7 @@ export const App = () => {
 };
 ```
 
-Vamos a seguir jugando, en este caso queremos que el componente se haga un
-poco más grande cuando hagamos hover sobre él.
+Vamos a seguir jugando, en este caso queremos que el componente se haga un poco más grande cuando hagamos *hover* sobre él.
 
 _./src/app.tsx_
 
@@ -79,8 +76,8 @@ export const App = () => {
 };
 ```
 
-¿Y si quiero lanzar una animación cuando se hace click en un botón?
-Aquí podemos jugar con el state,
+¿Y si quiero lanzar una animación cuando se hace clic en un botón?
+Aquí podemos jugar con el *state*:
 
 _./src/app.tsx_
 
@@ -103,7 +100,7 @@ export const App = () => {
 ```
 
 Vale pero igual yo lo que quiero es que la animación vaya de ida y vuelta
-sin tener que pulsar el botón de shrink...
+sin tener que pulsar el botón de *shrink*...
 
 ```diff
 export const App = () => {
@@ -125,7 +122,7 @@ export const App = () => {
 ```
 
 Esta chulo, pero quiero que la animación de vuelta se haga más lenta,
-¿Qué puedo hacer? Vamos a crear una propiedad de duration.
+¿Qué puedo hacer? Vamos a crear una propiedad de *duration*.
 
 ```diff
 export const App = () => {
@@ -150,8 +147,7 @@ export const App = () => {
 };
 ```
 
-- Pongamos que queremos dejar la animación corriendo en bucle, una cosa
-  que podemos hacer usar la propiedad _yoyo_
+- Pongamos que queremos dejar la animación corriendo en bucle, una cosa qué podemos hacer usar la propiedad _yoyo_.
 
 ```diff
       <motion.div
@@ -165,7 +161,7 @@ export const App = () => {
       >
 ```
 
-> Hay más valores, _yoyo_, _loop_ (añadimos bucle inifinity o numero de veces...)
+> Hay más valores, _yoyo_, _loop_ (añadimos bucle inifinity o número de veces...)
 
 ```diff
       <motion.div
@@ -182,16 +178,13 @@ export const App = () => {
 
 Mejor quitadlo del código que nos puede dejar rallados XDDD
 
-- Ahora tenemos un problema, pinchando en el botón solo podemos
-  ejecutar la animación una sóla vez, el problema es que el setState
-  lo ponemos al mismo valor siempre, ¿Qué podemos hacer? Aquí podemos
-  dejar de usar la aproximación declarative e ir a por código, podemos
-  usar el hook _useAnimation_, vamos a reemplazar el app completo:
+- Ahora tenemos un problema, pinchando en el botón solo podemos ejecutar la animación una sola vez, el problema es que el *setState* lo ponemos al mismo valor siempre, ¿Qué podemos hacer? Aquí podemos
+  dejar de usar la aproximación *declarative* e ir a por código, podemos usar el hook _useAnimation_, vamos a reemplazar el app completo:
 
 _./src/app.tsx_
 
 ```tsx
-import React, { useEffect } from "react";
+import React from "react";
 import { motion, useAnimation } from "framer-motion";
 
 export const App = () => {
