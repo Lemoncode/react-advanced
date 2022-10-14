@@ -1,9 +1,9 @@
 # Ejercicio conditional Rendering
 
-Vamos a partir del tipico escenario de "esto es una mierda pero funciona"
+Vamos a partir del típico escenario de "esto es una mierda pero funciona"
 :)
 
-Queremos editar la ficha de un cliente, tenemos la siguiente casuistica:
+Queremos editar la ficha de un cliente, tenemos la siguiente casuística:
 
 - El usuario puede tener la nacionalidad (NIF), ser residente (NIE), o ser extranjero (pasaporte).
 
@@ -12,7 +12,7 @@ Queremos editar la ficha de un cliente, tenemos la siguiente casuistica:
 
 - Si es residente: NIE, nombre, ApellidoA, provincia
 
-- Si es extranjero: Pasaporte, nombre, ApellidoA, provincia, pais.
+- Si es extranjero: Pasaporte, nombre, ApellidoA, provincia, país.
 
 En este ejemplo tenemos una solución "hecha con los pies",
 ¿Cómo harías para refacotizarla?
@@ -20,8 +20,16 @@ En este ejemplo tenemos una solución "hecha con los pies",
 Pistas:
 
 - Componentiza.
-- Utiliza conditional rendering.
-- Evalua si se puede sacar algún(os) componente común de ayuda.
+- Utiliza *conditional rendering*.
+- Evalúa si se puede sacar algún(os) componente común de ayuda.
+
+Este ejercicio toma como punto de partida el ejemplo *00-boiler-plate*.
+
+- Primero copiamos el ejemplo **00-boiler-plate**, y hacemos un *npm install*
+
+```
+npm install
+```
 
 # El código
 
@@ -41,9 +49,21 @@ export interface Client {
   province: string;
   country: string;
 }
+
+export const createEmptyClient = (): Client => ({
+  documentType: "",
+  name: "",
+  lastnameA: "",
+  lastnameB: "",
+  nif: "",
+  nie: "",
+  passport: "",
+  province: "",
+  country: "",
+});
 ```
 
-_./components/client/api.ts_
+_./components/client/client.api.ts_
 
 ```ts
 import { Client } from "./model";
