@@ -112,12 +112,62 @@ export const PageA = () => {
 ```
 
 Funciona, pero la usabilidad es rara, no se muestra nada mientras
-la página está cargando, podemos mostrar un indicador de cara:
+la página está cargando, podemos mostrar un indicador de carga.
 
-```diff
+Una opción es ponerlo en el root..., para ello podemos anidar
+las vistas debajo del raíz y poner un componente que haya de
+layout principal.
 
+_./src/root.layout.tsx_
+
+```tsx
+import React from "react";
+import { Outlet, useNavigation } from "react-router-dom";
+
+export const RootLayout = () => {
+  const navigation = useNavigation();
+
+  return (
+    <>
+      {navigation.state === "loading" && <h5>⏱ Loading...</h5>}
+      <Outlet />
+    </>
+  );
+};
 ```
 
+Y ahora vamos a por la estructura de rutas:
+
+_./src/core/routes.tsx_
+
+```diff
+import React from "react";
+import { createBrowserRouter } from "react-router-dom";
+import { HomePage } from "../home.page";
+import { routesModuleA } from "../modules/module-a";
+import { routesModuleB } from "../modules/module-b";
++ import { rootLayout } from "../root.layout";
+
+export const appRoutes = createBrowserRouter([
+  {
+    path: "/",
+-    element: <HomePage />,
++   element: <rootLayout />,
++   children: [
++     {
++       path: "/",
++       element: <HomePage />,
++     },
++     ...routesModuleA,
++     ...routesModuleB,
++   ]
+  },
+-  ...routesModuleA,
+-  ...routesModuleB,
+]);
+```
+
+> En el próximo ejemplo veremos como tratar el defer directamente en la página anidada.
 
 Por otro lado ¿Sólo soporta una llamada asíncrona? Podemos añadir más
 de una:
