@@ -168,8 +168,3 @@ export const appRoutes = createBrowserRouter([
 ```
 
 > En el próximo ejemplo veremos como tratar el defer directamente en la página anidada.
-
-Por otro lado ¿Sólo soporta una llamada asíncrona? Podemos añadir más
-de una:
-
-
