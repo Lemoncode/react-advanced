@@ -403,4 +403,300 @@ describe("formValidation", () => {
 });
 ```
 
+Vamos a añadir la validación al formulario:
 
+_./src/transfer-form/transfer-form.component.tsx_
+
+```diff
++ import { formValidation } from './transfer-form.validation';
+
+      <Formik
+        initialValues={createEmptyTransferFormEntity()}
+        onSubmit={(values) => {
+          console.log(values);
+        }}
++       validate={values => formValidation.validateForm(values)}
+      >
+```
+
+- Ya tenemos las validaciones apareciendo, todo genial :).
+
+- Seguimos, ahora queremos que el campo de correo electrónico
+  sea un email bien formado, para ello Fonk trae un validador ya hecho,
+  lo añadimos:
+
+_./src/transfer-form/transfer-form.validation.ts_
+
+```diff
+const validationSchema = {
+  field: {
+    account: [Validators.required],
+    beneficiary: [Validators.required],
+    name: [Validators.required],
+    integerAmount: [Validators.required],
+    decimalAmount: [Validators.required],
+    reference: [Validators.required],
+-    email: [Validators.required],
++    email: [Validators.required, Validators.email],
+  },
+};
+```
+
+Si queremos podemos añadir una prueba para este caso:
+
+_./src/transfer-form.validation.spec.ts_
+
+```diff
++  it("should fail when email is not valid", async () => {
++    // Arrange
++    const values: TransferFormEntity = {
++      account: "GB33BUKB20201555555555",
++      beneficiary: "John Doe",
++      integerAmount: 100,
++      decimalAmount: 0,
++      reference: "Taxes",
++      email: "john.doe",
++    };
++
++    // Act
++    const result = await formValidation.validateForm(values);
++
++    // Assert
++    expect(result["email"]).toBeDefined();
++  });
++
++  it("should fail when email is valid", async () => {
++    // Arrange
++    const values: TransferFormEntity = {
++      account: "GB33BUKB20201555555555",
++      beneficiary: "John Doe",
++      integerAmount: 100,
++      decimalAmount: 0,
++      reference: "Taxes",
++      email: "john.doe@mail.com",
++    };
++
++    // Act
++    const result = await formValidation.validateForm(values);
++
++    // Assert
++    expect(result["email"]).not.toBeDefined();
++  });
+});
+```
+
+- También podemos comprobarlo en el UI.
+
+- Ahora vamos a validar que el IBAN este bien formado, esta validación no
+  viene en el core de Fonk (sería añadir peso innecesario), pero si tiene
+  un ecosistema de validaciones que podemos instalar (son microlibrerías:
+  https://lemoncode.github.io/fonk-doc/validators/third-party-validators)).
+
+```bash
+npm install @lemoncode/fonk-iban-validator
+```
+
+- Y vamos a añadirlo a nuestro esquema:
+
+_./src/transfer-form/transfer-form.validation.ts_
+
+```diff
+import { Validators } from "@lemoncode/fonk";
+import { createFormikValidation } from "@lemoncode/fonk-formik";
++ import { iban } from '@lemoncode/fonk-iban-validator';
+
+const validationSchema = {
+  field: {
++    account: [Validators.required,
++              iban.validator
++          ],
+    beneficiary: [Validators.required],
+```
+
+- Podemos añadir pruebas aquí, ojo en este caso simplemente probamos que
+  la validación se aplica al campo, el que se valide bien el IBAN ya lo
+  tiene probado el validador.
+
+_./src/transfer-form/transfer-form.validation.spec.ts_
+
+```diff
++  it("should fail when account is not valid", async () => {
++    // Arrange
++    const values: TransferFormEntity = {
++      account: "GB33BUKB202000000",
++      beneficiary: "John Doe",
++      integerAmount: 100,
++      decimalAmount: 0,
++      reference: "Taxes",
++      email: "test@email.com",
++    };
++
++    // Act
++    const result = await formValidation.validateForm(values);
++
++    // Assert
++    expect(result["account"]).toBeDefined();
++  });
++
++  it("should fail when account is valid", async () => {
++    // Arrange
++    const values: TransferFormEntity = {
++      account: "GB33BUKB20201555555555",
++      beneficiary: "John Doe",
++      integerAmount: 100,
++      decimalAmount: 0,
++      reference: "Taxes",
++      email: "john@email.com"
++    };
++
++    // Act
++    const result = await formValidation.validateForm(values);
++
++    // Assert
++    expect(result["account"]).not.toBeDefined();
++  });
+});
+```
+
+- Vamos a realizar otra validación, el importe:
+
+  - En la cantidad entera queremos que la cifra esté entre 0 y 10.000
+  - En la cantidad decimal quremos que la cifra esté entre 0 y 99.
+
+- Vamos a tirar del ecosistema de Fonk y bajarnos el validador de rangos
+  numéricos:
+
+```bash
+npm install @lemoncode/fonk-range-number-validator --save
+```
+
+- En este caso podemos usar TDD, vamos a crear los tests y después implementamos.
+
+_./src/transfer-form/transfer-form.validation.spec.ts_
+
+```diff
++  it("should fail when integerAmount is not valid", async () => {
++    // Arrange
++    const values: TransferFormEntity = {
++      account: "GB33BUKB20201555555555",
++      beneficiary: "John Doe",
++      integerAmount: 11000,
++      decimalAmount: 0,
++      reference: "Taxes",
++      email: "john@email.com",
++    };
++
++    // Act
++    const result = await formValidation.validateForm(values);
++
++    // Assert
++    expect(result["integerAmount"]).toBeDefined();
++  });
+
++  it("should succeed when integerAmount is valid", async () => {
++    // Arrange
++    const values: TransferFormEntity = {
++      account: "GB33BUKB20201555555555",
++      beneficiary: "John Doe",
++      integerAmount: 1000,
++      decimalAmount: 0,
++      reference: "Taxes",
++      email:  "test@email.com"
++    };
++
++    // Act
++    const result = await formValidation.validateForm(values);
++
++    // Assert
++    expect(result["integerAmount"]).not.toBeDefined();
++  });
++
++  it("should fail when decimalAmount is not valid", async () => {
++    // Arrange
++    const values: TransferFormEntity = {
++      account: "GB33BUKB20201555555555",
++      beneficiary: "John Doe",
++      integerAmount: 1000,
++      decimalAmount: 100,
++      reference: "Taxes",
++      email: "test@email.com"
++    };
++
++    // Act
++    const result = await formValidation.validateForm(values);
++
++    // Assert
++    expect(result["decimalAmount"]).toBeDefined();
++  });
++
++  it("should succeed when decimalAmount is valid", async () => {
++    // Arrange
++    const values: TransferFormEntity = {
++      account: "GB33BUKB20201555555555",
++      beneficiary: "John Doe",
++      integerAmount: 1000,
++      decimalAmount: 99,
++      reference: "Taxes",
++      email: "test@email.com"
++    };
++
++    // Act
++    const result = await formValidation.validateForm(values);
++
++    // Assert
++    expect(result["decimalAmount"]).not.toBeDefined();
++  });
+});
+```
+
+- Vamos a por la implementación:
+
+```diff
+import { Validators } from "@lemoncode/fonk";
+import { createFormikValidation } from "@lemoncode/fonk-formik";
+import { iban } from "@lemoncode/fonk-iban-validator";
++ import { rangeNumber } from '@lemoncode/fonk-range-number-validator';
+
+
+const validationSchema = {
+  field: {
+    account: [Validators.required, iban.validator],
+    beneficiary: [Validators.required],
+    name: [Validators.required],
+    integerAmount: [
+      Validators.required,
++      {
++       validator: rangeNumber,
++       customArgs: {
++         min: {
++           value: 0,
++           inclusive: true,
++         },
++         max: {
++           value: 10000,
++           inclusive: true,
++         },
++       },
++     },
+     ],
+    decimalAmount: [
+      Validators.required,
++     {
++       validator: rangeNumber,
++       customArgs: {
++         min: {
++           value: 0,
++           inclusive: true,
++         },
++         max: {
++           value: 99,
++           inclusive: true,
++         },
++       },
++     },
+    ],
+    reference: [Validators.required],
+    email: [Validators.required, , Validators.email],
+  },
+};
+```

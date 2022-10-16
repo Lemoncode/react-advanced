@@ -6,6 +6,7 @@ import {
   createEmptyTransferFormEntity,
 } from "./transfer-form.model";
 import classes from "./transfer-form.component.css";
+import { formValidation } from './transfer-form.validation'; 
 
 export const TransferForm: React.FC = () => {
   return (
@@ -16,6 +17,7 @@ export const TransferForm: React.FC = () => {
         onSubmit={(values) => {
           console.log(values);
         }}
+        validate={values => formValidation.validateForm(values)}
       >
         {() => (
           <Form>
