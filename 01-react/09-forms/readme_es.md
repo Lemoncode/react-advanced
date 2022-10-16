@@ -766,3 +766,160 @@ const validationSchema = {
     ],
     beneficiary: [Validators.required],
 ```
+
+- Esto de las validaciones estándares para resolverlo todo está muy bien,
+  pero no siempre nos valen, vamos a ponernos en un caso en el que nos
+  hace falta una validación custom, vamos a recibir una lista de paises
+  que están en la lista negra y no podemos hacer transferencias, para ello
+  vamos a crear un validador custom (en este caso como no conocemos la firma
+  implementaremos el validador, y después los tests, pero cuando estemos
+  familiarizados podemos empezar con un test, la firma, y seguir evolucionando...).
+
+_./src/transfer-form/custom-validators/country-black-list.validator.ts_
+
+```tsx
+import { ValidationResult, Validators } from "@lemoncode/fonk";
+
+export const countryBlackList = ({ value, customArgs }) => {
+  const { countries } = customArgs;
+
+  const countriesRegExp = countries.reduce(
+    (regex, country, i) => (i === 0 ? `(${country})` : `${regex}|(${country})`),
+    ""
+  );
+  const pattern = new RegExp(`^(?!${countriesRegExp})`, "i");
+
+  const { succeeded } = Validators.pattern.validator({
+    value,
+    customArgs: { pattern },
+  }) as ValidationResult;
+
+  return {
+    type: "COUNTRY_BLACK_LIST",
+    succeeded,
+    message: succeeded ? "" : "This country is not available",
+  };
+};
+```
+
+- En este caso si nos tenemos que esmerar con las pruebas, ya que es un validador
+  que hemos hecho nosotros, hay que probar un buen número de casos.
+
+_./src/transfer-form/custom-validators/country-black-list.validator.spec.ts_
+
+```ts
+import { countryBlackList } from "./country-black-list.validator";
+
+describe("countryBlackList validator specs", () => {
+  it("should return true when value is undefined", () => {
+    // Arrange
+    const value = undefined;
+    const customArgs = {
+      countries: ["FR", "ES"],
+    };
+
+    // Act
+    const result = countryBlackList({ value, customArgs });
+
+    // Assert
+    expect(result.succeeded).toBeTruthy();
+  });
+
+  it("should return true when value is null", () => {
+    // Arrange
+    const value = null;
+    const customArgs = {
+      countries: ["FR", "ES"],
+    };
+
+    // Act
+    const result = countryBlackList({ value, customArgs });
+
+    // Assert
+    expect(result.succeeded).toBeTruthy();
+  });
+
+  it("should return true when value is empty", () => {
+    // Arrange
+    const value = "";
+    const customArgs = {
+      countries: ["FR", "ES"],
+    };
+
+    // Act
+    const result = countryBlackList({ value, customArgs });
+
+    // Assert
+    expect(result.succeeded).toBeTruthy();
+  });
+
+  it("should return true when value is valid", () => {
+    // Arrange
+    const value = "GB33BUKB20201555555555";
+    const customArgs = {
+      countries: ["FR", "ES"],
+    };
+
+    // Act
+    const result = countryBlackList({ value, customArgs });
+
+    // Assert
+    expect(result.succeeded).toBeTruthy();
+  });
+
+  it("should return false when value is invalid", () => {
+    // Arrange
+    const value = "FR7630006000011234567890189";
+    const customArgs = {
+      countries: ["FR", "ES"],
+    };
+
+    // Act
+    const result = countryBlackList({ value, customArgs });
+
+    // Assert
+    expect(result.succeeded).toBeFalsy();
+  });
+});
+```
+
+- Vamos a crear un barrel
+
+_./src/transfer-form/custom-validators/index.ts_
+
+```ts
+export * from "./country-black-list.validator";
+```
+
+- Vamos ahora a darle uso (quitamos el de Francia y
+  cubrimos el caso con el black list):
+
+_./src/transfer-form/transfer-form.validation.ts_
+
+```diff
+import { Validators } from "@lemoncode/fonk";
+import { createFormikValidation } from "@lemoncode/fonk-formik";
+import { iban } from "@lemoncode/fonk-iban-validator";
+import { rangeNumber } from "@lemoncode/fonk-range-number-validator";
++ import { countryBlackList } from "./custom-validators";
+
+const validationSchema = {
+  field: {
+    account: [
+      Validators.required,
+      iban.validator,
+-      {
+-        validator: Validators.pattern,
+-        customArgs: {
+-          pattern: /^(?!FR)/i,
+-        },
+-        message: "Transfers to France temporary disabled",
+-      },
++      {
++        validator: countryBlackList,
++        customArgs: { countries: ['FR', 'ES'] }
++      },
+    ],
+```
+
+

@@ -2,6 +2,7 @@ import { Validators } from "@lemoncode/fonk";
 import { createFormikValidation } from "@lemoncode/fonk-formik";
 import { iban } from "@lemoncode/fonk-iban-validator";
 import { rangeNumber } from "@lemoncode/fonk-range-number-validator";
+import { countryBlackList } from "./custom-validators";
 
 const validationSchema = {
   field: {
@@ -9,11 +10,8 @@ const validationSchema = {
       Validators.required,
       iban.validator,
       {
-        validator: Validators.pattern,
-        customArgs: {
-          pattern: /^(?!FR)/i,
-        },
-        message: "Transfers to France temporary disabled",
+        validator: countryBlackList,
+        customArgs: { countries: ["FR", "ES"] },
       },
     ],
     beneficiary: [Validators.required],
