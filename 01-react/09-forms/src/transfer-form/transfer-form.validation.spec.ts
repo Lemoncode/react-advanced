@@ -1,0 +1,60 @@
+import { TransferFormEntity } from "./transfer-form.model";
+import { formValidation } from "./transfer-form.validation";
+
+describe("formValidation", () => {
+  it("should fail when account is empty", async () => {
+    // Arrange
+    const values: TransferFormEntity = {
+      account: "",
+      beneficiary: "John Doe",
+      integerAmount: 100,
+      decimalAmount: 0,
+      reference: "Taxes",
+      email: "john.doe@gmail.com",
+    };
+
+    // Act
+    const result = await formValidation.validateForm(values);
+
+    // Assert
+    expect(result["account"]).toBeDefined();
+  });
+
+  it("should not fail when account is informed", async () => {
+    // Arrange
+    const values: TransferFormEntity = {
+      account: "GB33BUKB20201555555555",
+      beneficiary: "John Doe",
+      integerAmount: 100,
+      decimalAmount: 0,
+      reference: "Taxes",
+      email: "john.doe@gmail.com",
+    };
+
+    // Act
+    const result = await formValidation.validateForm(values);
+
+    // Assert
+    expect(result["account"]).not.toBeDefined();
+  });
+  it("should generate all field errors as required", async () => {
+    // Arrange
+    const values: TransferFormEntity = {
+      account: "",
+      beneficiary: "",
+      integerAmount: 100,
+      decimalAmount: 0,
+      reference: "",
+      email: "",
+    };
+
+    // Act
+    const result = await formValidation.validateForm(values);
+
+    // Assert
+    expect(result["account"]).toBeDefined();
+    expect(result["beneficiary"]).toBeDefined();
+    expect(result["reference"]).toBeDefined();
+    expect(result["email"]).toBeDefined();
+  });
+});

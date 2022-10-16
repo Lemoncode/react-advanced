@@ -1,0 +1,40 @@
+form {
+  max-width: 700px;
+  margin: 10px auto;
+  border: 1px solid #ccc;
+  padding: 20px;
+  box-shadow: 2px 2px 5px rgb(0 0 0 / 30%);
+  border-radius: 3px;
+}
+
+.form-group {
+  display: flex;
+  align-items: flex-start;
+  line-height: 2em;
+  margin: 5px;
+  flex-direction: row;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+form > div label:first-of-type {
+  color: #333;
+  font-size: 1em;
+  line-height: 32px;
+  margin-right: 2rem;
+  width: 150px;
+  text-align: left;
+}
+
+.amount-fields {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.buttons {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  margin-top: 15px;
+}
