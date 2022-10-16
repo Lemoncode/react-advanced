@@ -1,5 +1,5 @@
 import React from "react";
-import { Await, useLoaderData } from "react-router-dom";
+import { Await, Link, Outlet, useLoaderData } from "react-router-dom";
 import { Character } from "./model";
 
 export const PageA = () => {
@@ -11,11 +11,18 @@ export const PageA = () => {
       <React.Suspense fallback={<h4>Loading characters...</h4>}>
         <Await resolve={characters.characterCollection}>
           {(characters) => (
-            <ul>
-              {characters.map((character) => (
-                <li key={character.id}>{character.name}</li>
-              ))}
-            </ul>
+            <div style={{ display: "flex", flexDirection: "row" }}>
+              <div>
+                <ul>
+                  {characters.map((character) => (
+                    <li key={character.id}>
+                      <Link to={`./${character.id}`}>{character.name}</Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <Outlet />
+            </div>
           )}
         </Await>
       </React.Suspense>

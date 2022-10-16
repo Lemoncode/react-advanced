@@ -14,3 +14,13 @@ export const getCharacterCollection = async (
   console.log(data.results);
   return data.results;
 };
+
+export const getCharacter = async (id: string): Promise<Character> => {
+  const response = await fetch(
+    `https://rickandmortyapi.com/api/character/${id}`
+  );
+  const data = await response.json();
+  await new Promise((resolve) => setTimeout(resolve, randomLatency()));
+
+  return data;
+};
