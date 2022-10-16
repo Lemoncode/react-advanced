@@ -1080,3 +1080,31 @@ _./src/transfer-form/transfer-form.validation.spec.ts_
 + });
 })
 ```
+
+- Vamos añadirlo al componente
+
+_./src/transfer-form/transfer-form.component.tsx_
+
+```diff
+import React from "react";
+import { Formik, Form } from "formik";
+import { InputFormik } from "../common";
+import {
+  TransferFormEntity,
+  createEmptyTransferFormEntity,
+} from "./transfer-form.model";
+import classes from "./transfer-form.component.css";
+- import { formValidation } from './transfer-form.validation';
++ import { formValidation, updateFormValidationSchemaWithBlackList } from './transfer-form.validation';
++ import { getDisabledCountryIBANCollection } from './transfer-form.api';
+
+export const TransferForm: React.FC = () => {
+
++ React.useEffect(() => {
++   getDisabledCountryIBANCollection().then((countries) => {
++     updateFormValidationSchemaWithBlackList(countries);
++   });
++ },[])
+
+  return (
+```

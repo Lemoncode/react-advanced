@@ -6,9 +6,19 @@ import {
   createEmptyTransferFormEntity,
 } from "./transfer-form.model";
 import classes from "./transfer-form.component.css";
-import { formValidation } from './transfer-form.validation'; 
+import {
+  formValidation,
+  updateFormValidationSchemaWithBlackList,
+} from "./transfer-form.validation";
+import { getDisabledCountryIBANCollection } from "./transfer-form.api";
 
 export const TransferForm: React.FC = () => {
+  React.useEffect(() => {
+    getDisabledCountryIBANCollection().then((countries) => {
+      updateFormValidationSchemaWithBlackList(countries);
+    });
+  }, []);
+
   return (
     <>
       <h1>Transfer From</h1>
@@ -17,7 +27,7 @@ export const TransferForm: React.FC = () => {
         onSubmit={(values) => {
           console.log(values);
         }}
-        validate={values => formValidation.validateForm(values)}
+        validate={(values) => formValidation.validateForm(values)}
       >
         {() => (
           <Form>
