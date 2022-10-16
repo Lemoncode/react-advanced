@@ -922,4 +922,161 @@ const validationSchema = {
     ],
 ```
 
+- Esto está muy bien, pero ¿Que pasa si esta lista la recibimos
+  como llamada asíncrona? Podemos actualizar el esquema de validación
+  una vez que recibamos este datos.
 
+- Eliminamos la validación ya que de primeras no la tenemos
+  (también podríamos haber puesto una lista vacía de paises,
+  pero lo hacemos para ver como actualizar un esquema)
+
+_./src/transfer-form/transfer-form.validation.ts_
+
+```diff
+const validationSchema = {
+  field: {
+    account: [
+      Validators.required,
+      iban.validator,
+-      {
+-        validator: countryBlackList,
+-        customArgs: { countries: ["FR", "ES"] },
+-      },
+    ],
+```
+
+- Tenemos que eliminar las validaciones para ese caso.
+
+_./src/transfer-form/transfer-form.validation.spec.ts_
+
+```diff
+-  it("should fail when account is from France", async () => {
+-    // Arrange
+-    const values: TransferFormEntity = {
+-      account: "FR7630006000011234567890189",
+-      beneficiary: "John Doe",
+-      integerAmount: 1000,
+-      decimalAmount: 0,
+-      reference: "Taxes",
+-      email: "john@email.com",
+-    };
+-
+-    // Act
+-    const result = await formValidation.validateForm(values);
+-
+-    // Assert
+-    expect(result["account"]).toBeDefined();
+-  });
+-
+-  it("should succeed when account is not from France", async () -=> {
+-    // Arrange
+-    const values: TransferFormEntity = {
+-      account: "GB33BUKB20201555555555",
+-      beneficiary: "John Doe",
+-      integerAmount: 1000,
+-      decimalAmount: 0,
+-      reference: "Taxes",
+-      email: "john@email.com",
+-    };
+-
+-    // Act
+-    const result = await formValidation.validateForm(values);
+-
+-    // Assert
+-    expect(result["account"]).not.toBeDefined();
+-  });
+});
+```
+
+- Para ello vamos a simular una llamada a una API fake:
+
+_./src/transfer-form/transfer-form.api.ts_
+
+```ts
+const mockCountries = ["FR", "ES"];
+
+export const getDisabledCountryIBANCollection = () =>
+  Promise.resolve(mockCountries);
+```
+
+Y en la parte del validador vamos a exponer un método para
+actualizarlo:
+
+_./src/transfer-form/validation.ts_
+
+```diff
+};
+
+export const formValidation = createFormikValidation(validationSchema);
+
++ export const updateFormValidationSchemaWithBlackList = (countries: string[]) => {
++     const newValidationSchema = {
++       ...validationSchema,
++       field: {
++         ...validationSchema.field,
++         account: [
++           ...validationSchema.field.account,
++           {
++             validator: countryBlackList,
++             customArgs: {
++               countries,
++             },
++           },
++         ],
++       },
++     };
++     formValidation.updateValidationSchema(newValidationSchema);
++ };
+```
+
+- Vamos a probarlo, rescatamos los casos anteriores pero añadiendo _updateValidationSchema_
+
+_./src/transfer-form/transfer-form.validation.spec.ts_
+
+```diff
+- import { formValidation} from "./transfer-form.validation";
++ import { formValidation, updateFormValidationSchemaWithBlackList } from "./transfer-form.validation";
+```
+
+_./src/transfer-form/transfer-form.validation.spec.ts_
+
+```diff
++ it("Should update schema and fail with account france", async () => {
++   // Arrange
++   const values: TransferFormEntity = {
++     account: "FR7630006000011234567890189",
++     beneficiary: "John Doe",
++     integerAmount: 1000,
++     decimalAmount: 0,
++     reference: "Taxes",
++     email: "john@email.com",
++   };
++
++   // Act
++   updateFormValidationSchemaWithBlackList(["FR", "ES"]);
++
++   // Assert
++   const result = await formValidation.validateForm(values);
++   expect(result["account"]).toBeDefined();
++ });
++
++ it("Should update schema and succeed with account not france", async () => {
++   // Arrange
++   const values: TransferFormEntity = {
++     account: "GB33BUKB20201555555555",
++     beneficiary: "John Doe",
++     integerAmount: 1000,
++     decimalAmount: 0,
++     reference: "Taxes",
++     email: "john@email.com",
++   };
++
++   // Act
++   updateFormValidationSchemaWithBlackList(["FR", "ES"]);
++
++   // Assert
++   const result = await formValidation.validateForm(values);
++   expect(result["account"]).not.toBeDefined();
++ });
+})
+```

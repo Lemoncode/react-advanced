@@ -6,14 +6,7 @@ import { countryBlackList } from "./custom-validators";
 
 const validationSchema = {
   field: {
-    account: [
-      Validators.required,
-      iban.validator,
-      {
-        validator: countryBlackList,
-        customArgs: { countries: ["FR", "ES"] },
-      },
-    ],
+    account: [Validators.required, iban.validator],
     beneficiary: [Validators.required],
     name: [Validators.required],
     integerAmount: [
@@ -54,3 +47,24 @@ const validationSchema = {
 };
 
 export const formValidation = createFormikValidation(validationSchema);
+
+export const updateFormValidationSchemaWithBlackList = (
+  countries: string[]
+) => {
+  const newValidationSchema = {
+    ...validationSchema,
+    field: {
+      ...validationSchema.field,
+      account: [
+        ...validationSchema.field.account,
+        {
+          validator: countryBlackList,
+          customArgs: {
+            countries,
+          },
+        },
+      ],
+    },
+  };
+  formValidation.updateValidationSchema(newValidationSchema);
+};

@@ -1,5 +1,8 @@
 import { TransferFormEntity } from "./transfer-form.model";
-import { formValidation } from "./transfer-form.validation";
+import {
+  formValidation,
+  updateFormValidationSchemaWithBlackList,
+} from "./transfer-form.validation";
 
 describe("formValidation", () => {
   it("should fail when account is empty", async () => {
@@ -201,8 +204,7 @@ describe("formValidation", () => {
     // Assert
     expect(result["decimalAmount"]).not.toBeDefined();
   });
-
-  it("should fail when account is from France", async () => {
+  it("Should update schema and fail with account france", async () => {
     // Arrange
     const values: TransferFormEntity = {
       account: "FR7630006000011234567890189",
@@ -214,13 +216,14 @@ describe("formValidation", () => {
     };
 
     // Act
-    const result = await formValidation.validateForm(values);
+    updateFormValidationSchemaWithBlackList(["FR", "ES"]);
 
     // Assert
+    const result = await formValidation.validateForm(values);
     expect(result["account"]).toBeDefined();
   });
 
-  it("should succeed when account is not from France", async () => {
+  it("Should update schema and succeed with account not france", async () => {
     // Arrange
     const values: TransferFormEntity = {
       account: "GB33BUKB20201555555555",
@@ -232,9 +235,10 @@ describe("formValidation", () => {
     };
 
     // Act
-    const result = await formValidation.validateForm(values);
+    updateFormValidationSchemaWithBlackList(["FR", "ES"]);
 
     // Assert
+    const result = await formValidation.validateForm(values);
     expect(result["account"]).not.toBeDefined();
   });
 });
