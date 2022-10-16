@@ -5,7 +5,17 @@ import { rangeNumber } from "@lemoncode/fonk-range-number-validator";
 
 const validationSchema = {
   field: {
-    account: [Validators.required, iban.validator],
+    account: [
+      Validators.required,
+      iban.validator,
+      {
+        validator: Validators.pattern,
+        customArgs: {
+          pattern: /^(?!FR)/i,
+        },
+        message: "Transfers to France temporary disabled",
+      },
+    ],
     beneficiary: [Validators.required],
     name: [Validators.required],
     integerAmount: [

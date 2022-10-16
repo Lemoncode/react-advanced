@@ -130,75 +130,111 @@ describe("formValidation", () => {
     expect(result["account"]).not.toBeDefined();
   });
 
-    it("should fail when integerAmount is not valid", async () => {
-        // Arrange
-        const values: TransferFormEntity = {
-          account: "GB33BUKB20201555555555",
-          beneficiary: "John Doe",
-          integerAmount: 11000,
-          decimalAmount: 0,
-          reference: "Taxes",
-          email: "john@email.com",
-        };
-    
-        // Act
-        const result = await formValidation.validateForm(values);
-    
-        // Assert
-        expect(result["integerAmount"]).toBeDefined();
-      });
-    
-      it("should succeed when integerAmount is valid", async () => {
-        // Arrange
-        const values: TransferFormEntity = {
-          account: "GB33BUKB20201555555555",
-          beneficiary: "John Doe",
-          integerAmount: 1000,
-          decimalAmount: 0,
-          reference: "Taxes",
-          email:  "test@email.com"
-        };
-    
-        // Act
-        const result = await formValidation.validateForm(values);
-    
-        // Assert
-        expect(result["integerAmount"]).not.toBeDefined();
-      });
-    
-      it("should fail when decimalAmount is not valid", async () => {
-        // Arrange
-        const values: TransferFormEntity = {
-          account: "GB33BUKB20201555555555",
-          beneficiary: "John Doe",
-          integerAmount: 1000,
-          decimalAmount: 100,
-          reference: "Taxes",
-          email: "test@email.com"
-        };
-    
-        // Act
-        const result = await formValidation.validateForm(values);
-    
-        // Assert
-        expect(result["decimalAmount"]).toBeDefined();
-      });
-    
-      it("should succeed when decimalAmount is valid", async () => {
-        // Arrange
-        const values: TransferFormEntity = {
-          account: "GB33BUKB20201555555555",
-          beneficiary: "John Doe",
-          integerAmount: 1000,
-          decimalAmount: 99,
-          reference: "Taxes",
-          email: "test@email.com"
-        };
-    
-        // Act
-        const result = await formValidation.validateForm(values);
-    
-        // Assert
-        expect(result["decimalAmount"]).not.toBeDefined();
-      }); 
+  it("should fail when integerAmount is not valid", async () => {
+    // Arrange
+    const values: TransferFormEntity = {
+      account: "GB33BUKB20201555555555",
+      beneficiary: "John Doe",
+      integerAmount: 11000,
+      decimalAmount: 0,
+      reference: "Taxes",
+      email: "john@email.com",
+    };
+
+    // Act
+    const result = await formValidation.validateForm(values);
+
+    // Assert
+    expect(result["integerAmount"]).toBeDefined();
+  });
+
+  it("should succeed when integerAmount is valid", async () => {
+    // Arrange
+    const values: TransferFormEntity = {
+      account: "GB33BUKB20201555555555",
+      beneficiary: "John Doe",
+      integerAmount: 1000,
+      decimalAmount: 0,
+      reference: "Taxes",
+      email: "test@email.com",
+    };
+
+    // Act
+    const result = await formValidation.validateForm(values);
+
+    // Assert
+    expect(result["integerAmount"]).not.toBeDefined();
+  });
+
+  it("should fail when decimalAmount is not valid", async () => {
+    // Arrange
+    const values: TransferFormEntity = {
+      account: "GB33BUKB20201555555555",
+      beneficiary: "John Doe",
+      integerAmount: 1000,
+      decimalAmount: 100,
+      reference: "Taxes",
+      email: "test@email.com",
+    };
+
+    // Act
+    const result = await formValidation.validateForm(values);
+
+    // Assert
+    expect(result["decimalAmount"]).toBeDefined();
+  });
+
+  it("should succeed when decimalAmount is valid", async () => {
+    // Arrange
+    const values: TransferFormEntity = {
+      account: "GB33BUKB20201555555555",
+      beneficiary: "John Doe",
+      integerAmount: 1000,
+      decimalAmount: 99,
+      reference: "Taxes",
+      email: "test@email.com",
+    };
+
+    // Act
+    const result = await formValidation.validateForm(values);
+
+    // Assert
+    expect(result["decimalAmount"]).not.toBeDefined();
+  });
+
+  it("should fail when account is from France", async () => {
+    // Arrange
+    const values: TransferFormEntity = {
+      account: "FR7630006000011234567890189",
+      beneficiary: "John Doe",
+      integerAmount: 1000,
+      decimalAmount: 0,
+      reference: "Taxes",
+      email: "john@email.com",
+    };
+
+    // Act
+    const result = await formValidation.validateForm(values);
+
+    // Assert
+    expect(result["account"]).toBeDefined();
+  });
+
+  it("should succeed when account is not from France", async () => {
+    // Arrange
+    const values: TransferFormEntity = {
+      account: "GB33BUKB20201555555555",
+      beneficiary: "John Doe",
+      integerAmount: 1000,
+      decimalAmount: 0,
+      reference: "Taxes",
+      email: "john@email.com",
+    };
+
+    // Act
+    const result = await formValidation.validateForm(values);
+
+    // Assert
+    expect(result["account"]).not.toBeDefined();
+  });
 });

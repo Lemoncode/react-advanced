@@ -700,3 +700,69 @@ const validationSchema = {
   },
 };
 ```
+
+- Ahora imaginemos que hay un problema con Francia y que deshabilitar
+  los envíos para este pais, lo que hacemos es que en el IBAN si el código
+  del pais es el de Francia mostramos un error, para ellos usaremos
+  el validador de expresión regular.
+
+Vamos a por la prueba
+
+**./src/transfer-form/transfer-form.validation.spec.ts**
+
+```diff
++  it("should fail when account is from France", async () => {
++    // Arrange
++    const values: TransferFormEntity = {
++      account: "FR7630006000011234567890189",
++      beneficiary: "John Doe",
++      integerAmount: 1000,
++      decimalAmount: 0,
++      reference: "Taxes",
++      email: "john@email.com",
++    };
++
++    // Act
++    const result = await formValidation.validateForm(values);
++
++    // Assert
++    expect(result["account"]).toBeDefined();
++  });
++
++  it("should succeed when account is not from France", async () => {
++    // Arrange
++    const values: TransferFormEntity = {
++      account: "GB33BUKB20201555555555",
++      beneficiary: "John Doe",
++      integerAmount: 1000,
++      decimalAmount: 0,
++      reference: "Taxes",
++      email: "john@email.com"
++    };
++
++    // Act
++    const result = await formValidation.validateForm(values);
++
++    // Assert
++    expect(result["account"]).not.toBeDefined();
++  });
+```
+
+Y ahora a añadirlo
+
+```diff
+const validationSchema = {
+  field: {
+    account: [
+      Validators.required,
+      iban.validator
++     {
++       validator: Validators.pattern,
++       customArgs: {
++         pattern: /^(?!FR)/i,
++       },
++       message: 'Transfers to France temporary disabled',
++     },
+    ],
+    beneficiary: [Validators.required],
+```
