@@ -1,4 +1,3 @@
-import React from "react";
 import { KanbanState, ActionTypes, createDefaultKanbanContent } from "../model";
 import { kanbanReducer } from "./kanban.reducer";
 
@@ -67,12 +66,12 @@ describe("KanbanReducer", () => {
           name: "Column 2",
           content: [
             {
-              id: 1,
-              title: "Card 1",
-            },
-            {
               id: 2,
               title: "Card 2",
+            },
+            {
+              id: 1,
+              title: "Card 1",
             },
           ],
         },
@@ -93,7 +92,6 @@ describe("KanbanReducer", () => {
         },
       },
     });
-
     expect(newState).toEqual(state);
-  })
+  });
 });

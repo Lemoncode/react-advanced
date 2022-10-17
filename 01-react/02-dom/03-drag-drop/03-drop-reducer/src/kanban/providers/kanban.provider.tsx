@@ -1,5 +1,5 @@
 import React from "react";
-import { KanbanState, createDefaultKanbanContent } from "../model";
+import { createDefaultKanbanContent } from "../model";
 import { KanbanContext } from "./kanban.context";
 import { kanbanReducer } from "./kanban.reducer";
 
