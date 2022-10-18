@@ -3,9 +3,9 @@
 ## Resumen
 
 Ya hemos usado el contexto para tener más organizada nuestra aplicación y
-evitar acabar con un prop drill, vamos a darle una vuelta de tuerca más
-y aplicar useReducer a esta solución, el resultado lo evaluaremos y me
-diréis si merece la pena aplicar useReducer en este caso.
+evitar acabar con un *prop drill*, vamos a darle una vuelta de tuerca más
+y aplicar *useReducer* a esta solución, el resultado lo evaluaremos y me
+diréis si merece la pena aplicar *useReducer* en este caso.
 
 ## Paso a Paso
 
@@ -13,45 +13,30 @@ Partimos del ejemplo anterior.
 
 Este ejemplo toma como punto de partida el ejemplo _02-drop-column_.
 
-- El reduce lo vamos a usar dentro del contexto de Kanban, para tenerlo
+- El *reduce* lo vamos a usar dentro del contexto de *Kanban*, para tenerlo
   cerca vamos a crearlo dentro de la carpeta de providers (la localización de
   este fichero es discutible))
 
-- Vamos a hacer un refactor, en model vamos a renombrar _KanbanContent_
+- Vamos a hacer un *refactor*, en *model* vamos a renombrar _KanbanContent_
   a _KanbanState_
 
 _./src/kanban/model.ts_
 
-** Refactor con VSCode KanbanContent a KanbanState **
+** Refactor con VSCode *KanbanContent* a *KanbanState* **
 
-Aprovechamos el KanbanModel para añadir:
+Aprovechamos el *KanbanModel* para añadir:
 
-- Enumerado de acciones en este caso incializar el kanban de cards,
+- Enumerado de acciones en este caso incializar el *kanban* de cards,
   y mover una card de una columna a otra.
 
-- Añadimos enumerado con los action types.
+- Añadimos enumerado con los *action types*.
 
-- Añadimos interfaz con los payload.
+- Añadimos interfaz con los *payload*.
 
 (añadir al final)
 _./src/kanban/model.ts_
 
 ```ts
-export const ItemTypes = {
-  CARD: "card",
-};
-
-export interface CardContent {
-  id: number;
-  title: string;
-}
-
-export interface Column {
-  id: number;
-  name: string;
-  content: CardContent[];
-}
-
 export interface KanbanState {
   columns: Column[];
 }
@@ -74,23 +59,6 @@ export type KanbanAction =
       payload: MoveCardPayload;
     };
 //  | { type: 'drag'; payload: { from: string; to: string }
-
-export const createDefaultKanbanContent = (): KanbanState => ({
-  columns: [],
-});
-
-export interface DragItemInfo {
-  columnId: number;
-  content: CardContent;
-}
-
-export const createDragItemInfo = (
-  columnId: number,
-  content: CardContent
-): DragItemInfo => ({
-  columnId,
-  content: content,
-});
 ```
 
 - Creamos el fichero _kanban.reducer.ts_ dentro de la carpeta _providers_.
@@ -155,69 +123,108 @@ export const kanbanReducer = (
 };
 ```
 
-- Una cosa buena de esto es que si lo tenemos claro podríamos
-  haber arrancado por TDD, en este caso vamos a meter un par de
-  pruebas unitarias para ver que vamos por el buen camino
-  (en un caso real habría que trabajar esto más).
+- Una cosa buena de esto es que si lo tenemos claro podríamos haber arrancado por TDD, en este caso vamos a meter un par de pruebas unitarias para ver que vamos por el buen camino (en un caso real habría que trabajar esto más).
 
 _./src/kanban/providers/kanban.reducer.spec.ts_
 
 ```ts
-import { moveCardColumn } from "../kanban.business";
-import {
-  KanbanState,
-  KanbanAction,
-  ActionTypes,
-  createDefaultKanbanContent,
-  MoveCardPayload,
-} from "../model";
+import { KanbanState, ActionTypes, createDefaultKanbanContent } from "../model";
+import { kanbanReducer } from "./kanban.reducer";
 
-const handleSetKanbanContent = (state, newKanbanContent) => {
-  return newKanbanContent;
-};
+describe("KanbanReducer", () => {
+  it("should handle SET_KANBAN_CONTENT", () => {
+    const initialState: KanbanState = createDefaultKanbanContent();
 
-const handleMoveCard = (
-  state: KanbanState,
-  moveCardPayload: MoveCardPayload
-): KanbanState => {
-  const { columnDestinationId, dragItemInfo, dropCardId } = moveCardPayload;
-  const { columnId: columnOriginId, content } = dragItemInfo;
+    const state: KanbanState = {
+      columns: [
+        {
+          id: 1,
+          name: "Column 1",
+          content: [
+            {
+              id: 1,
+              title: "Card 1",
+            },
+          ],
+        },
+      ],
+    };
 
-  const columnDestination = state.columns.find(
-    (column) => column.id === columnDestinationId
-  );
+    const newState = kanbanReducer(initialState, {
+      type: ActionTypes.SET_KANBAN_CONTENT,
+      payload: state,
+    });
 
-  let cardIndex = columnDestination?.content.findIndex(
-    (card) => card.id === dropCardId
-  );
+    expect(newState).toEqual(state);
+  });
 
-  cardIndex =
-    cardIndex === -1 ? columnDestination.content.length : cardIndex + 1;
+  it("should handle MOVE_CARD from column 1 to column 2", () => {
+    const initialState: KanbanState = {
+      columns: [
+        {
+          id: 1,
+          name: "Column 1",
+          content: [
+            {
+              id: 1,
+              title: "Card 1",
+            },
+          ],
+        },
+        {
+          id: 2,
+          name: "Column 2",
+          content: [
+            {
+              id: 2,
+              title: "Card 2",
+            },
+          ],
+        },
+      ],
+    };
 
-  return moveCardColumn(
-    {
-      columnOriginId,
-      columnDestinationId,
-      cardIndex,
-      content,
-    },
-    state
-  );
-};
+    const state: KanbanState = {
+      columns: [
+        {
+          id: 1,
+          name: "Column 1",
+          content: [],
+        },
+        {
+          id: 2,
+          name: "Column 2",
+          content: [
+            {
+              id: 2,
+              title: "Card 2",
+            },
+            {
+              id: 1,
+              title: "Card 1",
+            },
+          ],
+        },
+      ],
+    };
 
-export const kanbanReducer = (
-  state: KanbanState = createDefaultKanbanContent(),
-  action: KanbanAction
-): KanbanState => {
-  switch (action.type) {
-    case ActionTypes.SET_KANBAN_CONTENT:
-      return handleSetKanbanContent(state, action.payload);
-    case ActionTypes.MOVE_CARD:
-      return handleMoveCard(state, action.payload);
-    default:
-      return state;
-  }
-};
+    const newState = kanbanReducer(initialState, {
+      type: ActionTypes.MOVE_CARD,
+      payload: {
+        columnDestinationId: 2,
+        dropCardId: 2,
+        dragItemInfo: {
+          columnId: 1,
+          content: {
+            id: 1,
+            title: "Card 1",
+          },
+        },
+      },
+    });
+    expect(newState).toEqual(state);
+  });
+});
 ```
 
 - Realizamos sustitución en _KanbanContext_
@@ -227,13 +234,12 @@ _./src/kanban/providers/kanban.context.tsx_
 ```diff
 import React from "react";
 import {
-  createDefaultKanbanContent,
-  DragItemInfo,
-  KanbanState,
-+ KanbanAction
+-  createDefaultKanbanContent,
+-  DragItemInfo,
+-  KanbanContent,
++  KanbanState,
++  KanbanAction
 } from "../model";
-
-+ import { kanbanReducer } from "./kanban.reducer";
 ```
 
 _./src/kanban/providers/kanban.context.tsx_
@@ -264,18 +270,18 @@ export const KanbanContext = React.createContext<KanbanContextModel>(
 );
 ```
 
-- Vamos a realizar sustitución en el componente KanbanProvider:
+- Vamos a realizar sustitución en el componente *KanbanProvider*:
 
 _./src/kanban/providers/kanban.provider.tsx_
 
 ```diff
 import React from "react";
 - import { moveCardColumn } from "../kanban.business";
-- import {
+  import {
 -  KanbanState,
--  createDefaultKanbanContent,
+   createDefaultKanbanContent,
 -  DragItemInfo,
-- } from "../model";
+  } from "../model";
 import { KanbanContext } from "./kanban.context";
 + import { kanbanReducer } from "./kanban.reducer";
 ```
@@ -334,9 +340,9 @@ export const KanbanProvider: React.FC<Props> = ({ children }) => {
 };
 ```
 
-- Vamos ahora a adapta el container para que use el _dispatch_
+- Vamos ahora a adaptar el *container* para que use el _dispatch_
 
-_./src/kanban/containers/kanban.container.tsx_
+_./src/kanban/kanban.container.tsx_
 
 ```diff
 import React from "react";
@@ -348,7 +354,7 @@ import classes from "./kanban.container.css";
 import { KanbanContext } from "./providers/kanban.context";
 ```
 
-_./src/kanban/containers/kanban.container.tsx_
+_./src/kanban/kanban.container.tsx_
 
 ```diff
 export const KanbanContainer: React.FC = () => {
@@ -377,9 +383,9 @@ export const KanbanContainer: React.FC = () => {
 };
 ```
 
-Y ahora vamos a actualizar el card container:
+Y ahora vamos a actualizar el *card component*:
 
-_./src/kanban/components/card.component.tsx_
+_./src/kanban/componentes/card.component.tsx_
 
 ```diff
 import React from "react";
@@ -451,7 +457,7 @@ export const Card = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
 });
 ```
 
-- Vale el drag entre cards perfecto, nos queda el drag cuando suelto en el espacio
+- Vale el *drag* entre *cards* perfecto, nos queda el *drag* cuando suelto en el espacio
   libre de una columna:
 
 _./src/kanban/components/empty-space-drop-zone.tsx_
@@ -501,8 +507,8 @@ export const EmptySpaceDropZone: React.FC<Props> = (props) => {
 
 # Ejercicio
 
-Vamos a práctica con useReducer:
+Vamos a práctica con *useReducer*:
 
-- Añadimos un botón al card para borrar un card.
-- Esa acción la creamos en el use reducer.
+- Añadimos un botón al *card* para borrar un *card*.
+- Esa acción la creamos en el *use reducer*.
 - Lo conectamos todo.
