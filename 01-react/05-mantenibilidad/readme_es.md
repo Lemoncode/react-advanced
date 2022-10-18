@@ -1,37 +1,33 @@
-# TODO
+# Mantenibilidad
 
-Mantenibilidad
+## Prop drilling
 
-## Evitando prop drilling.
-  Mostrar un ejemplo con prop drilling a tope y ver lo malo que tiene
-  Mostrar tecnicas para evitar esto
-    - Containment.
-    - Contexto a multiples niveles.
-    - Render props.
-    - UseReducer
-    - Ejemplo práctico tabs, o otro?
+Cubierto en otros ejemplos:
 
+- Evitar Prop Drilling:
+  - 01-react/02-context
+  - 01-react/02-dom/03-drag-drop/03-use-reducer
 
-## Enrutado:
-  Soluciones preparadas para escalar.
-  Mostrar proyecto pequeño, enrutado cutre y como se arregla const etc
+Otros temas a tener en cuenta:
 
-  Mostrar proyecto grande, upa esto es muy grande, romper en modulos y
-  trozos de ruta
+- Contexto a múltiples niveles.
+- Consideraciones rendimiento y otras opciones
+  (06-rendimiento/jotai)
 
-  Comentar problema MFE rutas y pelea
+## Enrutado
 
-  Hooks de Routing.
+Ver sección 07 routing.
 
-  Tipando el enrutado.
-
+Además de lo cubierto allí se puede revisar enrutado
+y contantes ruta: https://github.com/Lemoncode/master-frontend-lemoncode/tree/master/04-frameworks/01-react/05-architecture/01-routes
 
 ## Simplificando componentes
-Extracción de funcionalidad a hooks.
-UserReducer para escenarios complejos.
-Hooks utiles (WhyDidYouUpdate, Media Queries. Debounce…).
-Manejo de formularios
-Gestor de estados
-Motores de validación, casos avanzados
-Inmutabilidad:
-Immerjs.
+
+Ya cubierto en otros ejemplos:
+
+- Extracción de funcionalidad a hooks.
+- UserReducer para escenarios complejos.
+- Hooks utiles (WhyDidYouUpdate, Media Queries. Debounce…), sección _08 Hooks_.
+- Manejo de formularios (09-forms)
+- Motores de validación (09 forms)
+- Inmutabilidad + Immerjs.
