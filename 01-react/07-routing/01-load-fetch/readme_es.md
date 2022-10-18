@@ -1,14 +1,12 @@
-# 00 Load Fetch
+# 07 Routing - 01 Load Fetch
 
 ## Resumen
 
-Un tema interesante que incorporar React Router son los loaders.
+Un tema interesante que incorporar *React Router* son los *loaders*.
 
-No permiten cargar una serie de datos (llamadas asíncronas) y que
-cuando mostremos la página ya lo tengamos todo listo.
+No permiten cargar una serie de datos (llamadas asíncronas) y que cuando mostremos la página ya lo tengamos todo listo.
 
-Esto no esta mal para una página, pero cobra todo el sentido cuando anidemos
-varias vistas en una misma página.
+Esto no está mal para una página, pero cobra todo el sentido cuando anidemos varias vistas en una misma página.
 
 ## Paso a Paso
 
@@ -18,8 +16,7 @@ varias vistas en una misma página.
 npm install
 ```
 
-- Y en el modulo A vamos a añadir una api para leer la lista de caracteres de Rick & Morty (ojo le hemos añadido una latencia
-  de 1 a 3 segundos a cosa hecha):
+- Y en el módulo A vamos a añadir una api para leer la lista de caracteres de *Rick & Morty* (ojo le hemos añadido una latencia de 1 a 3 segundos a cosa hecha):
 
 _./src/modules/module-a/model.ts_
 
@@ -55,10 +52,9 @@ export const getCharacterCollection = async (
 };
 ```
 
-En el area de las rutas vamos añadir la propiedad _loader_
-en la ruta de _module-a_:
+En el área de las rutas vamos añadir la propiedad _loader_ en la ruta de _module-a_:
 
-_./src/modules/module-a/route.tsx_
+_./src/modules/module-a/routes.tsx_
 
 ```diff
 import React from "react";
@@ -94,6 +90,7 @@ _./src/modules/module-a/a.page.tsx_
 ```diff
 import React from "react";
 + import { useLoaderData } from 'react-router-dom';
++ import { Character } from './model';
 
 export const PageA = () => {
 + const characters = useLoaderData() as Character[];
@@ -111,12 +108,9 @@ export const PageA = () => {
 };
 ```
 
-Funciona, pero la usabilidad es rara, no se muestra nada mientras
-la página está cargando, podemos mostrar un indicador de carga.
+Funciona, pero la usabilidad es rara, no se muestra nada mientras la página está cargando, podemos mostrar un indicador de carga.
 
-Una opción es ponerlo en el root..., para ello podemos anidar
-las vistas debajo del raíz y poner un componente que haya de
-layout principal.
+Una opción es ponerlo en el *root*..., para ello podemos anidar las vistas debajo del raíz y poner un componente que haya de *layout* principal.
 
 _./src/root.layout.tsx_
 
@@ -146,13 +140,13 @@ import { createBrowserRouter } from "react-router-dom";
 import { HomePage } from "../home.page";
 import { routesModuleA } from "../modules/module-a";
 import { routesModuleB } from "../modules/module-b";
-+ import { rootLayout } from "../root.layout";
++ import { RootLayout } from "../root.layout";
 
 export const appRoutes = createBrowserRouter([
   {
     path: "/",
 -    element: <HomePage />,
-+   element: <rootLayout />,
++   element: <RootLayout />,
 +   children: [
 +     {
 +       path: "/",
@@ -167,4 +161,4 @@ export const appRoutes = createBrowserRouter([
 ]);
 ```
 
-> En el próximo ejemplo veremos como tratar el defer directamente en la página anidada.
+> En el próximo ejemplo veremos cómo tratar el defer directamente en la página anidada.
