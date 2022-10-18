@@ -1,4 +1,4 @@
-# 00 Routing
+# 07 Routing 00 Modules
 
 ## Resumen
 
@@ -18,8 +18,8 @@ npm install
 npm install react-router-dom
 ```
 
-- Un tema interesante de la nueva versión de React Router (6.4.2) es que
-  permite definir el arbol rutas como un array, así es muy fácil poder romper
+- Un tema interesante de la nueva versión de *React Router* (6.4.2) es que
+  permite definir el árbol de rutas como un *array*, así es muy fácil poder romper
   en módulos, y también permite rutas anidadas.
 
 - Imaginemos que tenemos dos módulos separados:
@@ -52,7 +52,7 @@ export const PageB = () => {
 };
 ```
 
-_./src/modules/module-b/page-a.tsx_
+_./src/modules/module-b/a.page.tsx_
 
 ```tsx
 import React from "react";
@@ -66,7 +66,7 @@ export const PageA = () => {
 };
 ```
 
-_./src/modules/module-b/page-b.tsx_
+_./src/modules/module-b/b.page.tsx_
 
 ```tsx
 import React from "react";
@@ -80,16 +80,15 @@ export const PageB = () => {
 };
 ```
 
-- Vamos a definir las rutas para cada módulo, en este caso para evitar
-  colisiones vamos a añadir un nivel de ruta anidada por módulo:
+- Vamos a definir las rutas para cada módulo, en este caso para evitar colisiones vamos a añadir un nivel de ruta anidada por módulo:
 
 _./src/modules/module-a/routes.tsx_
 
 ```tsx
 import React from "react";
 import { RouteObject } from "react-router-dom";
-import { PageA } from "./page-a";
-import { PageB } from "./page-b";
+import { PageA } from "./a.page";
+import { PageB } from "./b.page";
 
 export const routesModuleA: RouteObject[] = [
   {
@@ -116,13 +115,13 @@ export * from "./routes";
 
 - Hacemos lo mismo para el módulo B:
 
-_./src/modules/module-b/routes.ts_
+_./src/modules/module-b/routes.tsx_
 
 ```tsx
 import React from "react";
 import { RouteObject } from "react-router-dom";
-import { PageA } from "./page-a";
-import { PageB } from "./page-b";
+import { PageA } from "./a.page";
+import { PageB } from "./b.page";
 
 export const routesModuleB: RouteObject[] = [
   {
@@ -181,7 +180,7 @@ export const Home = () => {
 - Vamos ahora a definir el árbol de rutas principal y añadir las rutas de los
   módulos:
 
-_./src/core/routes.ts_
+_./src/core/routes.tsx_
 
 ```tsx
 import React from "react";
@@ -193,7 +192,7 @@ import { routesModuleB } from "../modules/module-b";
 export const appRoutes = createBrowserRouter([
   {
     path: "/",
-    element: <HomePage />,
+    element: <Home />,
   },
   ...routesModuleA,
   ...routesModuleB,
@@ -206,7 +205,6 @@ _./src/app.tsx_
 
 ```tsx
 import React from "react";
-import ReactDOM from "react-dom/client";
 import { appRoutes } from "./core/routes";
 import { RouterProvider } from "react-router-dom";
 
