@@ -1109,4 +1109,123 @@ export const TransferForm: React.FC = () => {
   return (
 ```
 
-Let's go for an asynchronous validation:
+- Ahora vamos a implementar una validación asíncrona custom.
+
+En este caso vamos a ver si un IBAN dado está dentro de una lista negra (mafiosos, magnates corruptos,
+el que se retrasó un mes en el pago del recibo de la luz, etc...).
+
+- Primero creamos una API fake en la ue le pasas un IBAN y te diga si estás en la black list:
+
+_./src/transfer-form/transfer-form.api.ts_
+
+```diff
+const mockCountries = ["FR", "ES"];
+
+export const getDisabledCountryIBANCollection = () =>
+  Promise.resolve(mockCountries);
+
++ const mockIBANBlackList = ["BE71 0961 2345 6769"];
+
++ export const isIBANInBlackList = iban =>
++  Promise.resolve(mockIBANBlackList.includes(iban));
+```
+
+- Vamos ahora a por el validador:
+
+_./src/transfer-form/custom-validators/iban-black-list.validator.ts_
+
+```tsx
+import { isIBANInBlackList } from "../transfer-form.api";
+
+export const ibanBlackList = ({ value }) =>
+  isIBANInBlackList(value).then((isInBlackList) => ({
+    type: "IBAN_BLACK_LIST",
+    succeeded: !isInBlackList,
+    message: isInBlackList ? "This IBAN is not allowed" : "",
+  }));
+```
+
+- Vamos añadir pruebas: en este caso no estamos probando si la API funciona, lo que haremos
+  será hacer mocking de la entrada devolviendo true en un caso y false en el otro, y comprobando
+  que sale un mensaje de error o no.
+
+_./src/transfer-form/custom-validators/iban-black-list.validator.spec.ts_
+
+```tsx
+import * as transferFormApi from "../transfer-form.api";
+import { ibanBlackList } from "./iban-black-list.validator";
+
+describe("ibanBlackList", () => {
+  it("Should fail with black list", async () => {
+    // Arrange
+    const value = "BE71 0961 2345 6769";
+
+    jest.spyOn(transferFormApi, "isIBANInBlackList").mockResolvedValue(true);
+
+    // Act
+    const result = await ibanBlackList({ value });
+
+    // Assert
+    expect(result.succeeded).toBeFalsy();
+    expect(result.message).toEqual("This IBAN is not allowed");
+  });
+
+  it("Should return empty message if iban is not in black list", async () => {
+    // Arrange
+    const value = "BE71 0961 2345 6769";
+
+    jest.spyOn(transferFormApi, "isIBANInBlackList").mockResolvedValue(false);
+
+    // Act
+    const result = await ibanBlackList({ value });
+
+    // Assert
+    expect(result.succeeded).toBeTruthy();
+    expect(result.message).toEqual("");
+  });
+});
+```
+
+- Ahora vamos a añadir el validador al formulario, esto nos va a obligar a modificar los tests
+  para que no tiren del API de black list (pondremos true en todos y sólo pondremos como false donde
+  querramos probarlo).
+
+_./src/transfer-form/transfer-form.validation.ts_
+
+```diff
+import { Validators } from "@lemoncode/fonk";
+import { createFormikValidation } from "@lemoncode/fonk-formik";
+import { iban } from "@lemoncode/fonk-iban-validator";
+import { rangeNumber } from "@lemoncode/fonk-range-number-validator";
+import { countryBlackList } from "./custom-validators";
++ import { ibanBlackList } from "./custom-validators/iban-black-list.validator";
+
+const validationSchema = {
+  field: {
+    account: [
+      Validators.required,
+      iban.validator
++     ibanBlackList,
+      ],
+    beneficiary: [Validators.required],
+```
+
+- Si ejecutamos todo pasa pero es porque estamos tirando de la API rest de black list, 
+esto es un problema ya que por ejemplo en un entorno de desarrollo o CI / CD no tenemos
+porque tenerla y menos con datos esperados, así que vamos añadir mocking a cada método,
+y añadir el caso en el que falla la black list
+
+En este ejemplo cambiamos sólo uno de los casos, en el código real cambiar todos.
+
+_./src/transfer-form/transfer-form.validation.spec.ts_
+
+```diff
+import { TransferFormEntity } from "./transfer-form.model";
+import {
+  formValidation,
+  updateFormValidationSchemaWithBlackList,
+} from "./transfer-form.validation";
++ import * as transferFormApi from "./transfer-form.api";
+
+
+```

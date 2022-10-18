@@ -3,8 +3,13 @@ import {
   formValidation,
   updateFormValidationSchemaWithBlackList,
 } from "./transfer-form.validation";
+import * as transferFormApi from "./transfer-form.api";
 
 describe("formValidation", () => {
+  beforeEach(() => {
+    jest.spyOn(transferFormApi, "isIBANInBlackList").mockResolvedValue(false);
+  });
+
   it("should fail when account is empty", async () => {
     // Arrange
     const values: TransferFormEntity = {

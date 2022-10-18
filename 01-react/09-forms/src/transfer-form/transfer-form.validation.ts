@@ -3,10 +3,11 @@ import { createFormikValidation } from "@lemoncode/fonk-formik";
 import { iban } from "@lemoncode/fonk-iban-validator";
 import { rangeNumber } from "@lemoncode/fonk-range-number-validator";
 import { countryBlackList } from "./custom-validators";
+import { ibanBlackList } from "./custom-validators/iban-black-list.validator";
 
 const validationSchema = {
   field: {
-    account: [Validators.required, iban.validator],
+    account: [Validators.required, iban.validator, ibanBlackList],
     beneficiary: [Validators.required],
     name: [Validators.required],
     integerAmount: [
