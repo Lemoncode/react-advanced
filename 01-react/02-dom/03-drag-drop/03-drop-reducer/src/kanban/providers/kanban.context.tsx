@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  createDefaultKanbanContent,
-  DragItemInfo,
-  KanbanAction,
-  KanbanState,
-} from "../model";
-import { kanbanReducer } from "./kanban.reducer";
+import { KanbanAction, KanbanState } from "../model";
 
 export interface KanbanContextModel {
   kanbanContent: KanbanState;
