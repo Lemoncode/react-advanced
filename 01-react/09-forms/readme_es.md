@@ -1258,3 +1258,230 @@ import {
 +   });
 + });
 ```
+
+- No pinta mal la cosa :)
+
+```bash
+npm start
+```
+
+- Para finalizar vamos a implementar una validación a nivel de registro,
+  es decir: hay casos en los que necesitamos tener el formulario completo
+  y en ese momento lanzar la validacion.
+
+El ejemplo que vamos a ver: queremos prohibir las transferencias a
+Suiza de más de 1000 € (hay que realizarlas por otro procedimiento)
+
+Para ello vamos a crear un custom validator pero esta vez asociado a
+un registro en vez de un campo concreto.
+
+_./src/transfer-form/custom-validators/swiss-limit.record-validator.ts_
+
+```ts
+import { Validators } from "@lemoncode/fonk";
+
+const isSwitzerlandAccount = (value) => {
+  const pattern = /^CH/i;
+  const { succeeded } = Validators.pattern.validator({
+    value,
+    customArgs: { pattern },
+  }) as ValidationResult;
+  return succeeded;
+};
+
+export const switzerlandTransfer = ({ values }) => {
+  const succeeded =
+    !isSwitzerlandAccount(values.account) ||
+    Number(values.integerAmount) < 1000 ||
+    (Number(values.integerAmount) === 1000 &&
+      Number(values.decimalAmount) <= 0);
+
+  return {
+    type: "SWITZERLAND_TRANSFER",
+    succeeded,
+    message: succeeded
+      ? ""
+      : "Not allowed to transfer more than 1000 € in Swiss account",
+  };
+};
+```
+
+Vamos a añadirle pruebas unitarias:
+
+_./src/transfer-form/custom-validators/swiss-limit.record-validator.spec.ts_
+
+```ts
+import { switzerlandTransfer } from "./swiss-limit.record-validator";
+
+describe("switzerlandTransfer", () => {
+  it("Should return empty message if iban is not in switzerland", () => {
+    // Arrange
+    const values = {
+      account: "BE71 0961 2345 6769",
+      integerAmount: 1000,
+      decimalAmount: 0,
+    };
+
+    // Act
+    const result = switzerlandTransfer({ values });
+
+    // Assert
+    expect(result.succeeded).toBeTruthy();
+    expect(result.message).toEqual("");
+  });
+
+  it("Should return empty message if iban is in switzerland and amount is less than 1000", () => {
+    // Arrange
+    const values = {
+      account: "CH93 0076 2011 6238 5295 7",
+      integerAmount: 999,
+      decimalAmount: 99,
+    };
+
+    // Act
+    const result = switzerlandTransfer({ values });
+
+    // Assert
+    expect(result.succeeded).toBeTruthy();
+    expect(result.message).toEqual("");
+  });
+
+  it("Should return empty message if iban is in switzerland and amount is 1000", () => {
+    // Arrange
+    const values = {
+      account: "CH93 0076 2011 6238 5295 7",
+      integerAmount: 1000,
+      decimalAmount: 0,
+    };
+
+    // Act
+    const result = switzerlandTransfer({ values });
+
+    // Assert
+    expect(result.succeeded).toBeTruthy();
+    expect(result.message).toEqual("");
+  });
+
+  it("Should return error message if iban is in switzerland and amount is 1000.01", () => {
+    // Arrange
+    const values = {
+      account: "CH93 0076 2011 6238 5295 7",
+      integerAmount: 1000,
+      decimalAmount: 1,
+    };
+
+    // Act
+    const result = switzerlandTransfer({ values });
+
+    // Assert
+    expect(result.succeeded).toBeFalsy();
+    expect(result.message).toEqual(
+      "Not allowed to transfer more than 1000 € in Swiss account"
+    );
+  });
+});
+```
+
+- Vamos a darle uso y vamos a probarlo:
+
+_./src/transfer-form/transfer-form.validation.ts_
+
+```diff
+import { Validators } from "@lemoncode/fonk";
+import { createFormikValidation } from "@lemoncode/fonk-formik";
+import { iban } from "@lemoncode/fonk-iban-validator";
+import { rangeNumber } from "@lemoncode/fonk-range-number-validator";
+import { countryBlackList } from "./custom-validators";
+import { ibanBlackList } from "./custom-validators/iban-black-list.validator";
++ import { switzerlandTransfer } from "./custom-validators/swiss-limit.record-validator";
+
+const validationSchema = {
+  field: {
+    account: [Validators.required, iban.validator, ibanBlackList],
+    beneficiary: [Validators.required],
+    name: [Validators.required],
+    integerAmount: [
+      Validators.required,
+      {
+        validator: rangeNumber,
+        customArgs: {
+          min: {
+            value: 0,
+            inclusive: true,
+          },
+          max: {
+            value: 10000,
+            inclusive: true,
+          },
+        },
+      },
+    ],
+    decimalAmount: [
+      Validators.required,
+      {
+        validator: rangeNumber,
+        customArgs: {
+          min: {
+            value: 0,
+            inclusive: true,
+          },
+          max: {
+            value: 99,
+            inclusive: true,
+          },
+        },
+      },
+    ],
+    reference: [Validators.required],
+    email: [Validators.required, , Validators.email],
+  },
++ record: {
++   switzerlandTransfer: [switzerlandTransfer],
++ },
+};
+```
+
+```bash
+npm start
+```
+
+- Y vamos a mostrar este mensaje de error en el formulario:
+
+_./src/transfer-form/transfer-form.component.tsx_
+
+```diff
+      <Formik
+        initialValues={createEmptyTransferFormEntity()}
+        onSubmit={(values) => {
+          console.log(values);
+        }}
+        validate={(values) => formValidation.validateForm(values)}
+      >
+-        {() => (
++        {({ errors }) => (
+          <Form>
+```
+
+_./src/transfer-form/transfer-form.component.tsx_
+
+```diff
+            <div className={classes.formGroup}>
+              <label htmlFor="email">Email</label>
+              <InputFormik id="email" name="email" />
+            </div>
++           <div>
++           {errors.["recordErrors"] && errors["recordErrors"].switzerlandTransfer && (
++             <span style={{color: "red"}}>{errors["recordErrors"]switzerlandTransfer}</span>
++           )}
++           </div>
+            <div className={classes.buttons}>
+              <button type="submit">Submit</button>
+            </div>
+          </Form>
+        )}
+```
+
+- Y ya lo tenemos, ahora si nos fijamos que hemos obtenido:
+  - Un esquema de validación desacoplado del UI.
+  - Un esquema con una buen cobertura de pruebas unitaras.
+  - Unos validadores externos robustos y que en algunos casos pueden ser reutilizados.

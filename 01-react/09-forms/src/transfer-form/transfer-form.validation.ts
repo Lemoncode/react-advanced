@@ -4,6 +4,7 @@ import { iban } from "@lemoncode/fonk-iban-validator";
 import { rangeNumber } from "@lemoncode/fonk-range-number-validator";
 import { countryBlackList } from "./custom-validators";
 import { ibanBlackList } from "./custom-validators/iban-black-list.validator";
+import { switzerlandTransfer } from "./custom-validators/swiss-limit.record-validator";
 
 const validationSchema = {
   field: {
@@ -44,6 +45,9 @@ const validationSchema = {
     ],
     reference: [Validators.required],
     email: [Validators.required, , Validators.email],
+  },
+  record: {
+    switzerlandTransfer: [switzerlandTransfer],
   },
 };
 

@@ -29,7 +29,7 @@ export const TransferForm: React.FC = () => {
         }}
         validate={(values) => formValidation.validateForm(values)}
       >
-        {() => (
+        {({ errors }) => (
           <Form>
             <div className={classes.formGroup}>
               <label htmlFor="account">Beneficiary IBAN</label>
@@ -54,6 +54,14 @@ export const TransferForm: React.FC = () => {
             <div className={classes.formGroup}>
               <label htmlFor="email">Email</label>
               <InputFormik id="email" name="email" />
+            </div>
+            <div>
+              {errors["recordErrors"] &&
+                errors["recordErrors"].switzerlandTransfer && (
+                  <span style={{ color: "red" }}>
+                    {errors["recordErrors"].switzerlandTransfer}
+                  </span>
+                )}
             </div>
             <div className={classes.buttons}>
               <button type="submit">Submit</button>
