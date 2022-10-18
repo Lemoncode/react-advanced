@@ -1,9 +1,8 @@
-# 00 Load Fetch
+# 07 Routing - 02 Defer
 
 ## Resumen
 
-No mostrar la pantalla mientras se cargan los datos puede ser algo poco
-usable, vamos a mostrar la página y jugar con React.Suspense.
+No mostrar la pantalla mientras se cargan los datos puede ser algo poco usable, vamos a mostrar la página y jugar con *React.Suspense*.
 
 ## Paso a Paso
 
@@ -13,8 +12,7 @@ usable, vamos a mostrar la página y jugar con React.Suspense.
 npm install
 ```
 
-Y en la parte de rutas en la que hacemos el load, vamos a añadir
-un _defer_ (https://reactrouter.com/en/main/utils/defer)
+Y en la parte de rutas en la que hacemos el load, vamos a añadir un _defer_ (https://reactrouter.com/en/main/utils/defer)
 
 _./src/module-a/routes.tsx_
 
@@ -40,8 +38,7 @@ export const routesModuleA: RouteObject[] = [
       },
 ```
 
-Vamos ahora la página en concreto y vamos a añadir un _Suspense_ para indicar
-que estamos cargando.
+Vamos ahora la página en concreto y vamos a añadir un _Suspense_ para indicar qué estamos cargando.
 
 _/src/modules/module-a/a.page.tsx_
 
