@@ -1210,12 +1210,10 @@ const validationSchema = {
     beneficiary: [Validators.required],
 ```
 
-- Si ejecutamos todo pasa pero es porque estamos tirando de la API rest de black list, 
-esto es un problema ya que por ejemplo en un entorno de desarrollo o CI / CD no tenemos
-porque tenerla y menos con datos esperados, así que vamos añadir mocking a cada método,
-y añadir el caso en el que falla la black list
+- Si ejecutamos todo pasa pero es porque estamos tirando de la API rest de black list, esto es un problema ya que por ejemplo en un entorno de desarrollo o CI / CD no tenemos porque tenerla y menos con datos esperados, así que vamos añadir mocking a cada método, y añadir el caso en el que falla la black list
 
-En este ejemplo cambiamos sólo uno de los casos, en el código real cambiar todos.
+Vamos añadir un grupo de tests con un mock a isIbanBacklList a false
+(usaremos un beforeeach), y otro grupo de tests con un mock a isIbanBacklList a true.
 
 _./src/transfer-form/transfer-form.validation.spec.ts_
 
@@ -1227,5 +1225,36 @@ import {
 } from "./transfer-form.validation";
 + import * as transferFormApi from "./transfer-form.api";
 
+- describe("formValidation", () => {
++ describe("formValidation - isIBANInBlackList false", () => {
++    beforeEach(() => {
++      jest.spyOn(transferFormApi, "isIBANInBlackList").mockResolvedValue(false);
++    });
+// ...
+  });
+});
 
++ describe("formValidation - isIBanInBlackList true", () => {
++   beforeEach(() => {
++     jest.spyOn(transferFormApi, "isIBANInBlackList").mockResolvedValue(true);
++   });
++
++   it("Should fail when iban is in black list", async () => {
++     // Arrange
++     const values: TransferFormEntity = {
++      account: "GB33BUKB20201555555555",
++      beneficiary: "John Doe",
++      integerAmount: 1000,
++      decimalAmount: 0,
++      reference: "Taxes",
++      email: "john@email.com",
++     };
++
++     // Act
++     const result = await formValidation.validateForm(values);
++
++     // Assert
++     expect(result["account"]).toBeDefined();
++   });
++ });
 ```

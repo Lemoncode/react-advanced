@@ -5,7 +5,7 @@ import {
 } from "./transfer-form.validation";
 import * as transferFormApi from "./transfer-form.api";
 
-describe("formValidation", () => {
+describe("formValidation - isIBANInBlackList false", () => {
   beforeEach(() => {
     jest.spyOn(transferFormApi, "isIBANInBlackList").mockResolvedValue(false);
   });
@@ -245,5 +245,29 @@ describe("formValidation", () => {
     // Assert
     const result = await formValidation.validateForm(values);
     expect(result["account"]).not.toBeDefined();
+  });
+});
+
+describe("formValidation - isIBanInBlackList true", () => {
+  beforeEach(() => {
+    jest.spyOn(transferFormApi, "isIBANInBlackList").mockResolvedValue(true);
+  });
+
+  it("Should fail when iban is in black list", async () => {
+    // Arrange
+    const values: TransferFormEntity = {
+      account: "GB33BUKB20201555555555",
+      beneficiary: "John Doe",
+      integerAmount: 1000,
+      decimalAmount: 0,
+      reference: "Taxes",
+      email: "john@email.com",
+    };
+
+    // Act
+    const result = await formValidation.validateForm(values);
+
+    // Assert
+    expect(result["account"]).toBeDefined();
   });
 });
