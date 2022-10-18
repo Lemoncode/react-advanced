@@ -1,9 +1,8 @@
-# 00 Nested
+# 07 Routing 03 Nested
 
 ## Resumen
 
-Vamos a dar un punto más a las vistas anidadas. En este ejercicio vamos a crear una vista de detalle para cada uno de los personajes de la serie de televisión Rick and Morty y mostrarla en la misma página que la de
-listado.
+Vamos a dar un punto más a las vistas anidadas. En este ejercicio vamos a crear una vista de detalle para cada uno de los personajes de la serie de televisión *Rick and Morty* y mostrarla en la misma página que la de listado.
 
 ## Paso a Paso
 
@@ -13,8 +12,7 @@ listado.
 npm install
 ```
 
-- Vamos a ampliar la API rest y añadir un metodo para carga
-  los datos de un caracter por id.
+- Vamos a ampliar la *API rest* y añadir un método para carga los datos de un *character* por *id*.
 
 _./src/modules/module-a/character-collection.api.ts_
 
@@ -135,7 +133,7 @@ export const PageA = () => {
                 ))}
               </ul>
 +            </div>
-+            <Outlet/>
++            <Outlet />
 +         </div>
           )}
         </Await>
@@ -150,13 +148,14 @@ export const PageA = () => {
 _./src/modules/module-a/a.page.tsx_
 
 ```diff
-+ import { Character } from "./model";
+- import { Await, Outlet, useLoaderData } from "react-router-dom";
++ import { Await, Link, Outlet, useLoaderData } from "react-router-dom";
 // (...)
                 <ul>
                   {characters.map((character) => (
                     <li key={character.id}>
 -                      {character.name}
-+                       <Link to={`./${character.id}`}>{character.name}</a>
++                       <Link to={`./${character.id}`}>{character.name}</Link>
                     </li>
                   ))}
                 </ul>
@@ -164,4 +163,4 @@ _./src/modules/module-a/a.page.tsx_
 
 ## Ejercicio
 
-Vamos a meter un defer y un indicador de carga a la vista de detalle.
+Vamos a meter un *defer* y un indicador de carga a la vista de detalle.
