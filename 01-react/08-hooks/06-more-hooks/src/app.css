@@ -1,0 +1,11 @@
+.online {
+  width: 24px;
+  height: 24px;
+  background-color: green;
+}
+
+.offline {
+  width: 24px;
+  height: 24px;
+  background-color: red;
+}
