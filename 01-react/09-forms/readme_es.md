@@ -2,25 +2,23 @@
 
 ## Resumen
 
-Manejar formularios tienen una serie de desafíos, cuando mostrar errores, cuando lanzar validaciones, como actualizar campos... y lo más importante como hacer para que tu código
-no acabe siendo un spaghetti.
+Manejar formularios tiene una serie de desafíos, cuando mostrar errores, cuando lanzar validaciones, como actualizar campos... y lo más importante como hacer para que tu código no acabe siendo un spaghetti.
 
-En este ejemplo vamos a meternos a simular un formulario real, el de transferencia
-bancaria, los casos que vamos cubrir:
+En este ejemplo vamos a meternos a simular un formulario real, el de transferencia bancaria, los casos que vamos cubrir:
 
-- Cuando mostrar lo mensajes de error (sólo cuando el campos este manchado o si ya se
-  ha hecho submit del mismo).
-- Como marcar validaciones de campos obligatorios de informar.
-- Como validar que un campo se un correo bien informado.
-- Como validar un iban.
-- Como validar con expresiones regulares.
-- Como crear validaciones custom tanto síncronas como asíncronas.
+- Cuando mostrar lo mensajes de error (sólo cuando el campo está manchado o si ya se
+  ha hecho *submit* del mismo).
+- Cómo marcar validaciones de campos obligatorios de informar.
+- Cómo validar que un campo se un correo bien informado.
+- Cómo validar un iban.
+- Cómo validar con expresiones regulares.
+- Cómo crear validaciones *custom* tanto síncronas como asíncronas.
 - Como añadir validaciones a nivel de registro.
 - Como mostrar los mensajes de error.
 
 ## Paso a Paso
 
-- Primero copiamos el ejemplo anterior, y hacemos un _npm install_
+- Primero copiamos el *00-boiler-plate*, y hacemos un _npm install_
 
 ```bash
 npm install
@@ -28,30 +26,30 @@ npm install
 
 - De librerías de manejo de formularios nos podemos encontrar con varias, las más populares:
 
-  - React Final Form.
-  - React Hooks Form.
-  - Formik.
+  - *React Final Form*.
+  - *React Hooks Form*.
+  - *Formik*.
 
-- En este ejemplo vamos a hacer uso de Formik.
+- En este ejemplo vamos a hacer uso de *Formik*.
 
 ```bash
 npm install formik --save
 ```
 
 - De cara a gestionar las validaciones de los formularios existen varias opciones, algunas de ellas:
-  - Yups.
-  - Fonk.
+  - *Yups*.
+  - *Fonk*.
 
-En nuestro caso vamos a usar Fonk, esta librería es la evolución de lc-formvalidation, la llevamos
-usando en Lemoncode desde hace varios años con buenos resultados.
+En nuestro caso vamos a usar *Fonk*, esta librería es la evolución de *lc-formvalidation*, la llevamos
+usando en *Lemoncode* desde hace varios años con buenos resultados.
 
-- Vamos a instalar Fonk y el adaptador para Formik:
+- Vamos a instalar *Fonk* y el adaptador para *Formik*:
 
 ```bash
 npm install @lemoncode/fonk @lemoncode/fonk-formik --save
 ```
 
-- Cuando trabajamos con librerías como Formik, lo ideal es crear wrappers de los controles de formularios que vamos a usar, para poder así extraer info de contexto (info de error etc..), en nuestro caso vamos a crearnos un wrapper para el input de tipo text.
+- Cuando trabajamos con librerías como *Formik*, lo ideal es crear *wrappers* de los controles de formularios que vamos a usar, para poder así extraer *info* de contexto (*info* de error etc...), en nuestro caso vamos a crearnos un *wrapper* para el *input* de tipo *text*.
 
 _./src/common/input-formik.component.tsx_
 
@@ -102,7 +100,7 @@ export const InputFormik: React.FC<
 };
 ```
 
-- Vamos a crear un barrel:
+- Vamos a crear un *barrel*:
 
 _./src/common/index.ts_
 
@@ -136,18 +134,14 @@ export const createEmptyTransferFormEntity = (): TransferFormEntity => ({
 
 - Vamos a crear un componente que llamaremos _transfer-form.component.tsx_ que será el que se encargue de mostrar el formulario de transferencia bancaria.
 
-Empezamos por montar la fontaneria de Formik.
+Empezamos por montar la fontanería de *Formik*.
 
 _./src/transfer-form/transfer-form.component.tsx_
 
 ```tsx
 import React from "react";
 import { Formik, Form } from "formik";
-import { InputFormik } from "../common";
-import {
-  TransferFormEntity,
-  createEmptyTransferFormEntity,
-} from "./transfer-form.model";
+import { createEmptyTransferFormEntity } from "./transfer-form.model";
 
 export const TransferForm: React.FC = () => {
   return (
@@ -240,6 +234,7 @@ form > div label:first-of-type {
 _./src/transfer-form/transfer-form.component.tsx_
 
 ```diff
++ import { InputFormik } from "../common";
 + import classes from './transfer-form.component.css';
 
       <Formik
@@ -289,13 +284,9 @@ Vamos a añadir un botón para enviar el formulario:
       </Formik>
 ```
 
-- Ahora si le damos a submit podemos ver los valores por consola,
-  pero nos faltan las validaciones.
+- Ahora si le damos a *submit* podemos ver los valores por consola pero nos faltan las validaciones.
 
-Vamos a crear un fichero en el que definiremos las validaciones
-del formulario, en el inicializamos un esquema de validaciones,
-y se lo dejamos preparado para integrarse con un formulario de
-formik.
+Vamos a crear un fichero en el que definiremos las validaciones del formulario, en el inicializamos un esquema de validaciones, y se lo dejamos preparado para integrarse con un formulario de *formik*.
 
 _./src/transfer-form/transfer-form.validation.ts_
 
@@ -307,12 +298,10 @@ const validationSchema = {};
 export const formValidation = createFormikValidation(validationSchema);
 ```
 
-- Ahora vamos a indicar los campos que son obligatorios, para ello
-  tenemos que hacer coincidir el nombre del campo con el nombre en el
-  modelo de la entidad (si fueran campos compuestos usariamos las comillas
-  por ejemplo: "address.street").
-
-- En este caso Fonk incorporar una validación para campo obligatorio.
+- Ahora vamos a indicar los campos que son obligatorios, para ello tenemos que hacer coincidir el nombre del campo con el nombre en el modelo de la entidad (si fueran campos compuestos usaríamos las comillas
+  por ejemplo: "*address.street*").
+  
+- En este caso *Fonk* incorporar una validación para campo obligatorio.
 
 _./src/transfer-form/transfer-form.validation.ts_
 
@@ -335,8 +324,7 @@ const validationSchema = {
 export const formValidation = createFormikValidation(validationSchema);
 ```
 
-Un tema interesante es que podemos implementar pruebas sobre esta
-validación sin tener que irnos al formulario (simulamos unas pruebas)
+Un tema interesante es que podemos implementar pruebas sobre esta validación sin tener que irnos al formulario (simulamos unas pruebas)
 
 _./src/transfer-form/transfer-form.validation.spec.ts_
 
@@ -421,9 +409,7 @@ _./src/transfer-form/transfer-form.component.tsx_
 
 - Ya tenemos las validaciones apareciendo, todo genial :).
 
-- Seguimos, ahora queremos que el campo de correo electrónico
-  sea un email bien formado, para ello Fonk trae un validador ya hecho,
-  lo añadimos:
+- Seguimos, ahora queremos que el campo de correo electrónico sea un email bien formado, para ello *Fonk* trae un validador ya hecho, lo añadimos:
 
 _./src/transfer-form/transfer-form.validation.ts_
 
@@ -485,11 +471,9 @@ _./src/transfer-form.validation.spec.ts_
 });
 ```
 
-- También podemos comprobarlo en el UI.
+- También podemos comprobarlo en el *UI*.
 
-- Ahora vamos a validar que el IBAN este bien formado, esta validación no
-  viene en el core de Fonk (sería añadir peso innecesario), pero si tiene
-  un ecosistema de validaciones que podemos instalar (son microlibrerías:
+- Ahora vamos a validar que el *IBAN* este bien formado, esta validación no viene en el *core* de *Fonk* (sería añadir peso innecesario), pero si tiene un ecosistema de validaciones que podemos instalar (son micro librerías:
   https://lemoncode.github.io/fonk-doc/validators/third-party-validators)).
 
 ```bash
@@ -507,6 +491,7 @@ import { createFormikValidation } from "@lemoncode/fonk-formik";
 
 const validationSchema = {
   field: {
+-    account: [Validators.required],
 +    account: [Validators.required,
 +              iban.validator
 +          ],
@@ -561,9 +546,9 @@ _./src/transfer-form/transfer-form.validation.spec.ts_
 - Vamos a realizar otra validación, el importe:
 
   - En la cantidad entera queremos que la cifra esté entre 0 y 10.000
-  - En la cantidad decimal quremos que la cifra esté entre 0 y 99.
+  - En la cantidad decimal queremos que la cifra esté entre 0 y 99.
 
-- Vamos a tirar del ecosistema de Fonk y bajarnos el validador de rangos
+- Vamos a tirar del ecosistema de *Fonk* y bajarnos el validador de rangos
   numéricos:
 
 ```bash
@@ -651,6 +636,8 @@ _./src/transfer-form/transfer-form.validation.spec.ts_
 
 - Vamos a por la implementación:
 
+_./src/transfer-form/transfer-form.validation.ts_
+
 ```diff
 import { Validators } from "@lemoncode/fonk";
 import { createFormikValidation } from "@lemoncode/fonk-formik";
@@ -701,14 +688,12 @@ const validationSchema = {
 };
 ```
 
-- Ahora imaginemos que hay un problema con Francia y que deshabilitar
-  los envíos para este pais, lo que hacemos es que en el IBAN si el código
-  del pais es el de Francia mostramos un error, para ellos usaremos
+- Ahora imaginemos que hay un problema con Francia y que deshabilitar los envíos para este país, lo que hacemos es que en el IBAN si el código del país es el de Francia mostramos un error, para ellos usaremos
   el validador de expresión regular.
 
 Vamos a por la prueba
 
-**./src/transfer-form/transfer-form.validation.spec.ts**
+*./src/transfer-form/transfer-form.validation.spec.ts*
 
 ```diff
 +  it("should fail when account is from France", async () => {
@@ -748,14 +733,17 @@ Vamos a por la prueba
 +  });
 ```
 
-Y ahora a añadirlo
+Y ahora a añadirlo:
+
+_./src/transfer-form/transfer-form.validation.ts_
 
 ```diff
 const validationSchema = {
   field: {
-    account: [
-      Validators.required,
-      iban.validator
+-   account: [Validators.required, iban.validator],
++   account: [
++     Validators.required,
++     iban.validator,
 +     {
 +       validator: Validators.pattern,
 +       customArgs: {
@@ -767,12 +755,8 @@ const validationSchema = {
     beneficiary: [Validators.required],
 ```
 
-- Esto de las validaciones estándares para resolverlo todo está muy bien,
-  pero no siempre nos valen, vamos a ponernos en un caso en el que nos
-  hace falta una validación custom, vamos a recibir una lista de paises
-  que están en la lista negra y no podemos hacer transferencias, para ello
-  vamos a crear un validador custom (en este caso como no conocemos la firma
-  implementaremos el validador, y después los tests, pero cuando estemos
+- Esto de las validaciones estándares para resolverlo todo está muy bien, pero no siempre nos valen, vamos a ponernos en un caso en el que nos hace falta una *validación custom*, vamos a recibir una lista de países
+  que están en la lista negra y no podemos hacer transferencias, para ello vamos a crear un *validador custom* (en este caso como no conocemos la firma implementaremos el validador, y después los test, pero cuando estemos
   familiarizados podemos empezar con un test, la firma, y seguir evolucionando...).
 
 _./src/transfer-form/custom-validators/country-black-list.validator.ts_
@@ -802,8 +786,7 @@ export const countryBlackList = ({ value, customArgs }) => {
 };
 ```
 
-- En este caso si nos tenemos que esmerar con las pruebas, ya que es un validador
-  que hemos hecho nosotros, hay que probar un buen número de casos.
+- En este caso si nos tenemos que esmerar con las pruebas, ya que es un validado que hemos hecho nosotros, hay que probar un buen número de casos.
 
 _./src/transfer-form/custom-validators/country-black-list.validator.spec.ts_
 
@@ -883,7 +866,7 @@ describe("countryBlackList validator specs", () => {
 });
 ```
 
-- Vamos a crear un barrel
+- Vamos a crear un *barrel*
 
 _./src/transfer-form/custom-validators/index.ts_
 
@@ -891,8 +874,7 @@ _./src/transfer-form/custom-validators/index.ts_
 export * from "./country-black-list.validator";
 ```
 
-- Vamos ahora a darle uso (quitamos el de Francia y
-  cubrimos el caso con el black list):
+- Vamos ahora a darle uso (quitamos el de Francia y cubrimos el caso con el *black list*):
 
 _./src/transfer-form/transfer-form.validation.ts_
 
@@ -922,13 +904,9 @@ const validationSchema = {
     ],
 ```
 
-- Esto está muy bien, pero ¿Que pasa si esta lista la recibimos
-  como llamada asíncrona? Podemos actualizar el esquema de validación
-  una vez que recibamos este datos.
-
-- Eliminamos la validación ya que de primeras no la tenemos
-  (también podríamos haber puesto una lista vacía de paises,
-  pero lo hacemos para ver como actualizar un esquema)
+- Esto está muy bien, pero ¿Qué pasa si esta lista la recibimos como llamada asíncrona? Podemos actualizar el esquema de validación una vez que recibamos estos datos.
+  
+- Eliminamos la validación ya que de primeras no la tenemos (también podríamos haber puesto una lista vacía de países, pero lo hacemos para ver como actualizar un esquema)
 
 _./src/transfer-form/transfer-form.validation.ts_
 
@@ -988,7 +966,7 @@ _./src/transfer-form/transfer-form.validation.spec.ts_
 });
 ```
 
-- Para ello vamos a simular una llamada a una API fake:
+- Para ello vamos a simular una llamada a una *API fake*:
 
 _./src/transfer-form/transfer-form.api.ts_
 
@@ -999,8 +977,7 @@ export const getDisabledCountryIBANCollection = () =>
   Promise.resolve(mockCountries);
 ```
 
-Y en la parte del validador vamos a exponer un método para
-actualizarlo:
+Y en la parte del validador vamos a exponer un método para actualizarlo:
 
 _./src/transfer-form/validation.ts_
 
@@ -1114,7 +1091,7 @@ export const TransferForm: React.FC = () => {
 En este caso vamos a ver si un IBAN dado está dentro de una lista negra (mafiosos, magnates corruptos,
 el que se retrasó un mes en el pago del recibo de la luz, etc...).
 
-- Primero creamos una API fake en la ue le pasas un IBAN y te diga si estás en la black list:
+- Primero creamos una *API fake* en la que le puedas pasar un IBAN y te diga si estás en la *black list*:
 
 _./src/transfer-form/transfer-form.api.ts_
 
@@ -1146,7 +1123,7 @@ export const ibanBlackList = ({ value }) =>
 ```
 
 - Vamos añadir pruebas: en este caso no estamos probando si la API funciona, lo que haremos
-  será hacer mocking de la entrada devolviendo true en un caso y false en el otro, y comprobando
+  será hacer *mocking* de la entrada devolviendo true en un caso y false en el otro, y comprobando
   que sale un mensaje de error o no.
 
 _./src/transfer-form/custom-validators/iban-black-list.validator.spec.ts_
@@ -1186,9 +1163,7 @@ describe("ibanBlackList", () => {
 });
 ```
 
-- Ahora vamos a añadir el validador al formulario, esto nos va a obligar a modificar los tests
-  para que no tiren del API de black list (pondremos true en todos y sólo pondremos como false donde
-  querramos probarlo).
+- Ahora vamos a añadir el validador al formulario, esto nos va a obligar a modificar los test para que no tiren del API de *black list* (pondremos true en todos y sólo pondremos como false donde queramos probarlo).
 
 _./src/transfer-form/transfer-form.validation.ts_
 
@@ -1204,16 +1179,16 @@ const validationSchema = {
   field: {
     account: [
       Validators.required,
-      iban.validator
+-     iban.validator
++     iban.validator,
 +     ibanBlackList,
       ],
     beneficiary: [Validators.required],
 ```
 
-- Si ejecutamos todo pasa pero es porque estamos tirando de la API rest de black list, esto es un problema ya que por ejemplo en un entorno de desarrollo o CI / CD no tenemos porque tenerla y menos con datos esperados, así que vamos añadir mocking a cada método, y añadir el caso en el que falla la black list
+- Si ejecutamos todo pasa pero es porque estamos tirando de la *API rest* de *black list*, esto es un problema ya que por ejemplo en un entorno de desarrollo o *CI / CD* no tenemos por qué tenerla y menos con datos esperados, así que vamos añadir *mocking* a cada método, y añadir el caso en el que falla la *black list*.
 
-Vamos añadir un grupo de tests con un mock a isIbanBacklList a false
-(usaremos un beforeeach), y otro grupo de tests con un mock a isIbanBacklList a true.
+Vamos añadir un grupo de test con un *mock* a *isIbanBacklList* a false (usaremos un *beforeeach*), y otro grupo de test con un *mock* a *isIbanBacklList* a true.
 
 _./src/transfer-form/transfer-form.validation.spec.ts_
 
@@ -1265,20 +1240,16 @@ import {
 npm start
 ```
 
-- Para finalizar vamos a implementar una validación a nivel de registro,
-  es decir: hay casos en los que necesitamos tener el formulario completo
-  y en ese momento lanzar la validacion.
+- Para finalizar vamos a implementar una validación a nivel de registro, es decir: hay casos en los que necesitamos tener el formulario completo y en ese momento lanzar la validación.
 
-El ejemplo que vamos a ver: queremos prohibir las transferencias a
-Suiza de más de 1000 € (hay que realizarlas por otro procedimiento)
+El ejemplo que vamos a ver: queremos prohibir las transferencias a Suiza de más de 1000 € (hay que realizarlas por otro procedimiento)
 
-Para ello vamos a crear un custom validator pero esta vez asociado a
-un registro en vez de un campo concreto.
+Para ello vamos a crear un *custom validator* pero esta vez asociado a un registro en vez de un campo concreto.
 
 _./src/transfer-form/custom-validators/swiss-limit.record-validator.ts_
 
 ```ts
-import { Validators } from "@lemoncode/fonk";
+import { ValidationResult, Validators } from "@lemoncode/fonk";
 
 const isSwitzerlandAccount = (value) => {
   const pattern = /^CH/i;
@@ -1470,8 +1441,8 @@ _./src/transfer-form/transfer-form.component.tsx_
               <InputFormik id="email" name="email" />
             </div>
 +           <div>
-+           {errors.["recordErrors"] && errors["recordErrors"].switzerlandTransfer && (
-+             <span style={{color: "red"}}>{errors["recordErrors"]switzerlandTransfer}</span>
++           {errors["recordErrors"] && errors["recordErrors"].switzerlandTransfer && (
++             <span style={{color: "red"}}>{errors["recordErrors"].switzerlandTransfer}</span>
 +           )}
 +           </div>
             <div className={classes.buttons}>
@@ -1483,5 +1454,5 @@ _./src/transfer-form/transfer-form.component.tsx_
 
 - Y ya lo tenemos, ahora si nos fijamos que hemos obtenido:
   - Un esquema de validación desacoplado del UI.
-  - Un esquema con una buen cobertura de pruebas unitaras.
+  - Un esquema con una buen cobertura de pruebas unitarias.
   - Unos validadores externos robustos y que en algunos casos pueden ser reutilizados.
