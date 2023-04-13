@@ -1,5 +1,5 @@
 import React from "react";
-import classes from "./modal.css";
+import classes from "./modal.modules.css";
 
 interface Props {
   children: React.ReactNode;
