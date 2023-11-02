@@ -20,7 +20,7 @@ Y al final nuestro Front revienta y no sabemos de donde viene el fuego amigo, y 
 
 Zod es una librería TypeScript-first de declaración y validación de esquemas de datos.
 
-Es más sencilla, y natural que sar JSON Schema y trae mas funcionalidades y además nos permite generar el modelo a partir del ZOD que hayamos definido.
+Es más sencilla, y natural que usar JSON Schema, trae mas funcionalidades y además nos permite generar el modelo a partir del ZOD que hayamos definido.
 
 Vamos a ver tanto la opción de JSON Schema como la de ZOD en acción.
 
@@ -309,7 +309,13 @@ type MedidaPresionArterial = z.infer<typeof MedidaPresionArterial>;
 type Paciente = z.infer<typeof Paciente>;
 ```
 
-Esto no esta mal, ¿Pero y al contrario? ¿Podemos generar un esquema de ZOD a partir de un interface de TypeScript? Hay varias librerías para ello, una es _@runtpying/zod_
+Esto no esta mal, ¿Pero y al contrario? ¿Podemos generar un esquema de ZOD a partir de un interface de TypeScript? Hay varias librerías para ello:
+
+# Librerías ts to zod
+
+## Runtyping
+
+una es _@runtpying/zod_
 
 vamos a crear un proyecto nuevo:
 
@@ -362,4 +368,6 @@ Y ejecutamos el comando para generar el esquema:
 npx runtyping
 ```
 
-TODO: ver si se puede buscar recursivamente todo los .model.ts y sacar los .zod.ts (y nombre de fichero)... un poco complicado :)
+Esta solución también te permite pasar una lisa de ficheros.
+
+https://github.com/johngeorgewright/runtyping/blob/master/packages/zod/README.md
