@@ -1,5 +1,12 @@
 import { css } from "@emotion/css";
 import { theme } from "@/core/theme";
+import {
+  inputClasses,
+  tableCellClasses,
+  tableHeadClasses,
+  tableRowClasses,
+  typographyClasses,
+} from "@mui/material";
 
 export const root = css`
   display: flex;
@@ -9,6 +16,37 @@ export const root = css`
   max-width: 1280px;
   margin: 0 auto;
   padding: ${theme.spacing(3)};
+
+  .${typographyClasses.h1} {
+    font-size: 28px;
+    font-weight: bold;
+  }
+
+  .${typographyClasses.caption} {
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  .${inputClasses.input} {
+    background-color: ${theme.palette.background.paper};
+    padding: ${theme.spacing(1)};
+  }
+
+  .${tableHeadClasses.root} {
+    background-color: ${theme.palette.primary.main};
+  }
+
+  .${tableCellClasses.head} {
+    font-size: 18px;
+    font-weight: bold;
+    color: ${theme.palette.secondary.main};
+  }
+
+  .${tableRowClasses.root} {
+    &:nth-of-type(even) {
+      background-color: ${theme.palette.grey[100]};
+    }
+  }
 `;
 
 export const textFieldsContainer = css`

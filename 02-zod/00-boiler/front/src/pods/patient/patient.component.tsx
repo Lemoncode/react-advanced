@@ -1,5 +1,15 @@
 import React from "react";
-import { IconButton, Typography } from "@mui/material";
+import {
+  IconButton,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+} from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
 import { switchRoutes } from "@/core/router";
@@ -28,6 +38,29 @@ export const Patient: React.FC<Props> = (props) => {
       <section className={classes.textFieldsContainer}>
         <PatientFormComponent patient={patient} onChange={onChange} />
       </section>
+      <Typography className={classes.title} variant="h1" component={"h1"}>
+        Medidas de Presión Arterial
+      </Typography>
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 600 }}>
+          <TableHead>
+            <TableRow>
+              <TableCell align="center">Fecha</TableCell>
+              <TableCell align="center">Presión sistólica</TableCell>
+              <TableCell align="center">Presión Diastólica</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {patient?.medidasPresionArterial?.map((presion) => (
+              <TableRow key={presion.fechaHora}>
+                <TableCell align="center">{presion.fechaHora}</TableCell>
+                <TableCell align="center">{presion.sistolica} mmHg</TableCell>
+                <TableCell align="center">{presion.diastolica} mmHg</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
       <IconButton
         className={classes.goBack}

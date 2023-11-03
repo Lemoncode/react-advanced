@@ -16,6 +16,14 @@ export const mapPatientFromApiToVm = (
         edad: patient.edad,
         alergias: patient.alergias ?? [],
         medicacion: patient.medicacion ?? [],
-        medidasPresionArterial: patient.medidasPresionArterial,
+        medidasPresionArterial:
+          patient.medidasPresionArterial.map((presion) => ({
+            fechaHora: new Date(presion.fechaHora)?.toLocaleDateString(
+              "es-ES",
+              { hour: "2-digit", minute: "2-digit" }
+            ),
+            sistolica: presion.sistolica,
+            diastolica: presion.diastolica,
+          })) ?? [],
       }
     : createEmptyPatient();
