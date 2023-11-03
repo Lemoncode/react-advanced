@@ -1,8 +1,8 @@
 {
   "pacientes": [
     {
-      "ID": 1,
-      "NIF": "12345678A",
+      "id": 1,
+      "nif": "12345678A",
       "nombre": "Juan",
       "apellidos": "Pérez",
       "edad": 35,
@@ -23,8 +23,8 @@
       ]
     },
     {
-      "ID": 2,
-      "NIF": "23456789B",
+      "id": 2,
+      "nif": "23456789B",
       "nombre": "María",
       "apellidos": "López",
       "edad": 28,
@@ -45,8 +45,8 @@
       ]
     },
     {
-      "ID": 3,
-      "NIF": "34567890C",
+      "id": 3,
+      "nif": "34567890C",
       "nombre": "Luis",
       "apellidos": "González",
       "edad": 42,
@@ -67,8 +67,8 @@
       ]
     },
     {
-      "ID": 4,
-      "NIF": "45678901D",
+      "id": 4,
+      "nif": "45678901D",
       "nombre": "Elena",
       "apellidos": "Martínez",
       "edad": 55,
@@ -89,8 +89,8 @@
       ]
     },
     {
-      "ID": 5,
-      "NIF": "56789012E",
+      "id": 5,
+      "nif": "56789012E",
       "nombre": "Carlos",
       "apellidos": "Sánchez",
       "edad": 30,

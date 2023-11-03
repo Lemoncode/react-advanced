@@ -1,6 +1,7 @@
 export interface Patient {
   id: string;
-  nif: string;
+  dni: string;
+  letra: string;
   nombre: string;
   apellidos: string;
   edad: number;
@@ -12,3 +13,15 @@ export interface Patient {
     diastolica: number;
   }[];
 }
+
+export const createEmptyPatient = (): Patient => ({
+  id: "",
+  dni: "",
+  letra: "",
+  nombre: "",
+  apellidos: "",
+  edad: 0,
+  alergias: [],
+  medicacion: [],
+  medidasPresionArterial: [],
+});

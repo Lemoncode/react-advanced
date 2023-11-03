@@ -36,7 +36,7 @@ export const PatientList: React.FC<Props> = (props) => {
           <Table sx={{ minWidth: 600 }}>
             <TableHead>
               <TableRow>
-                <TableCell>Id</TableCell>
+                <TableCell align="center">Id</TableCell>
                 <TableCell>Nif</TableCell>
                 <TableCell>Nombre Completo</TableCell>
                 <TableCell>Edad</TableCell>
@@ -46,18 +46,15 @@ export const PatientList: React.FC<Props> = (props) => {
             <TableBody>
               {patientList?.map((patient) => (
                 <TableRow key={patient.id}>
-                  <TableCell>{patient.id}</TableCell>
+                  <TableCell align="center">{patient.id}</TableCell>
                   <TableCell>{patient.nif}</TableCell>
                   <TableCell>{patient.nombreCompleto}</TableCell>
                   <TableCell>{patient.edad}</TableCell>
                   <TableCell align="center">
-                    <IconButton>
-                      <NavigatePatientDetail
-                        sx={{ color: "black" }}
-                        onClick={() =>
-                          navigate(switchRoutes.patient(patient.id))
-                        }
-                      />
+                    <IconButton
+                      onClick={() => navigate(switchRoutes.patient(patient.id))}
+                    >
+                      <NavigatePatientDetail sx={{ color: "black" }} />
                     </IconButton>
                   </TableCell>
                 </TableRow>

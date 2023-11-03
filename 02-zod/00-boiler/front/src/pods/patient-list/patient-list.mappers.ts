@@ -4,8 +4,8 @@ import * as viewModel from "./patient-list.vm";
 const mapPatientFromApiToVm = (
   patient: apiModel.Patient
 ): viewModel.Patient => ({
-  id: patient.ID,
-  nif: patient.NIF,
+  id: patient.id,
+  nif: patient.nif,
   nombreCompleto: `${patient.nombre} ${patient.apellidos}`,
   edad: patient.edad,
 });
