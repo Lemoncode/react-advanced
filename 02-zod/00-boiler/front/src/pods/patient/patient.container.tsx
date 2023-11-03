@@ -10,12 +10,18 @@ export const PatientContainer: React.FC = () => {
     viewModel.createEmptyPatient()
   );
   const { id } = useParams();
-  console.log(patient);
+
+  const handleFieldChange =
+    (fieldId: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setPatient({ ...patient, [fieldId]: value });
+    };
+
   React.useEffect(() => {
     if (id) {
       api.getPatient(id).then(mapPatientFromApiToVm).then(setPatient);
     }
   }, []);
 
-  return <Patient patient={patient} />;
+  return <Patient patient={patient} onChange={handleFieldChange} />;
 };

@@ -14,8 +14,8 @@ export const mapPatientFromApiToVm = (
         nombre: patient.nombre,
         apellidos: patient.apellidos,
         edad: patient.edad,
-        alergias: patient.alergias,
-        medicacion: patient.medicacion,
+        alergias: patient.alergias ?? [],
+        medicacion: patient.medicacion ?? [],
         medidasPresionArterial: patient.medidasPresionArterial,
       }
     : createEmptyPatient();
