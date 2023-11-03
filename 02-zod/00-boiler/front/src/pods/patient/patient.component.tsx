@@ -28,9 +28,6 @@ export const Patient: React.FC<Props> = (props) => {
       <section className={classes.textFieldsContainer}>
         <PatientFormComponent patient={patient} onChange={onChange} />
       </section>
-      <Typography className={classes.title} variant="h1" component={"h1"}>
-        Medidas de Presión Arterial
-      </Typography>
 
       <ArterialPreassureComponent patient={patient} />
 
