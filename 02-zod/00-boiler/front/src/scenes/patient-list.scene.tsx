@@ -1,5 +1,6 @@
 import React from "react";
+import { PatientListContainer } from "@/pods/patient-list";
 
 export const PatientListScene: React.FC = () => {
-  return <h1>Hola desde Book Scene</h1>;
+  return <PatientListContainer />;
 };
