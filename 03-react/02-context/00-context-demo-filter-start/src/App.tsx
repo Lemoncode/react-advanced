@@ -1,7 +1,7 @@
 import { HashRouter, Routes, Route } from "react-router-dom";
 import { CharacterCollectionPage, CharacterDetailPage } from "./pages";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "./core/queries";
+import { queryClient } from "@/core/queries";
 
 export const App = () => {
   return (
