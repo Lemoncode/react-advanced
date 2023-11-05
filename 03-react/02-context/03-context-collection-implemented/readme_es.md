@@ -285,7 +285,59 @@ _./src/pages/character-collection/character-collection.page.tsx_
   }, []);
 ```
 
-\*\*\* Este código mejorar con el promise
+Este código cuesta un poco de leer ¿Intentamos hacerlo más legible?
+
+_./src/pages/character-collection/character-collection.page.tsx_
+
+```diff
+  React.useEffect(() => {
+-   trackPromise(
+-     getCharacterCollection().then((characters) => {
+-       setCharacters(characters);
+-       characterCollectionContext.setCharacters(characters);
+-     })
+-    );
++   const promise = trackPromise(getCharacterCollection());
++   promise.then((characters) => {
++     setCharacters(characters);
++     characterCollectionContext.setCharacters(characters);
++   });
+  }, [])
+```
+
+Si te fijas no estamos usando _async / await_ ¿Por qué? Porque no podemos usarlo en el _useEffect_, para poder usarlo tendríamos que hacer lo siguiente:
+
+- Crear una función asíncrona.
+- Llamarla desde el _useEffect_.
+
+```diff
++ const loadCharacters = async () => {
++   const characters = await trackPromise(getCharacterCollection());
++   setCharacters(characters);
++   characterCollectionContext.setCharacters(characters);
++ };
++
+  React.useEffect(() => {
+-   const promise = trackPromise(getCharacterCollection());
+-   promise.then((characters) => {
+-     setCharacters(characters);
+-     characterCollectionContext.setCharacters(characters);
+-   });
++   loadCharacters();
+  }, [])
+```
+
+> ¿Qué versión te parece mejor?
+
+> Esta limitación de useEffect hace que ciertos desarrolladores no quieran usar _async/await_ esa y que también es relativamente fácil que se te olvide poner el _await_, y la lies parda :), por otro lado _async/await_ te deja un código muy lineal.
+
+Por otro lado, como nos ha quedado el código, podríamos sacar a un custom hook la funcionalidad relativa a la carga de actores, ¿Es esto buena idea? DEPENDE:
+
+- En este caso seguramente no, de momento tenemos poco código y parece que no sea algo que podamos reusar.
+- Si el componente se hiciera más grande:
+  - Podría ser buena idea "vaciar el cangrejo", aquí la idea no es hacer un custom hook que saque todo el código del componente, si no organizar por trozos de custom hooks grupos de funcionalidad.
+  - También puede ser buena idea si quiero implementar unit tests (suele ser más sencillo probar un hook que un componente).
+  - Y pueden ser trozos que igual se podría reusar en otros componentes.
 
 Si probamos ahora vemos que está funcionando, pero se nos queda una espinita clavada, y es... ¿Qué pasa si hay páginas o consultas a la API que si deben de bloquear el interfaz de usuario hasta que se resuelvan y otras que no? Para eso podemos usar la áreas:
 
@@ -345,16 +397,37 @@ export const SpinnerComponent = () => {
     promiseInProgress && (
 ```
 
+Si ahora eliminamos el retraso que metimos, verás que ni se llega a mostrar el spinner.
+
+_./src/pages/character-collection/character-collection.api.ts_
+
+```diff
+export const getCharacterCollection = async (): Promise<Character[]> => {
+  const response = await fetch("https://rickandmortyapi.com/api/character");
+  const data = await response.json();
+-  await new Promise((resolve) => setTimeout(resolve, randomLatency()));
+  console.log(data.results);
+  return data.results;
+};
+```
+
 ## UseDebounce
 
 Tirar esto sin filtrado no tiene mucha merito, vamos poner el filtrado en funcionamiento de nuevo.
 
-Esto lo ponemos como ejercicio (tenéis el resultado anterior para ir copiando e integrando):
+Esto lo ponemos como **ejercicio** (tenéis el resultado anterior para ir copiando e integrando):
 
-- Paso 1 habilitar el filtrado.
-- Paso 2 añadir el filtro al contexto.
+Algunas pistas:
 
-> ¿Qué creéis que es mejor? ¿ Tener un contexto para el filtro y otro para el listado, o un contexto para ambas propiedades?
+- Esto ya lo tenemos resuelto de antes.
+- Te hará falta copiar lo que haya de filtro en _core/providers/character-filter_
+- Te hará falta instanciar el provider a nivel de aplicación.
+- En la página de actores:
+  - Te hará falta añadir el handler para filtrar.
+  - Te hará falta utilizar el hook _useCharacterFilterContext_ en la página de actores, tanto para leer el último filtro y asignarselo al estado, como para guardar el filtro en el contexto cuando se modifique.
+  - IMPORTANTE... hay que cambiar la API para que admita parametros (acuerdate de copiar eso también).
+
+> ¿Qué creéis que es mejor? ¿Tener un contexto para el filtro y otro para el listado, o un contexto para ambas propiedades?
 
 Ya que tenemos el filtro operativo, vamos a hacer que la petición a la api se haga cuando el usuario deje de escribir, para ello vamos a utilizar el hook _useDebounce_.
 
@@ -379,19 +452,26 @@ import { Character } from "./character-collection.model";
 
 ```diff
 export const CharacterCollectionPage = () => {
+  const cache = useCharacterFilterContext();
   const characterCollectionContext = useCharacterCollectionContext();
-  const [filter, setFilter] = React.useState("");
+  const [filter, setFilter] = React.useState(cache.filter);
 + const [filterDebounced] = useDebounce(filter, 500);
 ```
 
 ```diff
+  const loadCharacters = async () => {
+    const characters = await trackPromise(
+-      getCharacterCollection(filter),
++      getCharacterCollection(filterDebounced),
+      "non-blocking-area"
+    );
+    setCharacters(characters);
+    characterCollectionContext.setCharacters(characters);
+  };
+
+
   React.useEffect(() => {
--   getCharacterCollection(filter).then((characters) => {
-+   getCharacterCollection(filterDebounced).then((characters) => {
-     setCharacters(characters);
-     characterCollectionContext.setCharacters(characters);
-   });
--  }, [filter]);
+    loadCharacters();
 +  }, [filterDebounced]);
 ```
 

@@ -1,7 +1,10 @@
 import { usePromiseTracker } from "react-promise-tracker";
 
 export const SpinnerComponent = () => {
-  const { promiseInProgress } = usePromiseTracker();
+  const { promiseInProgress } = usePromiseTracker({
+    area: "non-blocking-area",
+    delay: 500,
+  });
 
   return (
     promiseInProgress && (
