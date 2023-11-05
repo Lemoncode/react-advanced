@@ -476,3 +476,347 @@ export const CharacterCollectionPage = () => {
 ```
 
 Si ahora ejecutamos y vemos el tab de network, veremos que sólo se hace una petición a la api cuando el usuario deja de escribir.
+
+# Refactoring
+
+Ahora llega el momento duro, esto código funciona, pero si te fijas ahora si que empieza a ser complicado de leer... y si lo dejamos así el que llegue pondrá su mierdecita y una detrás de otra y al final ponle nombre a este "mostruito".
+
+Es el momento de ser profesionales y refactorizar, ya conocemos bien el problema, y seguro que hay cosas que nos chirrían, aguantamos el aliento en el cogote de nuestro jefe y nos ponemos manos a la obra:
+
+Vamos a pensar en _vaciar el cangrejo_ aquí hay demasiada lógica en la página de actores y además de cosas que se pueden separar, una aproximación que podríamos utilizar es:
+
+- Extraer la lógica de filtrado a custom hook.
+- Extraer la lógica de carga de actores a custom hook.
+
+¿Es esto lo mejor? No tiene porque, y tampoco es directo de ver la solución, igual empezamos a refactorizar y nos damos cuenta de que hay otra solución mejor, lo que si es cierto, que salvo veces que lo tengamos super claro, uno no empieza a entender bien como refactorizar hasta que no tienes la solución medio montada o completa.
+
+Nos vamos a crear un fichero que vamos a llamar _character-collection.hook.tsx_, aquí vamos a almacenar todos los hooks relacionados con esta página (aquí depende, otra opción sería crear una subcarpeta _hooks_ y meter dentro un fichero por cada _hook_ ... _en ocasiones veo Java_ ;), ya hablando en serio, si este ficheor de _hooks_ empieza a hacerse grande mejor romperlo en carpeta y hook por fichero).
+
+Vamos a empezar por el hook de filtrado, una cosa buena de react y los hooks es que te puedes llevar código copiando y pegando al hook:
+
+_./src/pages/character-collection/character-collection/character-collection.hook.tsx_
+
+```tsx
+import React from "react";
+import { useDebounce } from "use-debounce";
+import { useCharacterFilterContext } from "@/core/providers/character-filter/character-filter.context";
+
+export const useFilterHook = () => {
+  const cache = useCharacterFilterContext();
+  const [filter, setFilter] = React.useState(cache.filter);
+  const [filterDebounced] = useDebounce(filter, 500);
+
+  const handleFilterChange = (newValue: string) => {
+    setFilter(newValue);
+    cache?.setFilter(newValue);
+  };
+
+  return { filter, setFilter, filterDebounced, handleFilterChange };
+};
+```
+
+Hacemos limpia en el fichero y usamos el hook:
+
+_./src/pages/character-collection/character-collection/character-collection.page.tsx_
+
+```diff
+import React from "react";
+import { Link } from "react-router-dom";
+import { trackPromise } from "react-promise-tracker";
+import { getCharacterCollection } from "./character-collection.api";
+import { Character } from "./character-collection.model";
+import { useCharacterCollectionContext } from "@/core/providers/character-collection";
+- import { useDebounce } from "use-debounce";
+- import { useCharacterFilterContext } from "@/core/providers/character-filter/character-filter.context";
++ import { useFilterHook } from "./character-collection.hook";
+```
+
+```diff
+export const CharacterCollectionPage = () => {
+  const cache = useCharacterFilterContext();
+  const characterCollectionContext = useCharacterCollectionContext();
++ const { filter, filterDebounced, handleFilterChange } = useFilterHook();
+-  const [filter, setFilter] = React.useState(cache.filter);
+-  const [filterDebounced] = useDebounce(filter, 500);
+  const [characters, setCharacters] = React.useState<Character[]>(
+    characterCollectionContext.characters
+  );
+
+  const loadCharacters = async () => {
+    const characters = await trackPromise(
+      getCharacterCollection(filterDebounced),
+      "non-blocking-area"
+    );
+    setCharacters(characters);
+    characterCollectionContext.setCharacters(characters);
+  };
+
+-  const handleFilterChange = (newValue: string) => {
+-    setFilter(newValue);
+-    cache?.setFilter(newValue);
+-  };
+```
+
+Probamos a ver que todo funciona, ¿Qué tal va quedando el código? Está quedando el jardín más despejado :)
+
+Ahora toca darle caña a la funcionalidad de autores, aquí podemos hacer algo parecido:
+
+- Nos llevamos el uso de contexto de autores a un hook.
+- Nos llevamos el estado también.
+- Y el loadCharacters podemos hacer lo mismo.
+- El useEffect lo podemos dejar en el componente.
+
+_./src/pages/character-collection/character-collection/character-collection.hook.tsx_
+
+```diff
+import React from "react";
+import { useDebounce } from "use-debounce";
+import { useCharacterFilterContext } from "@/core/providers/character-filter/character-filter.context";
++ import { trackPromise } from "react-promise-tracker";
++ import { getCharacterCollection } from "./character-collection.api";
++ import { Character } from "./character-collection.model";
++ import { useCharacterCollectionContext } from "@/core/providers/character-collection";
+```
+
+** Añadir al final \***
+
+```tsx
+export const useCharacters = () => {
+  const characterCollectionContext = useCharacterCollectionContext();
+  const [characters, setCharacters] = React.useState<Character[]>(
+    characterCollectionContext.characters
+  );
+
+  const loadCharacters = async () => {
+    const characters = await trackPromise(
+      getCharacterCollection(filterDebounced),
+      "non-blocking-area"
+    );
+    setCharacters(characters);
+    characterCollectionContext.setCharacters(characters);
+  };
+
+  return { characters, setCharacters, loadCharacters };
+};
+```
+
+Aquí tenemos un problema, _filteredDebounce_ no lo tenemos en el hook ¿Qué podemos hacer?
+
+- Lo primero darnos cuenta que no ese debounce no dice nada en este hook, vamos a renombrarlo a filter.
+- Por otro lado lo vamos a pasar por parametro en _loadCharacters_.
+
+```diff
+-  const loadCharacters = async () => {
++  const loadCharacters = async (filter: string) => {
+    const characters = await trackPromise(
+-      getCharacterCollection(filterDebounced),
++      getCharacterCollection(filter),
+      "non-blocking-area"
+    );
+    setCharacters(characters);
+    characterCollectionContext.setCharacters(characters);
+  };
+```
+
+Y ahora vamos a refactorizar la página
+
+_./src/pages/character-collection/character-collection/character-collection.page.tsx_
+
+```diff
+import React from "react";
+import { Link } from "react-router-dom";
+- import { trackPromise } from "react-promise-tracker";
+- import { getCharacterCollection } from "./character-collection.api";
+- import { Character } from "./character-collection.model";
+- import { useCharacterCollectionContext } from "@/core/providers/character-collection";
+- import { useFilterHook } from "./character-collection.hook";
++ import { useCharacters, useFilterHook } from "./character-collection.hook";
+```
+
+```diff
+export const CharacterCollectionPage = () => {
+-  const characterCollectionContext = useCharacterCollectionContext();
+  const { filter, filterDebounced, handleFilterChange } = useFilterHook();
++ const { characters, setCharacters, loadCharacters } = useCharacters();
+
+-  const [characters, setCharacters] = React.useState<Character[]>(
+-    characterCollectionContext.characters
+-  );
+
+-  const loadCharacters = async () => {
+-    const characters = await trackPromise(
+-      getCharacterCollection(filterDebounced),
+-      "non-blocking-area"
+-    );
+-    setCharacters(characters);
+-    characterCollectionContext.setCharacters(characters);
+-  };
+
+  React.useEffect(() => {
+-    loadCharacters();
++    loadCharacters(filterDebounced);
+  }, [filterDebounced]);
+```
+
+Y ya que estamos vamos a refactorizar el markup, aquí tenemos la página que haría de contenedor ¿Que podríamos plantear? Si nos ponemos canónicos, haríamos lo siguiente:
+
+- Tener la lógica del componente en el contenedor (Que sería la página).
+- Crear un componente que haga de presentacional.
+- Romper en subcomponentes presentacionales.
+
+Esto no debemos de tomarlo como que es algo que va a "misa", normalmente en un proyecto real suele ser una aproximación que va bien para el 70% de los casos de una aplicación de negocio, pero hay otros que son más sencillos o diferentes y no merece la pena meter tanto ruido, de hecho en este caso de momento lo que vamos a hacer es:
+
+- Crear una carpeta components.
+- Crear un componente de filtrado.
+- Crear un componente de character-collection.
+
+Vamos a ello:
+
+Primero el filtrado:
+
+_./src/pages/character-collection/components/filter.component.tsx_
+
+```tsx
+import React from "react";
+
+interface Props {
+  filter: string;
+  onFilterChange: (filter: string) => void;
+}
+
+export const FilterComponent: React.FC<Props> = (props) => {
+  const { filter, onFilterChange } = props;
+
+  return (
+    <>
+      <label htmlFor="filter">filter</label>
+      <input
+        id="filter"
+        value={filter}
+        onChange={(e) => onFilterChange(e.target.value)}
+      />
+    </>
+  );
+};
+```
+
+Creamos un barrel:
+
+_./src/pages/character-collection/components/index.ts_
+
+```tsx
+export * from "./filter.component";
+```
+
+Vamos a refactorizar la página:
+
+_./src/pages/character-collection/character-collection/character-collection.page.tsx_
+
+```diff
+import React from "react";
+import { Link } from "react-router-dom";
+import { useFilterHook, useCharacters } from "./character-collection.hook";
++ import { FilterComponent } from "./components";
+```
+
+```diff
+  return (
+    <>
+      <h1>Character Collection</h1>
+-      <label htmlFor="filter">filter</label>
+-      <input
+-        id="filter"
+-        value={filter}
+-        onChange={(e) => handleFilterChange(e.target.value)}
+-      ></input>
++     <FilterComponent filter={filter} onFilterChange={handleFilterChange} />
+      <ul>
+        {characters.map((character) => (
+          <li key={character.id}>
+            <Link to={`/${character.id}`}>{character.name}</Link>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+```
+
+Vemos que la app sigue funcionando (pequeño detalle sin importancia :)).
+
+Ahora vamos a por el listado de actores:
+
+_./src/pages/character-collection/components/character-collection.component.tsx_
+
+```tsx
+import React from "react";
+import { Character } from "../character-collection.model";
+import { Link } from "react-router-dom";
+
+interface Props {
+  characters: Character[];
+}
+
+export const CharacterCollectionComponent: React.FC<Props> = (props) => {
+  const { characters } = props;
+
+  return (
+    <ul>
+      {characters.map((character) => (
+        <li key={character.id}>
+          <Link to={`/${character.id}`}>{character.name}</Link>
+        </li>
+      ))}
+    </ul>
+  );
+};
+```
+
+Lo añadimos al barrel:
+
+_./src/pages/character-collection/components/index.ts_
+
+```tsx
+export * from "./filter.component";
++ export * from "./character-collection.component";
+```
+
+Y lo usamos en la página:
+
+_./src/pages/character-collection/character-collection/character-collection.page.tsx_
+
+```diff
+import React from "react";
+- import { Link } from "react-router-dom";
+import { useFilterHook, useCharacters } from "./character-collection.hook";
+- import { FilterComponent } from "./components";
++ import { FilterComponent, CharacterCollectionComponent } from "./components";
+```
+
+```diff
+  return (
+    <>
+      <h1>Character Collection</h1>
+      <FilterComponent filter={filter} onFilterChange={handleFilterChange} />
+-      <ul>
+-        {characters.map((character) => (
+-          <li key={character.id}>
+-            <Link to={`/${character.id}`}>{character.name}</Link>
+-          </li>
+-        ))}
+-      </ul>
++    <CharacterCollectionComponent characters={characters} />
+    </>
+  );
+```
+
+¿Qué os parece? ¿Cómo se ha quedado? ¿Ha merecido la pena?
+
+Varios consejos:
+
+- Estos refactors hazlos paso paso y ves probando (si lo intentas de un tirón te vas a liar).
+- Si además los acompañas de pruebas unitarias (estén ya implementadas de antes o que las vayas a implementar), mejor que mejor.
+
+¿Qué se podría hacer a futuro?
+
+- Plantear, seguramente el componente que muestra un actor sea más elaborado (lo normal es que se un card con la foto y varios datos y/o acciones), aquí podríamos plantear un componente de actor, y por ejemplo que un compañero se encargara de darle el estilado fino.
+- Si el contenedor crece en complejidad, crear un componente presentacional para la página de actores.
