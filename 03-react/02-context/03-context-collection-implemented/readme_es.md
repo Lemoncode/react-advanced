@@ -28,7 +28,7 @@ _./src/core/providers/character-collection/character-collection.context.tsx_
 
 ```tsx
 import React from "react";
-import { Character } from "@pages/character-collection/character-collection.vm";
+import { Character } from "@pages/character-collection/character-collection.model.ts";
 
 interface ContextProps {
   characters: Character[];
@@ -56,7 +56,7 @@ _./src/core/providers/character-collection/character-collection.provider.tsx_
 ```tsx
 import React from "react";
 import { CharacterCollectionContext } from "./character-collection.context";
-import { Character } from "@pages/character-collection/character-collection.vm";
+import { Character } from "@/pages/character-collection/character-collection.model";
 
 interface Props {
   children: React.ReactNode;
@@ -96,7 +96,7 @@ _./src/app.tsx_
 
 ```diff
 import { HashRouter, Routes, Route } from "react-router-dom";
-+ import { CharacterCollectionContextProvider } from "core/providers/character-collection";
++ import { CharacterCollectionContextProvider } from "@/core/providers/character-collection";
 import { CharacterCollectionPage, CharacterDetailPage } from "./pages";
 
 export const App = () => {
@@ -125,7 +125,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { getCharacterCollection } from "./character-collection.api";
 import { Character } from "./character-collection.model";
-+ import { useCharacterCollectionContext } from "core/providers/character-collection";
++ import { useCharacterCollectionContext } from "@/core/providers/character-collection";
 ```
 
 _./src/pages/character-collection/character-collection.page.tsx_
@@ -147,6 +147,24 @@ export const CharacterCollectionPage = () => {
 ```
 
 Con esto conseguimos que la primera vez que se carga la página se muestren datos, y en paralelo se haga una petición a la api, para el usuario es una experiencia mucho mejor.
+
+Para que se note en rendimiento, volvemos a añadir el delay random en la api:
+
+_./src/pages/character-collection/character-collection.api.ts_
+
+```diff
+
++ // add random value to simulate network latency (bad connection), between 1 and 3 seconds
++ const randomLatency = () => Math.floor(Math.random() * 3 + 1) * 1000;
+
+export const getCharacterCollection = async (): Promise<Character[]> => {
+  const response = await fetch("https://rickandmortyapi.com/api/character");
+  const data = await response.json();
++  await new Promise((resolve) => setTimeout(resolve, randomLatency()));
+  console.log(data.results);
+  return data.results;
+};
+```
 
 Aquí tenemos dos peros:
 
@@ -192,7 +210,6 @@ _./src/common/components/spinner/spinner.component.module.css_
 _./src/common/components/spinner/spinner.component.tsx_
 
 ```tsx
-import React from "react";
 import { usePromiseTracker } from "react-promise-tracker";
 
 export const SpinnerComponent = () => {
@@ -202,10 +219,9 @@ export const SpinnerComponent = () => {
     promiseInProgress && (
       <div className="spinner">
         <div className="spinner-border text-primary" role="status">
-          <span>Actualizando datos...</span>
+          <span>⏳ Actualizando datos...</span>
         </div>
       </div>
-    )
     )
   );
 };
@@ -226,10 +242,11 @@ _./src/app.tsx_
 ```diff
 import { HashRouter, Routes, Route } from "react-router-dom";
 import { CharacterCollectionPage, CharacterDetailPage } from "./pages";
-+ import { SpinnerComponent } from "common/components/spinner";
++ import { SpinnerComponent } from "@/common/components/spinner";
 
 export const App = () => {
   return (
++  <>
     <HashRouter>
       <Routes>
         <Route path="/" element={<CharacterCollectionPage />} />
@@ -237,6 +254,7 @@ export const App = () => {
       </Routes>
     </HashRouter>
 +   <SpinnerComponent />
++  </>
   );
 };
 ```
@@ -262,9 +280,12 @@ _./src/pages/character-collection/character-collection.page.tsx_
 +     getCharacterCollection().then((characters) => {
 +       setCharacters(characters);
 +       characterCollectionContext.setCharacters(characters);
-+     });
++     })
++    );
   }, []);
 ```
+
+\*\*\* Este código mejorar con el promise
 
 Si probamos ahora vemos que está funcionando, pero se nos queda una espinita clavada, y es... ¿Qué pasa si hay páginas o consultas a la API que si deben de bloquear el interfaz de usuario hasta que se resuelvan y otras que no? Para eso podemos usar la áreas:
 
