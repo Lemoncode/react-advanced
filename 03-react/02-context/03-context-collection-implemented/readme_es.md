@@ -820,3 +820,5 @@ Varios consejos:
 
 - Plantear, seguramente el componente que muestra un actor sea más elaborado (lo normal es que se un card con la foto y varios datos y/o acciones), aquí podríamos plantear un componente de actor, y por ejemplo que un compañero se encargara de darle el estilado fino.
 - Si el contenedor crece en complejidad, crear un componente presentacional para la página de actores.
+
+Le hemos pegado un buen repaso a conceptos básicos de contexto y buenas prácticas, más adelante lo revisitaremos para ver que problemas de rendimiento puede tener.
