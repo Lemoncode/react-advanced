@@ -381,7 +381,83 @@ _./src/my-form.component.tsx_
     <label>
 ```
 
-TODO: El otro wrapper más sencillo de render prop
+Está forma de definir la _render prop_ es un poco engorrosa, existe otra aproximación que se llama _children as a prop_ (tampoco es la alegría de la huerta, pero es mejor) vamos a refactorizarlo:
+
+_./src/animation-wrapper.component.tsx_
+
+```diff
+interface Props {
+   inProp: boolean;
+-  render: (animationInProgress: boolean) => JSX.Element;
++  children: (animationInProgress: boolean) => JSX.Element;
+}
+```
+
+```diff
+export const AnimationWrapper: React.FC<Props> = (props) => {
+-  const { inProp, children } = props;
++ const { inProp, children  } = props;
+  const [animationInProgress, setAnimationInProgress] = React.useState(false);
+
+  return (
+    <CSSTransition
+      in={inProp}
+      classNames={{
+        enter: "animate__animated animate__zoomIn",
+        exit: "animate__animated animate__zoomOut",
+      }}
+      timeout={500}
+      onEnter={() => setAnimationInProgress(true)}
+      onEntered={() => setAnimationInProgress(false)}
+      onExit={() => setAnimationInProgress(true)}
+      onExited={() => setAnimationInProgress(false)}
+    >
+-      {render(animationInProgress)}
++      {children(animationInProgress)}
+    </CSSTransition>
+```
+
+Y vamos ahora a usarlo:
+
+_./src/my-form.component.tsx_
+
+```diff
+-      <AnimationWrapper
+-        inProp={feverFlag}
+-        render={(animationInProgress) => (
+-          <div>
+-            <label>Temperatura:</label>
+-            <input
+-              type="number"
+-              name="temperature"
+-              value={patient.temperature}
+-              disabled={animationInProgress}
+-              onChange={handleChange}
+-              style={{ background: feverFlag ? "#BC5B40" : "#00AD74" }}
+-            />
+-            {animationInProgress ? "Animation in progress" : "quiet"}
+-          </div>
+-        )}
+-      />
++     <AnimationWrapper inProp={feverFlag}>
++        {(animationInProgress) => (
++          <label>
++            Temperatura:
++            <input
++              type="number"
++              name="temperature"
++              value={patient.temperature}
++              onChange={handleChange}
++              disabled={animationInProgress}
++              style={{ background: feverFlag ? "lightCoral" : "white" }}
++            />
++            {animationInProgress ? "Animation in progress" : "quiet"}
++          </label>
++        )}
++      </AnimationWrapper>
+```
+
+¿Qué sintaxis te parece mejor?
 
 # Ejercicio
 
@@ -417,3 +493,5 @@ También puedes apuntarte a nuestro Bootcamp de Back End [Bootcamp Backend](http
 
 Y si tienes ganas de meterte una zambullida en el mundo _devops_
 apuntate nuestro [Bootcamp devops online Lemoncode](https://lemoncode.net/bootcamp-devops#bootcamp-devops/inicio)
+
+

@@ -1,81 +1,50 @@
 import React from "react";
+import { Formik, Form, Field } from "formik";
 import classes from "./my-form.component.module.css";
-import { CSSTransition } from "react-transition-group";
-import { AnimationWrapper } from "./animation-wrapper.component";
 
-interface Patient {
-  name: string;
-  temperature: number;
-  bloodPressureH: number;
-  bloodPressureL: number;
+interface FormValues {
+  username: string;
+  email: string;
+  password: string;
 }
 
-export const MyForm = () => {
-  const [patient, setPatient] = React.useState<Patient>({
-    name: "",
-    temperature: 0,
-    bloodPressureH: 0,
-    bloodPressureL: 0,
-  });
+export const MyForm: React.FC = () => {
+  const initialValues: FormValues = {
+    username: "",
+    email: "",
+    password: "",
+  };
 
-  const [feverFlag, setFeverFlag] = React.useState(false);
-
-  React.useEffect(() => {
-    setFeverFlag(patient.temperature > 38.9);
-  }, [patient.temperature]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setPatient({ ...patient, [name]: value });
+  const onSubmit = (values: FormValues) => {
+    console.log(values); // Realiza alguna acción con los valores del formulario
   };
 
   return (
-    <form className={classes.form}>
-      <div>
-        <label>Nombre:</label>
-        <input
-          type="text"
-          name="name"
-          value={patient.name}
-          onChange={handleChange}
-        />
-      </div>
+    <div>
+      <h1>Registro de Usuario</h1>
+      <Formik initialValues={initialValues} onSubmit={onSubmit}>
+        {({ dirty }) => (
+          <Form className={classes.form}>
+            <div>
+              <label htmlFor="username">Nombre de usuario:</label>
+              <Field type="text" id="username" name="username" />
+            </div>
 
-      <AnimationWrapper
-        inProp={feverFlag}
-        render={(animationInProgress) => (
-          <div>
-            <label>Temperatura:</label>
-            <input
-              type="number"
-              name="temperature"
-              value={patient.temperature}
-              disabled={animationInProgress}
-              onChange={handleChange}
-              style={{ background: feverFlag ? "#BC5B40" : "#00AD74" }}
-            />
-            {animationInProgress ? "Animation in progress" : "quiet"}
-          </div>
+            <div>
+              <label htmlFor="email">Email:</label>
+              <Field type="email" id="email" name="email" />
+            </div>
+
+            <div>
+              <label htmlFor="password">Contraseña:</label>
+              <Field type="password" id="password" name="password" />
+            </div>
+
+            <button type="submit">Registrarse</button>
+            {dirty && <p>(*) El formulario tiene cambios</p>}
+          </Form>
         )}
-      />
-      <div>
-        <label>Presión arterial:</label>
-        <div>
-          <input
-            type="number"
-            name="bloodPressureL"
-            value={patient.bloodPressureL}
-            onChange={handleChange}
-          />
-          /
-          <input
-            type="number"
-            name="bloodPressureH"
-            value={patient.bloodPressureH}
-            onChange={handleChange}
-          />
-        </div>
-      </div>
-    </form>
+      </Formik>
+    </div>
   );
 };

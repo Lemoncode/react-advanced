@@ -3,11 +3,11 @@ import { CSSTransition } from "react-transition-group";
 
 interface Props {
   inProp: boolean;
-  render: (animationInProgress: boolean) => JSX.Element;
+  children: (animationInProgress: boolean) => JSX.Element;
 }
 
 export const AnimationWrapper: React.FC<Props> = (props) => {
-  const { inProp, render } = props;
+  const { inProp, children } = props;
   const [animationInProgress, setAnimationInProgress] = React.useState(false);
 
   return (
@@ -23,7 +23,7 @@ export const AnimationWrapper: React.FC<Props> = (props) => {
       onExit={() => setAnimationInProgress(true)}
       onExited={() => setAnimationInProgress(false)}
     >
-      {render(animationInProgress)}
+      {children(animationInProgress)}
     </CSSTransition>
   );
 };
