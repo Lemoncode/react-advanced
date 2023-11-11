@@ -491,8 +491,6 @@ export const Modal: React.FC<Props> = (props) => {
   return (
 ```
 
-_Esta solución puede estar bien si tengo un sólo modal, pero si tuviera más de uno podría darme algún quebradero de cabeza, ya que no tenemos varios handlers escuchando el evento del teclado_
-
 # Referencias
 
 Este ejemplo se base en el material expuesto en este post https://blog.logrocket.com/build-modal-with-react-portals/
