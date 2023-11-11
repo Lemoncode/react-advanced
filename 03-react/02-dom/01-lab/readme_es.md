@@ -40,6 +40,8 @@ export const App = () => {
 
 - Ahora queremos mostrar el indicado de progreso... (minuto segundo actual y total duración).
 
+- Ya que estamos crea una barra de progreso tipo youtube.
+
 # Pistas
 
 - Pistas:
