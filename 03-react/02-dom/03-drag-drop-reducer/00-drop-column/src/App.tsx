@@ -1,10 +1,13 @@
 import "./App.css";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { DndProvider } from "react-dnd";
+import { KanbanContainer } from "./kanban";
 
 function App() {
   return (
-    <>
-      <h1>React App Boilerplate</h1>
-    </>
+    <DndProvider backend={HTML5Backend}>
+      <KanbanContainer />
+    </DndProvider>
   );
 }
 
