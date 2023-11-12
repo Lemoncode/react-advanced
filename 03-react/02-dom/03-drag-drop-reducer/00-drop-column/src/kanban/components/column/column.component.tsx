@@ -3,23 +3,23 @@ import { useDrop } from "react-dnd";
 import classes from "./column.component.module.css";
 import { CardContent, ItemTypes, DragItemInfo } from "../../model";
 import { Card } from "../card/card.component";
+import { useKanbanContext } from "../../providers/kanban.context";
 
 interface Props {
   columnId: number;
   name: string;
   content: CardContent[];
-  onMoveCard: (card: DragItemInfo) => void;
 }
 
 export const Column: React.FC<Props> = (props) => {
-  const { columnId, name, content, onMoveCard } = props;
+  const { columnId, name, content } = props;
+  const { moveCard } = useKanbanContext();
 
   const [_, drop] = useDrop(
     () => ({
       accept: ItemTypes.CARD,
       drop: (item: DragItemInfo, _) => {
-        onMoveCard(item);
-        <s></s>;
+        moveCard(columnId, item);
 
         return {
           name: `DropColumn`,

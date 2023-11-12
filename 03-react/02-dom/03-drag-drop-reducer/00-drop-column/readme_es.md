@@ -2186,13 +2186,16 @@ import {
 } from "./model";
 import { loadKanbanContent } from "./api";
 import { Column } from "./components";
-import classes from "./kanban.container.css";
 + import { moveCardColumn } from "./kanban.business";
+import classes from "./kanban.container.css";
 ```
 
 _./src/kanban/kanban.container.tsx_
 
 ```diff
+- import { produce } from "immer";
+// (...)
+
 export const KanbanContainer: React.FC = () => {
   const [kanbanContent, setKanbanContent] = useKanbanState();
 
@@ -2236,7 +2239,7 @@ export const KanbanContainer: React.FC = () => {
 
 ✅ Nos sentimos un poco más limpios :)...
 
-- No está mal como se ha quedado, a futuro si el tema de _drag & drop_ crece (se añade más funcionalidad), podríamos plantearnos encapsularla todo en un _hook_.
+- No está mal como se ha quedado, a futuro si el tema de _drag & drop_ crece (se añade más funcionalidad), podríamos plantearnos encapsularlo todo en un _hook_.
 
 - Vamos ahora a por la columna:
   - Este componente tal y como esta no haría falta refactorizarlo.
@@ -2270,7 +2273,7 @@ Ambas opciones tienen sus pros y sus contras:
 - El contexto es interesante, pero metemos _getContext_ por mitad de la jerarquía.
 - El _Reducer_ añade mucho orden pero tenemos que ir pasando _dispatch_ de padre a hijo aunque un componente de la jerarquía no lo use.
 
-En este caso nos vamos a quedar con la solución del contexto:
+En este caso, de momento, nos vamos a quedar con la solución del contexto y después la evolucionaremos:
 
 - Vamos a definir el contexto del kanban:
 
@@ -2284,13 +2287,13 @@ import {
   KanbanContent,
 } from "../model";
 
-export interface KanbanContextModel {
+export interface KanbanContextProps {
   kanbanContent: KanbanContent;
   setKanbanContent: (kanbanContent: KanbanContent) => void;
   moveCard: (columnDestinationId: number, dragItemInfo: DragItemInfo) => void;
 }
 
-export const KanbanContext = React.createContext<KanbanContextModel>({
+export const KanbanContext = React.createContext<KanbanContextProps>({
   kanbanContent: createDefaultKanbanContent(),
   setKanbanContent: () =>
     console.warn(
@@ -2298,6 +2301,15 @@ export const KanbanContext = React.createContext<KanbanContextModel>({
     ),
   moveCard: () => null,
 });
+
+export const useKanbanContext = (): KanbanContextProps => {
+  const context = React.useContext(KanbanContext);
+  if (!context) {
+    throw new Error("useKanbanContext must be used within a KanbanProvider");
+  }
+
+  return context;
+};
 ```
 
 _./src/kanban/providers/kanban.provider.tsx_
@@ -2353,14 +2365,23 @@ export const KanbanProvider: React.FC<Props> = ({ children }) => {
 };
 ```
 
+_./src/kanban/providers/index.ts_
+
+```tsx
+export * from "./kanban.context";
+export * from "./kanban.provider";
+```
+
 - Vamos a colocar el _context_ en el _app_ donde se instancia el _kanban_, así si creamos más de un _kanban_ no compartirán estado (también, podríamos haber creado un componente _wrapper_ dentro de la carpeta _kanban_).
 
 _./src/kanban/index.ts_
 
 ```diff
 export * from "./kanban.container";
-+ export * from "./providers/kanban.provider";
++ export * from "./providers/kanban";
 ```
+
+Y para nuestro ejemplo lo instanciamos a nivel de _app_ en una aplicación real lo podríamos instanciar a nivel de página (por ejemplo):
 
 _./src/app.tsx_
 
@@ -2458,7 +2479,9 @@ export const KanbanContainer: React.FC = () => {
 };
 ```
 
-- Primer paso del _refactor_ dado, ahora vamos a quitar _drill prop_ de la _column_ y la card *(*podríamos eliminar más propiedades y añadir _helpers_ en el contexto, ¿Merece la pena? ¿Qué opinas?
+Probamos y vemos que todo sigue funcionando.
+
+- Primer paso del _refactor_ dado, ahora vamos a quitar _drill prop_ de la _column_ y la card
 
 _./src/kanban/kanban.container.tsx_
 
@@ -2513,12 +2536,12 @@ import { useDrop } from "react-dnd";
 import classes from "./column.component.css";
 import { CardContent, ItemTypes, DragItemInfo } from "../model";
 import { Card } from "./card.component";
-+ import { KanbanContext } from "../providers/kanban.context";
++ import {  useKanbanContext } from "../../providers/kanban.context";
 
 export const Column: React.FC<Props> = (props) => {
 -  const { columnId, name, content, onMoveCard } = props;
 +  const { columnId, name, content } = props;
-+  const { moveCard } = React.useContext(KanbanContext);
++  const { moveCard } = useKanbanContext();
 
   const [collectedProps, drop] = useDrop(() => ({
     accept: ItemTypes.CARD,
@@ -2536,17 +2559,19 @@ export const Column: React.FC<Props> = (props) => {
   }));
 ```
 
-- En la _card_ no tenemos _callback drill props_.
+Vamos a probar que no hemos roto nada...
 
-De momento nos quedamos así con el refactor, vamos a hacer una prueba rápida y ver que todo sigue funcionando.
+- En la _card_ no tenemos _callback drill props_.
 
 ¿Qué hemos ganado?
 
 - Simplificado _drill prop_.
-- Separador contenedor de estado.
+- Separar contenedor de estado.
 - Eliminado _curry_ al asignar el _callback_ de _move column_.
 
-### Insertar cards
+Podríamos plantear _kanban.business.ts_ dentro de la carpeta _providers_ ¿Cómo lo ves?
+
+### Intercalar cards
 
 Hasta ahora hemos estado haciendo _drops_ de las cartas al final de la columna, pero cuando yo arrastro y suelto normalmente quiero intercalar la _card_ en una posición determinada.
 
