@@ -1,0 +1,7 @@
+.card {
+  border: 1px dashed gray; /* TODO: review sizes, colors...*/
+  padding: 5px 15px;
+  background-color: white;
+  width: 210px;
+  display: flex;
+}

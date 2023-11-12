@@ -24,7 +24,7 @@ _./src/kanban/model.ts_
 
 ** Refactor con VSCode *KanbanContent* a *KanbanState* **
 
-Aprovechamos el *KanbanModel* para añadir:
+Aprovechamos el fichero *KanbanModel* para añadir:
 
 - Enumerado de acciones en este caso incializar el *kanban* de cards,
   y mover una card de una columna a otra.
