@@ -1,4 +1,4 @@
-import { CardContent, KanbanContent } from "./model";
+import { CardContent, KanbanState } from "./model";
 import { produce } from "immer";
 
 interface MoveInfo {
@@ -11,8 +11,8 @@ interface MoveInfo {
 // TODO this can be additionally refactored (apply clean code)
 export const moveCardColumn = (
   moveInfo: MoveInfo,
-  kanbanContent: KanbanContent
-): KanbanContent => {
+  kanbanContent: KanbanState
+): KanbanState => {
   const { columnOriginId, columnDestinationId, content, cardIndex } = moveInfo;
   let newKanbanContent = kanbanContent;
 

@@ -2,13 +2,16 @@ import React from "react";
 import { loadKanbanContent } from "./api";
 import { Column } from "./components";
 import classes from "./kanban.container.module.css";
-import { KanbanContext } from "./providers";
+import { KanbanContext, useKanbanContext } from "./providers";
+import { ActionTypes } from "./model";
 
 export const KanbanContainer: React.FC = () => {
-  const { kanbanContent, setKanbanContent } = React.useContext(KanbanContext);
+  const { kanbanContent, dispatch } = useKanbanContext();
 
   React.useEffect(() => {
-    loadKanbanContent().then((content) => setKanbanContent(content));
+    loadKanbanContent().then((content) =>
+      dispatch({ type: ActionTypes.SET_KANBAN_CONTENT, payload: content })
+    );
   }, []);
 
   return (

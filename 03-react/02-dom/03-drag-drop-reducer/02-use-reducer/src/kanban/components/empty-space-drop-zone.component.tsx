@@ -1,7 +1,7 @@
 import React from "react";
 import { useDrop } from "react-dnd";
-import { DragItemInfo, ItemTypes } from "../model";
-import { KanbanContext } from "../providers/kanban.context";
+import { DragItemInfo, ItemTypes, ActionTypes } from "../model";
+import { useKanbanContext } from "../providers/kanban.context";
 
 interface Props {
   columnId: number;
@@ -9,13 +9,20 @@ interface Props {
 
 export const EmptySpaceDropZone: React.FC<Props> = (props) => {
   const { columnId } = props;
-  const { moveCard, kanbanContent } = React.useContext(KanbanContext);
+  const { kanbanContent, dispatch } = useKanbanContext();
 
   const [_, drop] = useDrop(
     () => ({
       accept: ItemTypes.CARD,
       drop: (item: DragItemInfo, _) => {
-        moveCard(columnId, -1, item);
+        dispatch({
+          type: ActionTypes.MOVE_CARD,
+          payload: {
+            columnDestinationId: columnId,
+            dropCardId: -1,
+            dragItemInfo: item,
+          },
+        });
 
         return {
           name: `DropColumn`,

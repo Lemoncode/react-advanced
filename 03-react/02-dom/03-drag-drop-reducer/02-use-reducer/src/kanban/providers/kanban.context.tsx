@@ -1,28 +1,14 @@
 import React from "react";
-import {
-  createDefaultKanbanContent,
-  DragItemInfo,
-  KanbanContent,
-} from "../model";
+import { KanbanState, KanbanAction } from "../model";
 
 export interface KanbanContextProps {
-  kanbanContent: KanbanContent;
-  setKanbanContent: (kanbanContent: KanbanContent) => void;
-  moveCard: (
-    columnDestinationId: number,
-    dropCardId: number,
-    dragItemInfo: DragItemInfo
-  ) => void;
+  kanbanContent: KanbanState;
+  dispatch: React.Dispatch<KanbanAction>;
 }
 
-export const KanbanContext = React.createContext<KanbanContextProps>({
-  kanbanContent: createDefaultKanbanContent(),
-  setKanbanContent: () =>
-    console.warn(
-      "** If you area reading this, likely you have forgotten to add the provider on top of your app"
-    ),
-  moveCard: () => null,
-});
+export const KanbanContext = React.createContext<KanbanContextProps | null>(
+  null
+);
 
 export const useKanbanContext = (): KanbanContextProps => {
   const context = React.useContext(KanbanContext);
