@@ -4,6 +4,7 @@ import classes from "./column.component.module.css";
 import { CardContent, ItemTypes, DragItemInfo } from "../../model";
 import { Card } from "../card/card.component";
 import { useKanbanContext } from "../../providers/kanban.context";
+import { getArrayPositionBasedOnCoordinates } from "./column.business";
 
 interface Props {
   columnId: number;
@@ -18,8 +19,13 @@ export const Column: React.FC<Props> = (props) => {
   const [_, drop] = useDrop(
     () => ({
       accept: ItemTypes.CARD,
-      drop: (item: DragItemInfo, _) => {
-        moveCard(columnId, item);
+      drop: (item: DragItemInfo, monitor) => {
+        const index = getArrayPositionBasedOnCoordinates(
+          itemsRef.current,
+          monitor.getClientOffset() ?? { x: 0, y: 0 }
+        );
+
+        moveCard(columnId, index, item);
 
         return {
           name: `DropColumn`,
@@ -33,11 +39,19 @@ export const Column: React.FC<Props> = (props) => {
     [content]
   );
 
+  const itemsRef = React.useRef<HTMLDivElement[]>([]);
+  itemsRef.current = [];
+
   return (
     <div ref={drop} className={classes.container}>
       <h4>{name}</h4>
-      {content.map((card) => (
-        <Card key={card.id} columnId={columnId} content={card} />
+      {content.map((card, idx) => (
+        <Card
+          key={card.id}
+          ref={(ref) => (itemsRef.current[idx] = ref!)}
+          columnId={columnId}
+          content={card}
+        />
       ))}
     </div>
   );

@@ -1,9 +1,10 @@
 import { CardContent, KanbanContent } from "./model";
-import {produce} from "immer";
+import { produce } from "immer";
 
 interface MoveInfo {
   columnOriginId: number;
   columnDestinationId: number;
+  cardIndex: number;
   content: CardContent;
 }
 
@@ -12,7 +13,7 @@ export const moveCardColumn = (
   moveInfo: MoveInfo,
   kanbanContent: KanbanContent
 ): KanbanContent => {
-  const { columnOriginId, columnDestinationId, content } = moveInfo;
+  const { columnOriginId, columnDestinationId, content, cardIndex } = moveInfo;
   let newKanbanContent = kanbanContent;
 
   const columnIndexOrigin = kanbanContent.columns.findIndex(
@@ -30,7 +31,11 @@ export const moveCardColumn = (
         columnIndexOrigin
       ].content.filter((c) => c.id !== content.id);
       // add
-      draft.columns[columnIndexDestination].content.push(content);
+      draft.columns[columnIndexDestination].content.splice(
+        cardIndex,
+        0,
+        content
+      );
     });
   }
 

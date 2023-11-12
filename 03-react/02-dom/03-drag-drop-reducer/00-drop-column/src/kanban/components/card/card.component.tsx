@@ -8,7 +8,7 @@ interface Props {
   columnId: number;
 }
 
-export const Card: React.FC<Props> = (props) => {
+export const Card = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
   const { content, columnId } = props;
 
   const [{ opacity }, drag] = useDrag(() => ({
@@ -21,8 +21,10 @@ export const Card: React.FC<Props> = (props) => {
   }));
 
   return (
-    <div ref={drag} className={classes.card} style={{ opacity }}>
-      {content.title}
+    <div ref={ref}>
+      <div ref={drag} className={classes.card} style={{ opacity }}>
+        {content.title}
+      </div>
     </div>
   );
-};
+});

@@ -2591,20 +2591,23 @@ Pero... ¿Por qué la primera opción nos va a dar guerra?
 
 - Nuestra área de _drop_ es la columna.
 - A priori _ReactDnd_ no sabe que coordenada tiene cada _card_ en esa columna destino.
-- Tenemos que buscar una forma de calcularla... aquí podríamos pensar: usamos _ref_ :)... bien pero no tenemos un _card_, tenemos un array de _cards_, nos haría falta un _ref_ por cada _card_, es decir un array de _refs_, y además estas _ref_ son dinámicas, puedo añadir y quitar _cards_ de una columna.
+- Tenemos que buscar una forma de calcularla... aquí podríamos pensar: usamos _useRef_ :), pero... no tenemos un _card_, tenemos un array de _cards_, nos haría falta un _ref_ por cada _card_, es decir un array de _refs_, y además estas _ref_ son dinámicas, puedo añadir y quitar _cards_ de una columna.
+
+...Y nos vamos a meter en ese jardín para después recular y hacerlo de otra forma.
 
 ¿Cómo podemos hacer esto?
 
 - Vamos a crear un registro de _refs_ (uno por cada _card_ de la columna), usaremos un _array_ (se pueden mirar [optimizaciones](https://stackoverflow.com/questions/54633690/how-can-i-use-multiple-refs-for-an-array-of-elements-with-hooks)).
 
 - Este registro de _refs_ lo vamos a recalcular en cada render (los elementos han podido cambiar), se podía optimizar para recalcular sólo si han cambiado ciertas _props_.
+
 - El registro de _refs_ lo enlazo con el listado de _Cards_.
 
 - Vamos a empezar por definir el tipo de registro de _refs_.
 
 Vamos a crear la lista de refs que se asociaran al repintar el componente.
 
-_./src/kanban/components/column.tsx_
+_./src/kanban/components/column/column.tsx_
 
 ```diff
 +  const itemsRef = React.useRef<HTMLDivElement[]>([]);
@@ -2612,6 +2615,7 @@ _./src/kanban/components/column.tsx_
 +  itemsRef.current = [];
 
   return (
+        <div ref={drop} className={classes.container}>
 ```
 
 - Y ahora vamos a asociar cada _ref_ a cada _card_ (para el nombre de la propiedad accedo por el operador de array).
@@ -2667,6 +2671,29 @@ _./src/kanban/components/card.component.tsx_
 - };
 + });
 ```
+
+Ahora tenemos otro error:
+
+```
+Type 'HTMLDivElement | null' is not assignable to type 'HTMLDivElement'.
+  Type 'null' is not assignable to type 'HTMLDivElement'.
+```
+
+Es de TypeScript estricto, en este caso, vamos añadir una exlamación para pedirle que confíe en nosotros (ojo esto en algunos casos puede ser peligroso):
+
+_./src/kanban/components/column.tsx_
+
+```diff
+        <Card
+          key={card.id}
+-         ref={(ref) => (itemsRef.current[idx] = ref)}
++         ref={(ref) => (itemsRef.current[idx] = ref!)}
+
+          columnId={columnId}
+          content={card} />
+```
+
+> En esta caso podemos busar una opcion más elaborada pero no ayudaría a la legibilidad del código
 
 Ya parece que lo tengo, vamos a implementar un método que teniendo en cuenta la coordenada X,Y del _drop_, me lo compare con las X,Y de las _card_ y si encuentra una que este en esa zona me devuelva el índice en el array de _cards_ (se podría hacer algo más fino y si cae en la mitad superior que del índice anterior y si es la mitad inferior que del índice siguiente... esto para la lista de _martillo fino_ :)).
 
@@ -2726,8 +2753,9 @@ export const Column: React.FC<Props> = (props) => {
 
   const [collectedProps, drop] = useDrop(() => ({
     accept: ItemTypes.CARD,
-    drop: (item: DragItemInfo, monitor) => {
-+     console.log("** Card Index:",getArrayPositionBasedOnCoordinates(itemsRef.current, monitor.getClientOffset()));
+-    drop: (item: DragItemInfo, _) => {
++    drop: (item: DragItemInfo, monitor) => {
++     console.log("** Card Index:",getArrayPositionBasedOnCoordinates(itemsRef.current, monitor.getClientOffset() ?? {x:0, y:0}));
       moveCard(columnId, item);
 
       return {
@@ -2736,13 +2764,13 @@ export const Column: React.FC<Props> = (props) => {
     },
 ```
 
-Vamos a probarlo:
+Vamos a probarlo (muestra la consola):
 
 ```bash
 npm start
 ```
 
-- Vamos a eliminar el console.log, para ello vamos a añadir un parámetro más a _moveCard_.
+- Vamos a eliminar el console.log y realizar el movimiento real, para ello vamos a añadir un parámetro más a _moveCard_.
 
 _./src/kanban/components/column.tsx_
 
@@ -2760,7 +2788,7 @@ _./src/kanban/components/column.tsx_
 
 +      const index = getArrayPositionBasedOnCoordinates(
 +        itemsRef.current,
-+        monitor.getClientOffset()
++        monitor.getClientOffset() ?? { x: 0, y: 0 }
 +      );
 -      moveCard(columnId, item);
 +      moveCard(columnId, index, item);
@@ -2775,7 +2803,7 @@ Vamos a actualizar el _moveCard_ del context:
 _./src/kanban/providers/kanban.context.ts_
 
 ```diff
-export interface KanbanContextModel {
+export interface KanbanContextProps {
   kanbanContent: KanbanContent;
   setKanbanContent: (kanbanContent: KanbanContent) => void;
 -  moveCard: (columnDestinationId: number, dragItemInfo: DragItemInfo) => void;
@@ -2824,6 +2852,10 @@ export const moveCardColumn = (moveInfo : MoveInfo, kanbanContent : KanbanConten
 _./src/kanban/kanban.business.ts_
 
 ```diff
+export const moveCardColumn = (
+  moveInfo: MoveInfo,
+  kanbanContent: KanbanContent
+): KanbanContent => {
 -  const {columnOriginId, columnDestinationId, content} = moveInfo;
 +  const {columnOriginId, columnDestinationId, content, cardIndex} = moveInfo;
 //(...)
@@ -2843,6 +2875,269 @@ _./src/kanban/kanban.business.ts_
 ```
 
 Vamos a arreglar las pruebas que se han roto (añadimos el parámetro para que pase e inserte al final, tendríamos que añadir más casos y probar inserciones):
+
+\*\* Si lo has dejado en modo .each:
+
+_./src/kanban/kanban.business.spec.ts_
+
+```diff
+import { moveCardColumn } from "./kanban.business";
+
+describe("Kanban business", () => {
+  test.each([
+    [
+      "should move card from one column to another",
+      {
+        columns: [
+          {
+            id: 1,
+            name: "Column A",
+            content: [
+              {
+                id: 1,
+                title: "Card 1",
+              },
+              {
+                id: 2,
+                title: "Card 2",
+              },
+            ],
+          },
+          {
+            id: 2,
+            name: "Column B",
+            content: [
+              {
+                id: 3,
+                title: "Card 3",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        columnOriginId: 1,
+        columnDestinationId: 2,
++        cardIndex: 1,
+        content: {
+          id: 1,
+          title: "Card 1",
+        },
+      },
+      {
+        columns: [
+          {
+            id: 1,
+            name: "Column A",
+            content: [
+              {
+                id: 2,
+                title: "Card 2",
+              },
+            ],
+          },
+          {
+            id: 2,
+            name: "Column B",
+            content: [
+              {
+                id: 3,
+                title: "Card 3",
+              },
+              {
+                id: 1,
+                title: "Card 1",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    [
+      "should move card from first column to third column",
+      {
+        columns: [
+          {
+            id: 1,
+            name: "Column A",
+            content: [
+              {
+                id: 1,
+                title: "Card 1",
+              },
+              {
+                id: 2,
+                title: "Card 2",
+              },
+            ],
+          },
+          {
+            id: 2,
+            name: "Column B",
+            content: [
+              {
+                id: 3,
+                title: "Card 3",
+              },
+            ],
+          },
+          {
+            id: 3,
+            name: "Column C",
+            content: [],
+          },
+        ],
+      },
+      {
+        columnOriginId: 1,
+        columnDestinationId: 3,
+        content: {
+          id: 1,
++          cardIndex: 0,
+          title: "Card 1",
+        },
+      },
+      {
+        columns: [
+          {
+            id: 1,
+            name: "Column A",
+            content: [
+              {
+                id: 2,
+                title: "Card 2",
+              },
+            ],
+          },
+          {
+            id: 2,
+            name: "Column B",
+            content: [
+              {
+                id: 3,
+                title: "Card 3",
+              },
+            ],
+          },
+          {
+            id: 3,
+            name: "Column C",
+            content: [
+              {
+                id: 1,
+                title: "Card 1",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    [
+      "should return same state if destination does not exist",
+      {
+        columns: [
+          {
+            id: 1,
+            name: "Column A",
+            content: [
+              {
+                id: 1,
+                title: "Card 1",
+              },
+              {
+                id: 2,
+                title: "Card 2",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        columnOriginId: 1,
+        columnDestinationId: 2,
+        content: {
+          id: 1,
++          cardIndex: 0,
+          title: "Card 1",
+        },
+      },
+      {
+        columns: [
+          {
+            id: 1,
+            name: "Column A",
+            content: [
+              {
+                id: 1,
+                title: "Card 1",
+              },
+              {
+                id: 2,
+                title: "Card 2",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    [
+      "should return same state if origin does not exist",
+      {
+        columns: [
+          {
+            id: 1,
+            name: "Column A",
+            content: [
+              {
+                id: 1,
+                title: "Card 1",
+              },
+              {
+                id: 2,
+                title: "Card 2",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        columnOriginId: 2,
+        columnDestinationId: 1,
+        cardIndex: 0,
+        content: {
+          id: 1,
+          title: "Card 1",
+        },
+      },
+      {
+        columns: [
+          {
+            id: 1,
+            name: "Column A",
+            content: [
+              {
+                id: 1,
+                title: "Card 1",
+              },
+              {
+                id: 2,
+                title: "Card 2",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  ])("%s", (testName, kanbanContent, moveInfo, expectedKanbanContent) => {
+    it(testName, () => {
+      const newKanbanContent = moveCardColumn(moveInfo, kanbanContent);
+      expect(newKanbanContent).toEqual(expectedKanbanContent);
+    });
+  });
+});
+```
+
+\*\* Sólo si no estás en modo .each:
 
 _./src/kanban/kanban.business.spec.ts_
 
@@ -2962,9 +3257,9 @@ describe("Kanban business", () => {
     const moveInfo = {
       columnOriginId: 1,
       columnDestinationId: 3,
++       cardIndex: 0,
       content: {
         id: 1,
-+       cardIndex: 0,
         title: "Card 1",
       },
     };
@@ -3069,6 +3364,7 @@ describe("Kanban business", () => {
 +     cardIndex: 0,
       content: {
         id: 1,
+
         title: "Card 1",
       },
     };
@@ -3079,5 +3375,9 @@ describe("Kanban business", () => {
   });
 });
 ```
+
+> Aquí deberíamos añadir mas pruebas unitarias para cubrir casuística.
+
+Vamos a probarlo.
 
 ✅ Pheeeew hemos sudado ¿Podemos hacer esto mejor?

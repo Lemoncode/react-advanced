@@ -35,6 +35,7 @@ describe("Kanban business", () => {
       {
         columnOriginId: 1,
         columnDestinationId: 2,
+        cardIndex: 1,
         content: {
           id: 1,
           title: "Card 1",
@@ -107,8 +108,10 @@ describe("Kanban business", () => {
       {
         columnOriginId: 1,
         columnDestinationId: 3,
+        cardIndex: 0,
         content: {
           id: 1,
+
           title: "Card 1",
         },
       },
@@ -170,8 +173,10 @@ describe("Kanban business", () => {
       {
         columnOriginId: 1,
         columnDestinationId: 2,
+        cardIndex: 0,
         content: {
           id: 1,
+
           title: "Card 1",
         },
       },
@@ -217,8 +222,10 @@ describe("Kanban business", () => {
       {
         columnOriginId: 2,
         columnDestinationId: 1,
+        cardIndex: 0,
         content: {
           id: 1,
+
           title: "Card 1",
         },
       },
@@ -243,6 +250,7 @@ describe("Kanban business", () => {
     ],
   ])("%s", (testName, kanbanContent, moveInfo, expectedKanbanContent) => {
     it(testName, () => {
+      //      const newKanbanContent = moveCardColumn(moveInfo, kanbanContent);
       const newKanbanContent = moveCardColumn(moveInfo, kanbanContent);
       expect(newKanbanContent).toEqual(expectedKanbanContent);
     });

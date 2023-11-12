@@ -18,6 +18,7 @@ export const KanbanProvider: React.FC<Props> = ({ children }) => {
 
   const moveCard = (
     columnDestinationId: number,
+    index: number,
     dragItemInfo: DragItemInfo
   ) => {
     const { columnId: columnOriginId, content } = dragItemInfo;
@@ -27,6 +28,7 @@ export const KanbanProvider: React.FC<Props> = ({ children }) => {
         {
           columnOriginId,
           columnDestinationId,
+          cardIndex: index,
           content,
         },
         kanbanContentLatest
