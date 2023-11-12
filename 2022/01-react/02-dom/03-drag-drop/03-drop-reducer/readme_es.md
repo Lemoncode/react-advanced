@@ -525,3 +525,17 @@ Vamos a práctica con _useReducer_:
 - Añadimos un botón al _card_ para borrar un _card_.
 - Esa acción la creamos en el _use reducer_.
 - Lo conectamos todo.
+
+****
+
+Labs
+
+Borrar una card
+
+Mover columnas?
+Con pistas aquí
+
+
+Refactor Card
+
+Vaciar business
