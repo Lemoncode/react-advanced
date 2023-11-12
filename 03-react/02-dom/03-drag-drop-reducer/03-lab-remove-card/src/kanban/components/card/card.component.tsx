@@ -53,12 +53,22 @@ export const Card = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
     }),
   }));
 
+  const handleDeleteCard = () => {
+    dispatch({
+      type: ActionTypes.DELETE_CARD,
+      payload: {
+        columnId: columnId,
+        cardId: content.id,
+      },
+    });
+  };
+
   return (
     <div ref={drop}>
       <div ref={ref}>
         <div ref={drag} className={classes.card} style={{ opacity }}>
           {content.title}
-          <button>Borrar</button>
+          <button onClick={handleDeleteCard}>Borrar</button>
         </div>
       </div>
     </div>

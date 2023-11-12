@@ -41,3 +41,21 @@ export const moveCardColumn = (
 
   return newKanbanContent;
 };
+
+export const deleteCard = (columnId : number, cardId : number, kanbanContent: KanbanState) : KanbanState => {
+
+  // Todo esto se usa también en el moveCard ¿Porque no crear un helper comun?
+  const columnIndex = kanbanContent.columns.findIndex(
+    (c) => c.id === columnId
+  );
+
+  if (columnIndex !== -1) {
+    return produce(kanbanContent, (draft) => {
+      draft.columns[columnIndex].content = kanbanContent.columns[
+        columnIndex
+      ].content.filter((c) => c.id !== cardId);
+    });
+  }
+
+  return kanbanContent;
+}

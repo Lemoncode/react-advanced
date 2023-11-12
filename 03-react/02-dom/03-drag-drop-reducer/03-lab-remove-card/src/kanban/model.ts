@@ -24,6 +24,7 @@ export const createDefaultKanbanState = (): KanbanState => ({
 export enum ActionTypes {
   SET_KANBAN_CONTENT = "SET_KANBAN_CONTENT",
   MOVE_CARD = "MOVE_CARD",
+  DELETE_CARD = "DELETE_CARD",
 }
 
 export interface MoveCardPayload {
@@ -32,12 +33,18 @@ export interface MoveCardPayload {
   dragItemInfo: DragItemInfo;
 }
 
+export interface DeleteCardPayload {
+  columnId: number;
+  cardId: number;
+}
+
 export type KanbanAction =
   | { type: ActionTypes.SET_KANBAN_CONTENT; payload: KanbanState }
   | {
       type: ActionTypes.MOVE_CARD;
       payload: MoveCardPayload;
-    };
+    }
+  | { type: ActionTypes.DELETE_CARD; payload: DeleteCardPayload };
 
 export interface DragItemInfo {
   columnId: number;
