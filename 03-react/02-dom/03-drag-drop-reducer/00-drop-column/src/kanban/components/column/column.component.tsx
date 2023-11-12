@@ -14,11 +14,12 @@ interface Props {
 export const Column: React.FC<Props> = (props) => {
   const { columnId, name, content, onMoveCard } = props;
 
-  const [collectedProps, drop] = useDrop(
+  const [_, drop] = useDrop(
     () => ({
       accept: ItemTypes.CARD,
-      drop: (item: DragItemInfo, monitor) => {
+      drop: (item: DragItemInfo, _) => {
         onMoveCard(item);
+        <s></s>;
 
         return {
           name: `DropColumn`,

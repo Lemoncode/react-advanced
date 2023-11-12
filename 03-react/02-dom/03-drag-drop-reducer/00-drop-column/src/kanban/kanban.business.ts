@@ -1,5 +1,5 @@
 import { CardContent, KanbanContent } from "./model";
-import produce from "immer";
+import {produce} from "immer";
 
 interface MoveInfo {
   columnOriginId: number;
