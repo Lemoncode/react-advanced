@@ -1,6 +1,12 @@
 import React from "react";
-import { useDrag } from "react-dnd";
-import { CardContent, ItemTypes, createDragItemInfo } from "../../model";
+import { useDrag, useDrop } from "react-dnd";
+import {
+  CardContent,
+  ItemTypes,
+  createDragItemInfo,
+  DragItemInfo,
+} from "../../model";
+import { KanbanContext } from "../../providers/kanban.context";
 import classes from "./card.component.module.css";
 
 interface Props {
@@ -10,6 +16,25 @@ interface Props {
 
 export const Card = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
   const { content, columnId } = props;
+  const { moveCard, kanbanContent } = React.useContext(KanbanContext);
+
+  const [_, drop] = useDrop(
+    () => ({
+      accept: ItemTypes.CARD,
+      drop: (item: DragItemInfo, _) => {
+        moveCard(columnId, content.id, item);
+
+        return {
+          name: `DropColumn`,
+        };
+      },
+      collect: (monitor: any) => ({
+        isOver: monitor.isOver(),
+        canDrop: monitor.canDrop(),
+      }),
+    }),
+    [kanbanContent]
+  );
 
   const [{ opacity }, drag] = useDrag(() => ({
     type: ItemTypes.CARD, // Definimos que es de tipo CARD esto lo usaremos en el drop
@@ -21,9 +46,11 @@ export const Card = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
   }));
 
   return (
-    <div ref={ref}>
-      <div ref={drag} className={classes.card} style={{ opacity }}>
-        {content.title}
+    <div ref={drop}>
+      <div ref={ref}>
+        <div ref={drag} className={classes.card} style={{ opacity }}>
+          {content.title}
+        </div>
       </div>
     </div>
   );

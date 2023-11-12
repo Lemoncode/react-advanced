@@ -18,17 +18,31 @@ export const KanbanProvider: React.FC<Props> = ({ children }) => {
 
   const moveCard = (
     columnDestinationId: number,
-    index: number,
+    dropCardId: number,
     dragItemInfo: DragItemInfo
   ) => {
     const { columnId: columnOriginId, content } = dragItemInfo;
+
+    // TODO: este código se puede refactorizar
+    const columnDestination = kanbanContent.columns.find(
+      (column) => column.id === columnDestinationId
+    );
+
+    let cardIndex = columnDestination?.content.findIndex(
+      (card) => card.id === dropCardId
+    );
+
+    cardIndex =
+      cardIndex === -1
+        ? columnDestination?.content.length ?? 0
+        : cardIndex ?? 0 + 1;
 
     setKanbanContent((kanbanContentLatest) =>
       moveCardColumn(
         {
           columnOriginId,
           columnDestinationId,
-          cardIndex: index,
+          cardIndex: cardIndex ?? 0,
           content,
         },
         kanbanContentLatest
