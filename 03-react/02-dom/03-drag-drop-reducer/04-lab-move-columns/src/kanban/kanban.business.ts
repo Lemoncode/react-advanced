@@ -1,4 +1,4 @@
-import { CardContent, KanbanState } from "./model";
+import { CardContent, Column, KanbanState } from "./model";
 import { produce } from "immer";
 
 interface MoveInfo {
@@ -42,12 +42,13 @@ export const moveCardColumn = (
   return newKanbanContent;
 };
 
-export const deleteCard = (columnId : number, cardId : number, kanbanContent: KanbanState) : KanbanState => {
-
+export const deleteCard = (
+  columnId: number,
+  cardId: number,
+  kanbanContent: KanbanState
+): KanbanState => {
   // Todo esto se usa también en el moveCard ¿Porque no crear un helper comun?
-  const columnIndex = kanbanContent.columns.findIndex(
-    (c) => c.id === columnId
-  );
+  const columnIndex = kanbanContent.columns.findIndex((c) => c.id === columnId);
 
   if (columnIndex !== -1) {
     return produce(kanbanContent, (draft) => {
@@ -58,4 +59,30 @@ export const deleteCard = (columnId : number, cardId : number, kanbanContent: Ka
   }
 
   return kanbanContent;
+};
+
+export interface MoveColumnInfo {
+  sourceColumnId: number;
+  targetColumnId: number;
 }
+
+// TODO: habría que cubrir casos arista (id no encontrado etc...)
+export const moveColumn = (
+  columns: Column[],
+  { sourceColumnId, targetColumnId }: MoveColumnInfo
+): Column[] => {
+  const sourceColumnIndex = columns.findIndex(
+    (column) => column.id === sourceColumnId
+  );
+  const targetColumnIndex = columns.findIndex(
+    (column) => column.id === targetColumnId
+  );
+
+  const sourceColumn = columns[sourceColumnIndex];
+  const targetColumn = columns[targetColumnIndex];
+
+  const newColumns = [...columns];
+  newColumns[sourceColumnIndex] = targetColumn;
+  newColumns[targetColumnIndex] = sourceColumn;
+  return newColumns;
+};

@@ -1,4 +1,4 @@
-import { moveCardColumn } from "../kanban.business";
+import { moveCardColumn, deleteCard, moveColumn } from "../kanban.business";
 import {
   KanbanState,
   KanbanAction,
@@ -6,8 +6,8 @@ import {
   createDefaultKanbanState,
   MoveCardPayload,
   DeleteCardPayload,
+  MoveColumnPayload,
 } from "../model";
-import { deleteCard } from "../kanban.business";
 
 const handleSetKanbanContent = (
   _: KanbanState,
@@ -52,6 +52,14 @@ const handleDeleteCard = (
   payload: DeleteCardPayload
 ): KanbanState => deleteCard(payload.columnId, payload.cardId, state);
 
+const handleMoveColumn = (
+  state: KanbanState,
+  payload: MoveColumnPayload
+): KanbanState => ({
+  ...state,
+  columns: moveColumn(state.columns, payload),
+});
+
 export const kanbanReducer = (
   state: KanbanState = createDefaultKanbanState(),
   action: KanbanAction
@@ -63,6 +71,8 @@ export const kanbanReducer = (
       return handleMoveCard(state, action.payload);
     case ActionTypes.DELETE_CARD:
       return handleDeleteCard(state, action.payload);
+    case ActionTypes.MOVE_COLUMN:
+      return handleMoveColumn(state, action.payload);
     default:
       return state;
   }

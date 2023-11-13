@@ -1,4 +1,4 @@
-import { moveCardColumn } from "./kanban.business";
+import { moveCardColumn, moveColumn } from "./kanban.business";
 
 describe("Kanban business", () => {
   test.each([
@@ -254,5 +254,29 @@ describe("Kanban business", () => {
       const newKanbanContent = moveCardColumn(moveInfo, kanbanContent);
       expect(newKanbanContent).toEqual(expectedKanbanContent);
     });
+  });
+});
+
+describe("moveColumn", () => {
+  it("should move column", () => {
+    // Arrange
+    const columns = [
+      { id: 1, name: "TODO", content: [] },
+      { id: 2, name: "DOING", content: [] },
+      { id: 3, name: "DONE", content: [] },
+    ];
+
+    // Act
+    const result = moveColumn(columns, {
+      sourceColumnId: 1,
+      targetColumnId: 3,
+    });
+
+    // Assert
+    expect(result).toEqual([
+      { id: 3, name: "DONE", content: [] },
+      { id: 2, name: "DOING", content: [] },
+      { id: 1, name: "TODO", content: [] },
+    ]);
   });
 });
