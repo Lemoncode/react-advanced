@@ -90,7 +90,7 @@ La impresión que da es que fue un proyecto popular, tiene una solución simple,
   - En el readme no se indica que el proyecto esté discontinuado
   - Mirando la documentación tiene implementación con _hooks_
   - El proyecto está escrito con _TypeScript_
-  - Si miramos en npm trends (unimos a la grafica anterior), es una librería con más uso que _react-dnd_, pero qu también va en caída libre.
+  - Si miramos en npm trends (unimos a la grafica anterior), es una librería con más uso que _react-dnd_, pero que también va en caída libre.
 
 Parece que es un proyecto popular, con una buena documentación, con un mantenimiento relativo.
 
@@ -531,7 +531,7 @@ Ahora ejecutamos y ya podemos ver que ocupa bastante espacio :).
 npm start
 ```
 
-✅ Somos capaces de mostrar un contenedor vació...
+✅ Somos capaces de mostrar un contenedor vacio...
 
 Vamos a definir el componente de columnas:
 
@@ -683,7 +683,7 @@ _./src/kanban/column/column.component.tsx_
 import React from "react";
 import classes from "./column.component.css";
 import { CardContent } from "./model";
-+ import {Card} from '../card/card.component';
++ import { Card } from '../card/card.component';
 ```
 
 _./src/kanban/column/column.component.tsx_
@@ -695,7 +695,6 @@ _./src/kanban/column/column.component.tsx_
       {content.map((card) => (
 -        <h5>{card.title}</h5>
 +       <Card key={card.id} content={card} />
-      ))}
       ))}
     </div>
   );
@@ -814,7 +813,7 @@ _./src/kanban/components/card.component.tsx_
 ```diff
 import React from "react";
 + import { useDrag } from "react-dnd";
-- import { CardContent } from "../model";
+- import { CardContent } from "../../model";
 + import { CardContent, ItemTypes } from "../../model";
 import classes from "./card.component.css";
 ```
@@ -839,6 +838,7 @@ export const Card: React.FC<Props> = (props) => {
 +  }));
 
   return (
+-    < className={classes.card}>
 +    <div ref={drag} className={classes.card}>
       {content.title}
     </div>
@@ -853,8 +853,8 @@ _./src/kanban/components/card.component.css_
 
 ```diff
   return (
--    <div ref={preview} className={classes.card}>
-+    <div ref={preview} className={classes.card} style={{opacity}}>
+-    <div ref={drag} className={classes.card}>
++    <div ref={drag} className={classes.card} style={{opacity}}>
 ```
 
 - Vamos a probar :)
@@ -935,7 +935,7 @@ export const Column: React.FC<Props> = (props) => {
 
 En cuanto tengamos esto implementado, nos daremos cuentas de varias cosas:
 
-- Empezamos a sufrir de "_drill prop_" subiendo y bajando datos y _callbacks_ por las _props_, empieza a oler a que usar un contexto podría ser de ayuda (otro TODO para la lista de "_martillo fino_") y este es el momento en que te pueden preguntar _¿Pero si funciona para qué lo vas a tocar? tampoco está tan mal..._ ese es el problema que si empezamos así y sumamos un montón de _tampoco está tan mal_ acabamos con un _esto está muy mal y no hay quien lo mantenga_, así que más adelante evaluaremos si centralizar en un contexto a aporta o no.
+- Empezamos a sufrir de "_drill prop_" subiendo y bajando datos y _callbacks_ por las _props_, empieza a oler a que usar un contexto podría ser de ayuda (otro TODO para la lista de "_martillo fino_") y este es el momento en que te pueden preguntar _¿Pero si funciona para qué lo vas a tocar? tampoco está tan mal..._ ese es el problema que si empezamos así y sumamos un montón de _tampoco está tan mal_ acabamos con un _esto está muy mal y no hay quien lo mantenga_, así que más adelante evaluaremos si centralizar en un contexto aporta o no.
 
 - De momento vamos a añadir la _card_ al final de la lista, si has usado herramientas como _trello_ te habrás dado cuenta de que cuando haces _drop_ te inserta la tarjeta entre las tarjetas en las que lo hayas soltado, esto, apuntado para el TODO de "_martillo fino_", y lo resolveremos más adelante (este es de los "_detalles_" que nos va a llevar bastante trabajo de arreglar).
 
@@ -1373,8 +1373,8 @@ _./src/kanban/components/card.components.tsx_
 ```diff
 import React from "react";
 import { useDrag } from "react-dnd";
-- import { CardContent, ItemTypes } from "../model";
-+ import { CardContent, ItemTypes, createDragItemInfo } from "../model";
+- import { CardContent, ItemTypes } from "../../model";
++ import { CardContent, ItemTypes, createDragItemInfo } from "../../model";
 import classes from "./card.component.css";
 
 interface Props {
@@ -1426,8 +1426,8 @@ _./src/kanban/components/column.component.tsx_
 import React from "react";
 import { useDrop } from "react-dnd";
 import classes from "./column.component.css";
-- import { CardContent, ItemTypes } from "../model";
-+ import { CardContent, ItemTypes, DragItemInfo } from "../model";
+- import { CardContent, ItemTypes } from "../../model";
++ import { CardContent, ItemTypes, DragItemInfo } from "../../model";
 import { Card } from "./card.component";
 ```
 
@@ -1493,7 +1493,7 @@ import React from "react";
 import {
   KanbanContent,
   createDefaultKanbanContent,
-  CardContent,
+- CardContent,
 + DragItemInfo
 } from "./model";
 import { loadKanbanContent } from "./api";
@@ -1602,7 +1602,7 @@ Creamos el _custom hook_ (lo vamos a dejar dentro del fichero del _container_, p
 _./src/kanban/kanban.container.tsx_
 
 ```diff
-import produce from "immer";
+import classes from "./kanban.container.module.css";
 
 + const useKanbanState = () : [
 +  KanbanContent,
@@ -1680,7 +1680,7 @@ export const moveCardColumn = (
 Arrancamos en modo test en otro terminal:
 
 ```bash
-npm run test:watch
+npm run test
 ```
 
 _./src/kanban/kanban.business.spec.ts_
@@ -2378,7 +2378,7 @@ _./src/kanban/index.ts_
 
 ```diff
 export * from "./kanban.container";
-+ export * from "./providers/kanban";
++ export * from "./providers";
 ```
 
 Y para nuestro ejemplo lo instanciamos a nivel de _app_ en una aplicación real lo podríamos instanciar a nivel de página (por ejemplo):
@@ -2413,7 +2413,6 @@ import React from "react";
 import {
 -  KanbanContent,
 -  createDefaultKanbanContent,
--  CardContent,
    DragItemInfo,
 } from "./model";
 import { loadKanbanContent } from "./api";
