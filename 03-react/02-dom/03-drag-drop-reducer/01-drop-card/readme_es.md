@@ -20,9 +20,9 @@ _./src/kanban/components/column.component.tsx_
 import React from "react";
 - import { useDrop } from "react-dnd";
 import classes from "./column.component.css";
-- import { CardContent, ItemTypes, DragItemInfo } from "../model";
-+ import { CardContent } from "../model";
-import { Card } from "./card.component";
+- import { CardContent, ItemTypes, DragItemInfo } from "../../model";
++ import { CardContent } from "../../model";
+import { Card } from "../card/card.component";
 - import { KanbanContext } from "../providers/kanban.context";
 - import { getArrayPositionBasedOnCoordinates } from "./column.business";
 
@@ -95,7 +95,7 @@ _./src/kanban/components/card.component.tsx_
 import React from "react";
 - import { useDrag } from "react-dnd";
 + import { useDrag, useDrop } from "react-dnd";
-- import { CardContent, ItemTypes, createDragItemInfo } from "../model";
+- import { CardContent, ItemTypes, createDragItemInfo } from "../../model";
 + import { CardContent, ItemTypes, createDragItemInfo, DragItemInfo } from "../../model";
 + import { KanbanContext } from "../../providers/kanban.context";
 import classes from "./card.component.css";
@@ -206,7 +206,7 @@ _./src/providers/kanban.provider.ts_
           columnOriginId,
           columnDestinationId,
 -          cardIndex: index,
-+          cardIndex: cardIndex ?? 0,,
++          cardIndex: cardIndex ?? 0,
           content,
         },
         kanbanContentLatest
