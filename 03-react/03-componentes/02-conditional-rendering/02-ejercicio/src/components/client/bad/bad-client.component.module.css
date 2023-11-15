@@ -1,0 +1,7 @@
+.field {
+  display: flex;
+  justify-content: space-between;
+  width: 300px;
+  flex-direction: row;
+  margin-bottom: 10px;
+}
