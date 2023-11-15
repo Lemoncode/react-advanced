@@ -1,9 +1,0 @@
-.container {
-  display: inline-flex;
-  flex-direction: column;
-}
-
-.container label {
-  color: red;
-  font-size: x-small;
-}
