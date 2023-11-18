@@ -156,6 +156,8 @@ export const ROUTES = {
 };
 ```
 
+> Estos ficheros de constantes pueden ser un dolor en SonarQ cuando tienes requisitos de cobertura de código altos, en muchos casos es un sinsentido que te obliguen a testear un fichero de constantes, ¿Qué opciones tenemos? Una es añadir una regla a SonarQ indicando que ignore los ficheros con extensión _const.tsx_ para el cálculo de cobertura de código, otra, asumir que otro fichero lo referenciará e indirectamente se manchará es fichero (depende con quien hables te puede decir que esto es algo sucio...).
+
 Y ahora enlazamos las escenas con las rutas:
 
 _./src/core/routing/router.tsx_
