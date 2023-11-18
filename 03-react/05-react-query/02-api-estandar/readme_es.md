@@ -6,7 +6,7 @@ Aunque para esta proyecto (con lo pequeño y simple que es) sería sobrearquitec
 
 # Paso a paso
 
-Partimos del boiler plate de este curso e instalamos la dependencias.
+Partimos del ejemplo anterior de este curso e instalamos la dependencias.
 
 ```bash
 npm install
