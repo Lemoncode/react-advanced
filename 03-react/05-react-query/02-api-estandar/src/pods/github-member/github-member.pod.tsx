@@ -1,6 +1,7 @@
 import React from "react";
 import { getGithubMemberDetail } from "./github-member.repository";
 import { createDefaultMemberDetail } from "./github-member.vm";
+import { GithubMemberComponent } from "./github-member.component";
 
 interface Props {
   id: string;
@@ -20,8 +21,7 @@ export const GithubMemberPod: React.FC<Props> = (props) => {
 
   return (
     <div>
-      <h1>{id}</h1>
-      <h1>{member.name}</h1>
+      <GithubMemberComponent githubMember={member} />
     </div>
   );
 };

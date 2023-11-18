@@ -880,10 +880,15 @@ _./src/pods/github-member/github-member.component.module.css_
 ```css
 .container {
   display: grid;
-  grid-template-columns: 80px 1fr 3fr;
-  grid-template-rows: 20px;
-  grid-auto-rows: 80px;
-  grid-gap: 10px 5px;
+  grid-template-rows: auto auto auto; /* Tres filas para cada elemento */
+  gap: 10px; /* Espacio entre los elementos */
+  justify-items: center; /* Centrar horizontalmente los elementos */
+  align-items: center; /* Alinear los elementos verticalmente en el centro */
+}
+
+.container img {
+  width: auto; /* Mantener la proporción de la imagen */
+  height: 80px; /* Altura fijada a 80px */
 }
 ```
 
@@ -894,7 +899,6 @@ _./src/pods/github-member/github-member.component.tsx_
 ```tsx
 import React from "react";
 import { GithubMemberVm } from "./github-member.vm";
-import classNames from "classnames";
 
 interface Props {
   githubMember: GithubMemberVm;
@@ -904,13 +908,46 @@ export const GithubMemberComponent: React.FC<Props> = (props) => {
   const { githubMember } = props;
 
   return (
-    <div className={classNames(classes.container, classes.someAdditionalClass)}>
-      <span className={classes.header}>Avatar</span>
-      <span className={classes.header}>Name</span>
-      <span className={classes.header}>Bio</span>
+    <div className={classes.container}>
       <img src={githubMember.avatarUrl} />
-      <span>{githubMember.id}</span>
+      <span>{githubMember.name}</span>
       <span>{githubMember.bio}</span>
+    </div>
+  );
+};
+```
+
+Y lo usamos en el _pod_:
+
+_./src/pods/github-member/github-member.pod.tsx_
+
+```diff
+import React from "react";
+import { getGithubMemberDetail } from "./github-member.repository";
+import { createDefaultMemberDetail } from "./github-member.vm";
++ import { GithubMemberComponent } from "./github-member.component";
+
+interface Props {
+  id: string;
+}
+
+export const GithubMemberPod: React.FC<Props> = (props) => {
+  const { id } = props;
+  const [member, setMember] = React.useState(createDefaultMemberDetail());
+
+  React.useEffect(() => {
+    const loadGithubMember = async () => {
+      const member = await getGithubMemberDetail(id);
+      setMember(member);
+    };
+    loadGithubMember();
+  }, []);
+
+  return (
+    <div>
+-      <h1>{id}</h1>
+-      <h1>{member.name}</h1>
++     <GithubMemberComponent githubMember={member} />
     </div>
   );
 };
@@ -921,3 +958,9 @@ Vemos que tal se ve:
 ```bash
 npm run dev
 ```
+
+Ya tenemos nuestra mini aplicación implementada, vámonos ahora a la pestaña de Network y simular que trabajamos con un _slow 3G_.
+
+[Navegar web, pestaña networks, opción combo throttling cambiar a slow 3G](./content/network.png)
+
+Si te fijas cuando volvemos a la lista de usuarios se ve la ventana en blanco... el usuario puede pensar, _oye pero si esto lo cargué ya antes_
