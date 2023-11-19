@@ -184,7 +184,7 @@ interface Props {
   onSearch: (value: string) => void;
 }
 
-export const FilterComponent: React.FC = (props) => {
+export const FilterComponent: React.FC<Props> = (props) => {
   const { onSearch } = props;
   const [value, setValue] = React.useState("");
 
@@ -240,12 +240,11 @@ export const GithubCollectionPod: React.FC = () => {
 
   return (
     <div>
-+      <FilterComponent onSearch={(value) => {console.log("Aquí empieza tu aventura")}} />
++      <FilterComponent onSearch={(value) => {console.log(`Aquí empieza tu aventura: ${value}`)}} />
       <GithubCollectionComponent githubMembers={githubMembers} />
     </div>
   );
 };
-
 ```
 
 Pistas:
@@ -262,13 +261,138 @@ Desafió:
 
 #### Solución
 
+Creamos el estado en el pod:
 
+_./src/pods/github-collection/github-collection.pod.tsx_
+
+```diff
+export const GithubCollectionPod: React.FC = () => {
++ const [filter, setFilter] = React.useState("lemoncode");
+
+  const { data: githubMembers = [] } = useQuery({
+    queryKey: ["githubMembers", "lemoncode"],
+    queryFn: () => getGithubMembersCollection("lemoncode"),
+  });
+
+  return (
+    <div>
+      <FilterComponent
++       initialValue={filter}
+        onSearch={(value) =>
+-          console.log(`Aquí empieza tu aventura: ${value}`);
++         setFilter(value)
+        }
+      />
+```
+
+Ya que estamos actualizamos el _initialValue_.
+
+_./src/pods/github-collection/components/filter.component.tsx_
+
+```diff
+interface Props {
++ initialValue: string;
+  onSearch: (value: string) => void;
+}
+
+export const FilterComponent: React.FC<Props> = (props) => {
+-  const { onSearch } = props;
+-  const [value, setValue] = React.useState("");
++ const { initialValue, onSearch } = props;
++ const [value, setValue] = React.useState(initialValue);
+
+  return (
+```
+
+> Una curiosidad, ¿Cómo haríamos si _initialValue_ se informa más tarde (e.g. llamada asíncrona cargando el último estado de la página), si el usuario tuviera opcíon de cambiar el filtro desde fuera siguiendo alguna condición? (mirar aquí useEffect con corchetes, y comentar que todo se complicaría un poco si el usuario ya ha tecleado y no queremos fastidiar lo que ha tecleado pero se podría hacer, "the devil is on the details").
+
+Vamos ahora a por la query, ahora lo que haríamos sería los siguiente:
+
+_./src/pods/github-collection/github-collection.pod.tsx_
+
+```diff
+  const { data: githubMembers = [] } = useQuery({
+-    queryKey: ["githubMembers", "lemoncode"],
++   queryKey: ["githubMembers", filter],
+-    queryFn: () => getGithubMembersCollection("lemoncode"),
++  queryFn: () => getGithubMembersCollection(filter),
+  });
+```
+
+Si ahora ponemos un slow 3G podrás ver que los datos están allí aunque hagamos un refetch, si ponemos para esta consulta un gcTime de 0 mira la diferencia.
+
+**_ Eliminar esto después _**
+
+```diff
+  const { data: githubMembers = [] } = useQuery({
+    queryKey: ["githubMembers", filter],
+    queryFn: () => getGithubMembersCollection(filter),
++    gcTime: 0,
+  });
+```
+
+Prueba a quitar y poner verás que interesante el cambio.
+
+También es interesante corta la conexión a internet y ver que consultas que ya hemos hecho se nos sirven, esto puede ser interesante para una aplicación que se use en un sitio con mala cobertura y que trabaje con un conjunto reducido de datos.
+
+Otra cosa que puedes hacer es incluso evitar que se llegue a lanzar la consulta, tanto de forma indefinida (_infinity_), como por un tiempo, esto lo puedes hacer con _staleTime_
+
+```diff
+  const { data: githubMembers = [] } = useQuery({
+    queryKey: ["githubMembers", filter],
+    queryFn: () => getGithubMembersCollection(filter),
++    staleTime: Infinity,
++    gcTime: Infinity
+  });
+```
+
+Y aquí podemos jugar con un montón de casos, fijate que la cache se desactiva pasado un tiempo sin observadores.
+
+```diff
+  const { data: githubMembers = [] } = useQuery({
+    queryKey: ["githubMembers", filter],
+    queryFn: () => getGithubMembersCollection(filter),
+    staleTime: Infinity,
+-    gcTime: Infinity
+    gcTime: 0,
+  });
+```
+
+Fíjate aquí las devtools en la parte derecha de una consulta, el valor _observers_ cuando deja de valer 1... el tiempo de _gcTime_ empieza a rodar.
+
+> En una aplicación normal con los valores por defecto vamos sobrados, pero es bueno saber que tenemos esto.
+
+Vamos a eliminar esos valores
+
+```diff
+  const { data: githubMembers = [] } = useQuery({
+    queryKey: ["githubMembers", filter],
+    queryFn: () => getGithubMembersCollection(filter),
+-    staleTime: Infinity,
+-    gcTime: 0,
+  });
+```
 
 ### Aristas
 
 Vamos a cubrir algunas aristas (después avanzaremos e iremos a por más)
 
-¿Qué pasa si me hace falta ejecutar alguna acción justo cuando se han cargado los datos? Para eso tengo el evento _onSuccess_:
+¿Qué pasa si me hace falta ejecutar alguna acción justo cuando se han cargado los datos? Si estás en esa escenario piensa si puede ser un mal olor, si no hay más remedio, aquí va una solución, utilizando useEffect:
+
+```diff
+-  const { data: githubMembers = [] } = useQuery({
++  const { data: githubMembers = [], isSuccess } = useQuery({
+
+    queryKey: ["githubMembers", filter],
+    queryFn: () => getGithubMembersCollection(filter),
+  });
+
++  React.useEffect(() => {
++    if (isSuccess) {
++      console.log("Aquí puedes hacer lo que quieras");
++    }
++  }, [data, isSuccess]);
+```
 
 Y si... También tengo _onError_ para gestionar errores
 
@@ -302,3 +426,7 @@ Dev tool
 # Para saber más
 
 https://tkdodo.eu/blog/practical-react-query
+
+Dependant queries:
+
+https://tanstack.com/query/latest/docs/react/guides/dependent-queries
