@@ -22,12 +22,14 @@ const GithubMemberSchema = z.object({
   site_admin: z.boolean(),
 });
 
+const GithubMembersArraySchema = z.array(GithubMemberSchema);
+
 // Inferir la interfaz TypeScript desde el esquema Zod
 export type GithubMemberApiModel = z.infer<typeof GithubMemberSchema>;
 
 // Se podría mirar de hacer algo genérico con esto
 export const validateGithubMember = (data: unknown): boolean => {
-  const validationResult = GithubMemberSchema.safeParse(data);
+  const validationResult = GithubMembersArraySchema.safeParse(data);
   if (!validationResult.success) {
     // Se podría usar un logger
     console.warn(

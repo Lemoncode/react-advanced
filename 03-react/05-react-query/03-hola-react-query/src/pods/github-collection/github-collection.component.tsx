@@ -18,13 +18,13 @@ export const GithubCollectionComponent: React.FC<Props> = (props) => {
       <span className={classes.header}>Id</span>
       <span className={classes.header}>Name</span>
       {githubMembers.map((member) => (
-        <>
+        <React.Fragment key={member.id}>
           <img src={member.avatarUrl} />
           <span>{member.id}</span>
           <Link to={generatePath(ROUTES.GITHUB_MEMBER, { id: member.name })}>
             {member.name}
           </Link>
-        </>
+        </React.Fragment>
       ))}
     </div>
   );

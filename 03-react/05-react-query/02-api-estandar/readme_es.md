@@ -248,12 +248,14 @@ const GithubMemberSchema = z.object({
   site_admin: z.boolean(),
 });
 
+const GithubMembersArraySchema = z.array(GithubMemberSchema);
+
 // Inferir la interfaz TypeScript desde el esquema Zod
 export type GithubMemberApiModel = z.infer<typeof GithubMemberSchema>;
 
 // Se podría mirar de hacer algo genérico con esto
 export const validateGithubMember = (data: unknown): boolean => {
-  const validationResult = GithubMemberSchema.safeParse(data);
+  const validationResult = GithubMembersArraySchema.safeParse(data);
   if (!validationResult.success) {
     // Se podría usar un logger
     console.warn(
@@ -532,13 +534,13 @@ export const GithubCollectionComponent: React.FC<Props> = (props) => {
       <span className={classes.header}>Id</span>
       <span className={classes.header}>Name</span>
       {githubMembers.map((member) => (
-        <>
+        <React.Fragment key={member.id}>
           <img src={member.avatarUrl} />
           <span>{member.id}</span>
           <Link to={generatePath(ROUTES.GITHUB_MEMBER, { id: member.name })}>
             {member.name}
           </Link>
-        </>
+        </React.Fragment>
       ))}
     </div>
   );

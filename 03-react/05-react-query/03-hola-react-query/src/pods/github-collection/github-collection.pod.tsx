@@ -7,11 +7,16 @@ import { FilterComponent } from "./components";
 export const GithubCollectionPod: React.FC = () => {
   const [filter, setFilter] = React.useState("lemoncode");
 
-  const { data: githubMembers = [] } = useQuery({
+  const { data: githubMembers = [], isSuccess } = useQuery({
     queryKey: ["githubMembers", filter],
     queryFn: () => getGithubMembersCollection(filter),
-
   });
+
+  React.useEffect(() => {
+    if (isSuccess) {
+      console.log("Aquí puedes hacer lo que quieras");
+    }
+  }, [githubMembers, isSuccess]);
 
   return (
     <div>
