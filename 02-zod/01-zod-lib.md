@@ -293,10 +293,13 @@ y
 
 Vamos a cambiar el nif de paciente 1 (añadimos un guion).
 
-¿Qué hecho de menos aquí? 
-  - Me tengo que aprender JSON Schema...
-  - Es muy fácil cometer un fallo tonto (aunque hay tooling que te convierte de TS a Schema pero paso adicional de build)
-  - Mira como está el campo nif y abajo los required.
+¿Qué hecho de menos aquí?
+
+- Me tengo que aprender JSON Schema...
+- No tengo strong typing, si me equivoco ahí lo llevas...
+- Escribir JSON es un ... comillas, no puedes comentar...
+- Es muy fácil cometer un fallo tonto (aunque hay tooling que te convierte de TS a Schema pero paso adicional de build)
+- Mira como está el campo nif y abajo los required.
 
 ¿No estaría mejor definir todo eso en TypeScript y que se generara el módelo de forma automático?
 
@@ -310,27 +313,67 @@ npm install zod
 
 Y ahora vamos a definir el modelo:
 
+_./src/paciente-zod.ts_
+
 ```ts
 import { z } from "zod";
 
-const MedidaPresionArterial = z.object({
-  fechaHora: z.date(),
+export const MedidaPresionArterialSchema = z.object({
+  fechaHora: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/),
   sistolica: z.number().min(0).max(200),
   diastolica: z.number().min(0).max(200),
 });
 
-const Paciente = z.object({
-  NIF: z.string().regex(/^[0-9]{8}[A-Z]$/),
+export const PacienteSchema = z.object({
+  nif: z.string().regex(/^[0-9]{8}[A-Z]$/),
   nombre: z.string().min(1),
   edad: z.number().int().min(0).max(150),
-  fechaNacimiento: z.date(),
+  fechaNacimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/),
   alergias: z.array(z.string()).nullable(),
   medicacion: z.array(z.string()).nullable(),
-  medidasPresionArterial: z.array(MedidaPresionArterial),
+  medidasPresionArterial: z.array(MedidaPresionArterialSchema),
 });
 ```
 
 Y ahora podemos validar:
+
+_./main.ts_
+
+```diff
+- import Ajv from "ajv";
+- import schema from "./schema.json";
++ import { PacienteSchema } from "./paciente-zod";
+
+- const ajv = new Ajv();
+- const validate = ajv.compile(schema);
+```
+
+```diff
+const loadPacienteUno = async () => {
+  const paciente = await getPaciente(1);
+
+-  const valid = validate(paciente);
+-  if (!valid) {
+-    console.log(validate.errors);
+-    // Aquí podemos:
+-    //  - Si estamos en desarrollo sacar un aviso por consola, y por ejemplo loggearlo o mostrar un aviso.
+-    //  - Si estamos en producción, ver como gestionar el problema (degradación, mostrar un mensaje de error, ...) y enviarlo a un sistema de log.
+-  } else {
+-    console.log("Paciente Ok");
+-  }
+
++ try {
++  PacienteSchema.parse(paciente);
++ } catch (error) {
++  console.log(error);
++ }
+
+  const nif = paciente.nif;
+  const numero = nif.substring(0, 8);
+  const letra = nif.substring(8, 9);
+  console.log(numero, letra);
+};
+```
 
 ```ts
 const paciente = await getPaciente(1);
@@ -347,23 +390,57 @@ try {
 
 Si no queremos que suelte una excepción, podemos usar el método _safeParse_:
 
-```ts
-const paciente = await getPaciente(1);
+```diff
+const loadPacienteUno = async () => {
+  const paciente = await getPaciente(1);
 
-const result = Paciente.safeParse(paciente);
-if (!result.success) {
-  console.log(result.error);
-  // Aquí podemos:
-  //  - Si estamos en desarrollo sacar un aviso por consola, y por ejemplo loggearlo o mostrar un aviso.
-  //  - Si estamos en producción, ver como gestionar el problema (degradación, mostrar un mensaje de error, ...) y enviarlo a un sistema de log.
-}
+-  try {
+-    PacienteSchema.parse(paciente);
+-  } catch (error) {
+-    console.log(error);
+-  }
+
++ const result = PacienteSchema.safeParse(paciente);
++ if (!result.success) {
++  console.log(result.error);
++ }
 ```
 
 Ahora vienen varios temas interesantes de ZOD, puede inferir sacar los interfaces de TypeScript a partir de un esquema de ZOD:
 
-```ts
-type MedidaPresionArterial = z.infer<typeof MedidaPresionArterial>;
-type Paciente = z.infer<typeof Paciente>;
+_./model.ts_
+
+```diff
++ import { z } from "zod";
++ import { PacienteSchema, MedidaPresionArterialSchema } from "./paciente-zod";
+
++ export type MedidaPresionArterial = z.infer<typeof MedidaPresionArterialSchema>;
++ export type Paciente = z.infer<typeof PacienteSchema>;
+
+- interface MedidaPresionArterial {
+-  fechaHora: string;
+-  sistolica: number;
+-  diastolica: number;
+- }
+-
+- interface Paciente {
+-  nif: string;
+-  nombre: string;
+-  edad: number;
+-  fechaNacimiento: string;
+-  alergias: string[] | null;
+-  medicacion: string[] | null;
+-  medidasPresionArterial: MedidaPresionArterial[];
+- }
+```
+
+Y puedo usarlo como un modelo:
+
+_./main.ts_
+
+```diff
+import { PacienteSchema } from "./paciente-zod";
++ import { Paciente } from "./model";
 ```
 
 Esto no esta mal, ¿Pero y al contrario? ¿Podemos generar un esquema de ZOD a partir de un interface de TypeScript? Hay varias librerías para ello:
@@ -374,16 +451,54 @@ Esto no esta mal, ¿Pero y al contrario? ¿Podemos generar un esquema de ZOD a p
 
 una es _@runtpying/zod_
 
+creamos una carpeta vacia (nuevo proyecto)
+
+```bash
+mkdir prueba-runtyping
+```
+
 vamos a crear un proyecto nuevo:
 
 ```bash
-npm init
+npm init -y
 ```
+
+Instalamos zod y runtyping:
+
+```bash
+npm install zod
+npm install -D @runtyping/zod
+```
+
 
 Añadimos un tsconfig estandar
 
-```json
+_./tsconfig.json_
 
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src"]
+}
 ```
 
 Creamos desde la carpeta model un fichero _paciente.ts_ con el siguiente contenido:
@@ -410,12 +525,12 @@ interface Paciente {
 
 Añadimos un fichero _yml_ para generar el esquema de ZOD:
 
-_./runtpying.yml_
+_./runtyping.yml_
 
 ```yml
-targetFile: ./model/paciente.zod.ts # The file to create
+targetFile: ./src/model/paciente.zod.ts # The file to create
 sourceTypes:
-  file: ./model/paciente.model.ts # The file where your type lives
+  file: ./src/model/paciente.model.ts # The file where your type lives
   type: Paciente
 ```
 
@@ -425,6 +540,53 @@ Y ejecutamos el comando para generar el esquema:
 npx runtyping
 ```
 
-Esta solución también te permite pasar una lisa de ficheros.
+Esta solución también te permite pasar una lista de ficheros.
 
 https://github.com/johngeorgewright/runtyping/blob/master/packages/zod/README.md
+
+
+# Prompt e IA
+
+Otra forma muy cómoda es tirar de _chatGPT_ y después revisar.
+
+## Opción 1
+
+La más básica
+
+¿Me puedes generar el schema ZOD de estos interfaces?
+
+```ts
+interface MedidaPresionArterial {
+  fechaHora: string;
+  sistolica: number;
+  diastolica: number;
+}
+
+interface Paciente {
+  nif: string;
+  nombre: string;
+  edad: number;
+  fechaNacimiento: string;
+  alergias: string[] | null;
+  medicacion: string[] | null;
+  medidasPresionArterial: MedidaPresionArterial[];
+}
+```
+
+## Refinando
+
+Le indicamos en el siguiente punto de la charla...
+
+```
+Muchas gracias, además necesito:
+
+- Que el campo _nif_ sea de 8 digitos y una letra en mayuscula.
+- Que el de presión sistólica esté entre 60 y 200.
+- Que el de presión diasoticla esté entre 60 y 150.
+```
+
+Si no nos gusta la solución con Refine, podemos decirle
+
+```
+Para el campo nif, en vez de refine ¿Podrías encadenar directamente la RegEx?
+```

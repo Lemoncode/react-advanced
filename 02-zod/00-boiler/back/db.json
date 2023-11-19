@@ -2,7 +2,7 @@
   "pacientes": [
     {
       "id": 1,
-      "nif": "12345678-A",
+      "nif": "12345678A",
       "nombre": "Juan",
       "apellidos": "Pérez",
       "edad": 35,
