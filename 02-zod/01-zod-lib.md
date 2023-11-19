@@ -329,7 +329,7 @@ Añadimos un tsconfig estandar
 
 ```
 
-Creamos debejamos de la carpeta model un fichero _paciente.ts_ con el siguiente contenido:
+Creamos desde la carpeta model un fichero _paciente.ts_ con el siguiente contenido:
 
 _./src/model/paciente.model.ts_
 

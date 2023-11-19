@@ -445,14 +445,77 @@ return (
 );
 ```
 
-Oye y... ¿Ese string harcodeado no es peligroso? ¿Y si tengo parámetros en la búsqueda? ¿ Cómo lo cachea?
+### Refactor custom hook
 
-Otro tema muy interesante, la diferencia entre _stale_ y _cache_, st
-ale es te muestro datos pero aún así hago la carga en background, y cache es tiro de estos datos sin hacer la consulta en background, esto puede ser muy útil cuando los datos cambian poco o son sólo lectura, un ejemplo en tiempo real:
+En el GithubCollectionPod, hay algo de lógica en el componente (la veo aceptable), pero si por ejempo gestionaramos control de errores u otras queries podría convertirse en un código poco mantenible, podemos refactorizarlo a un custom hook:
 
-Una aplicación basada en mapas, conforme vas haciendo zoom in o out se lanzan consultas para informa de cada spot en detalle o si es un zoom out datos globalizados (también puedes moverte en el mapa), usando React Query la mejora en rendimiento es bruta, en cuanto se calienta con los zoom va todo superfluido.
+_./src/pods/github-collection/github-collection-query.hook.tsx_
+
+```tsx
+import { useQuery } from "@tanstack/react-query";
+import { getGithubMembersCollection } from "./github-collection.repository";
+
+export const useGithubCollectionQuery = (filter: string) => {
+  const {
+    data: githubMembers = [],
+    isSuccess,
+    refetch,
+  } = useQuery({
+    queryKey: ["githubMembers", filter],
+    queryFn: () => getGithubMembersCollection(filter),
+    enabled: filter !== "",
+  });
+
+  return { githubMembers, isSuccess, refetch };
+};
+```
+
+Y _vaciamos el cangrejo_ en el pod:
+
+_./src/pods/github-collection.pod.ts_
+
+```diff
+import React from "react";
+- import { getGithubMembersCollection } from "./github-collection.repository";
+import { GithubCollectionComponent } from "./github-collection.component";
+- import { useQuery } from "@tanstack/react-query";
+import { FilterComponent } from "./components";
++ import { useGithubCollectionQuery } from "./github-collection-query.hook";
+
+export const GithubCollectionPod: React.FC = () => {
+  const [filter, setFilter] = React.useState("");
+
+-  const {
+-    data: githubMembers = [],
+-    isSuccess,
+-    refetch,
+-  } = useQuery({
+-    queryKey: ["githubMembers", filter],
+-    queryFn: () => getGithubMembersCollection(filter),
+-    enabled: filter !== "",
+-  });
++ const { githubMembers, isSuccess, refetch } = useGithubCollectionQuery(filter);
+
+
+  React.useEffect(() => {
+
+```
 
 ## Detalle
+
+Ya tenemos la página de listado, completa.
+
+Vamos a por la de detalle
+
+¿Te animas a implementarla?
+
+Pistas:
+
+- Nos vamos al pod de _github-member_.
+- Creamos un use query, aquí para la clave:
+  - Primer parámetro, podemos usar "githubMember" (ya aprenderemos como eliminar estos harcodeos).
+  - Segundo parámetro, el id del usuario que nos viene por parámetro.
+- Eliminamos en _useEffect_
 
 ## Diferencia
 
