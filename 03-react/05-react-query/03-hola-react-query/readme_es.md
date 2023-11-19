@@ -169,48 +169,100 @@ Y de paso abrimos el tab de network, a ver si cabe todo.
 
 ### Ejercicio
 
-Con lo poco que sabemos ya somos capaces de hacer algo interesantes, vamos a permitir al usuario teclear el nombre de una organizacíon y vemos las fotos de los miembros de la misma, como estos datos van a cambiar muy poco jugaremos con _stale_ y _gcTime_ para esta consulta también.
+Con lo poco que sabemos ya somos capaces de hacer algo interesantes, vamos a permitir al usuario teclear el nombre de una organización y vemos las fotos de los miembros de la misma, como estos datos van a cambiar muy poco jugaremos con _stale_ y _gcTime_ para esta consulta también.
 
 Punto de partida:
 
-```diff
+Vamos a crear un componente que se llame _.(components/filter.component.tsx_ y lo vamos a usar en el _github-collection.component.tsx_.
+
+_./src/pods/github-collection/components/filter.component.tsx_
+
+```tsx
+import React from "react";
+
+interface Props {
+  onSearch: (value: string) => void;
+}
+
+export const FilterComponent: React.FC = (props) => {
+  const { onSearch } = props;
+  const [value, setValue] = React.useState("");
+
   return (
-+   <>
-+     <div>
-+       <input type="text" />
-+       <button>Buscar</button>
-+     </div>
-    <div className={classNames(classes.container, classes.someAdditionalClass)}>
-      <span className={classes.header}>Avatar</span>
-      <span className={classes.header}>Id</span>
-      <span className={classes.header}>Name</span>
-      {githubMembers.map((member) => (
-        <>
-          <img src={member.avatarUrl} />
-          <span>{member.id}</span>
-          <Link to={generatePath(ROUTES.GITHUB_MEMBER, { id: member.name })}>
-            {member.name}
-          </Link>
-        </>
-      ))}
-    </div>
-+  </>
+    <>
+      <div>
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+        />
+        <button
+          onClick={() => {
+            onSearch(value);
+          }}
+        >
+          Buscar
+        </button>
+      </div>
+    </>
   );
 };
 ```
 
-> Nota, esto huele a componentizar... :) pero lo dejamos para más adelante (cada fila a un componente, y el componente de filtrado a otro).
+Creamos un barrel
+
+_./src/pods/github-collection/components/index.ts_
+
+```tsx
+export * from "./filter.component";
+```
+
+Lo instanciamos...
+
+_./src/pods/github-collection/github-collection.container.tsx_
+
+```diff
+import React from "react";
+import { GithubMemberVm } from "./github-collection.vm";
+import classNames from "classnames";
+import { Link, generatePath } from "react-router-dom";
+import { ROUTES } from "@/core/routing";
++ import { FilterComponent } from "./components";
+import classes from "./github-collection.component.module.css";
+```
+
+```diff
+export const GithubCollectionPod: React.FC = () => {
+  const { data: githubMembers = [] } = useQuery({
+    queryKey: ["githubMembers", "lemoncode"],
+    queryFn: () => getGithubMembersCollection("lemoncode"),
+  });
+
+  return (
+    <div>
++      <FilterComponent onSearch={(value) => {console.log("Aquí empieza tu aventura")}} />
+      <GithubCollectionComponent githubMembers={githubMembers} />
+    </div>
+  );
+};
+
+```
 
 Pistas:
 
-- El filtro lo podemos guardar en el estado, por defecto puede ser lemoncode.
-- Metemos un botón para realizar el filtro.
+- Creamos un estado para el filtro en el container.
+- Podemos alimentar el filtro por defecto (lemoncode) al componente hijo.
+- Cuando le usuario le de al botón de actualizar, actualizamos el filtro.
 - En la consulta de React Query en vez de hardcodear Lemoncode usamos como segundo filtro de la caché el valor del filtro.
 - Lo mismo en la llamada a la api.
 
 Desafió:
 
 - ¿Y si partimos de filtro en blanco? No queremos lanzar la consulta hasta que el usuario pulse el botón.
+
+#### Solución
+
+
 
 ### Aristas
 
