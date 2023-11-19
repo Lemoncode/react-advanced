@@ -27,27 +27,27 @@ Vamos a ver tanto la opción de JSON Schema como la de ZOD en acción.
 Partamos de un ejemplo, tenemos la ficha de un paciente de un hospital:
 
 ```typescript
-  {
-    NIF: "12345678A",
-    nombre: "Juan",
-    apellidos: "Gómez Pérez",
-    edad: 45,
-    fechaNacimiento: new Date("1978-05-20"),
-    alergias: ["Polen", "Penicilina"],
-    medicacion: ["Aspirina", "Ibuprofeno"],
-    medidasPresionArterial: [
-      {
-        fechaHora: new Date("2023-01-15T08:30:00"),
-        sistolica: 120,
-        diastolica: 80,
-      },
-      {
-        fechaHora: new Date("2022-09-10T14:15:00"),
-        sistolica: 130,
-        diastolica: 85,
-      },
-    ],
-  },
+const paciente = {
+  nif: "12345678A",
+  nombre: "Juan",
+  apellidos: "Gómez Pérez",
+  edad: 45,
+  fechaNacimiento: new Date("1978-05-20"),
+  alergias: ["Polen", "Penicilina"],
+  medicacion: ["Aspirina", "Ibuprofeno"],
+  medidasPresionArterial: [
+    {
+      fechaHora: new Date("2023-01-15T08:30:00"),
+      sistolica: 120,
+      diastolica: 80,
+    },
+    {
+      fechaHora: new Date("2022-09-10T14:15:00"),
+      sistolica: 130,
+      diastolica: 85,
+    },
+  ],
+};
 ```
 
 Tenemos la siguientes restricciones:
@@ -72,7 +72,7 @@ Esto lo podemos definir con un JSON Schema, sería algo así como:
     "ID": {
       "type": "integer"
     },
-    "NIF": {
+    "nif": {
       "type": "string",
       "pattern": "^[0-9]{8}[A-Z]$"
     },
@@ -130,7 +130,7 @@ Esto lo podemos definir con un JSON Schema, sería algo así como:
     }
   },
   "required": [
-    "NIF",
+    "nif",
     "nombre",
     "edad",
     "fechaNacimiento",
@@ -149,7 +149,7 @@ interface MedidaPresionArterial {
 }
 
 interface Paciente {
-  NIF: string;
+  nif: string;
   nombre: string;
   edad: number;
   fechaNacimiento: string;
@@ -187,6 +187,8 @@ Un ejemplo de un paciente sería:
 Hasta aquí todo de color de rosa, tenemos ya un JSON Server para simular una API Rest y vamos a traernos datos,
 
 ```ts
+const API_URL = "http://localhost:3000";
+
 const getPaciente = async (id: number): Promise<Paciente> => {
   const response = await fetch(`${API_URL}/pacientes/${id}`);
   const paciente = await response.json();
@@ -197,11 +199,15 @@ const getPaciente = async (id: number): Promise<Paciente> => {
 E imaginate que nos hace falta extraer el número del NIF y la letra, como hemos acordado con Backend que siempre va a venir en el formato 8 números y una letra, pues lo hacemos así:
 
 ```ts
-const paciente = await getPaciente(1);
-const nif = paciente.NIF;
-const numero = nif.substring(0, 8);
-const letra = nif.substring(8, 9);
-console.log(numero, letra);
+const loadPacienteUno = async () => {
+  const paciente = await getPaciente(1);
+  const nif = paciente.nif;
+  const numero = nif.substring(0, 8);
+  const letra = nif.substring(8, 9);
+  console.log(numero, letra);
+};
+
+loadPacienteUno();
 ```
 
 Peeero... resulta que se hizo una importación de datos de un sistema de terceros y digamos que a alguien se le olvidó ese pequeño de datos y los datos vienen tal que así:
@@ -227,11 +233,34 @@ Podemos instalar la librería _ajv_ (Another JSON Schema Validator) y hacer algo
 npm install ajv
 ```
 
-```ts
-import Ajv from "ajv";
+```diff
++ import Ajv from "ajv";
++ import schema from "./schema.json";
++
++ const ajv = new Ajv();
++ const validate = ajv.compile(schema);
 
-const ajv = new Ajv();
-const validate = ajv.compile(schema);
+// (...)
+
+const loadPacienteUno = async () => {
+  const paciente = await getPaciente(1);
+
++  const valid = validate(paciente);
++  if (!valid) {
++    console.log(validate.errors);
++    // Aquí podemos:
++    //  - Si estamos en desarrollo sacar un aviso por consola, y por ejemplo loggearlo o mostrar un aviso.
++    //  - Si estamos en producción, ver como gestionar el problema (degradación, mostrar un mensaje de error, ...) y enviarlo a un sistema de log.
++  } else {
++   console.log("Paciente Ok");
++ }
+
+  const nif = paciente.nif;
+  const numero = nif.substring(0, 8);
+  const letra = nif.substring(8, 9);
+  console.log(numero, letra);
+};
+
 const valid = validate(paciente);
 if (!valid) {
   console.log(validate.errors);
@@ -241,7 +270,35 @@ if (!valid) {
 }
 ```
 
-¿Qué hecho de menos aquí? Por un lado tener que aprender a validar con JSON Schema (hay tooling, aunque no es tan natural como ZOD), por otro lado tener que definir el modelado (aunque existe tooling para generar lel modelo a partir del JSON Schema)
+ESTO NOS DA UN PETE: para que a esta librería no le gusta el format _date-time_ para ese string.
+
+lo quitamos (schema.json)
+
+```diff
+    "fechaNacimiento": {
+      "type": "string",
+-      "format": "date-time"
+    },
+```
+
+y
+
+```diff
+        "properties": {
+          "fechaHora": {
+            "type": "string",
+-            "format": "date-time"
+          },
+```
+
+Vamos a cambiar el nif de paciente 1 (añadimos un guion).
+
+¿Qué hecho de menos aquí? 
+  - Me tengo que aprender JSON Schema...
+  - Es muy fácil cometer un fallo tonto (aunque hay tooling que te convierte de TS a Schema pero paso adicional de build)
+  - Mira como está el campo nif y abajo los required.
+
+¿No estaría mejor definir todo eso en TypeScript y que se generara el módelo de forma automático?
 
 ## ZOD
 
