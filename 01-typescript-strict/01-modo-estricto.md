@@ -5,10 +5,11 @@
 En _TypeScript_ cuando queremos volar por los aires los tipos de datos, estamos a acostumbrados a usar el tipo _any_, esto:
 
 - Hay veces que no queda otra y tenemos que usar.
-- Otras suele ser un mal olor en el código, que nos indica que algo no estamos haciendo bien, de hecho una metrica rápida para evaluar una base de código es si se hace un uso excesivo de _any_.
+
+- Otras suele ser un mal olor en el código, que nos indica que algo no estamos haciendo bien, de hecho una métrica rápida para evaluar una base de código es si se hace un uso excesivo de _any_.
 
 ```ts
-const mensaje: any = "hola";
+let mensaje: any = "hola";
 
 mensaje = 2;
 
@@ -36,6 +37,8 @@ procesarValorDesconocido("Hola, mundo"); // Imprimirá "HOLA, MUNDO"
 procesarValorDesconocido(42); // Imprimirá "El valor no es una cadena."
 ```
 
+> Intenta poner en el else _valor = valor + 1_, verás que te dice que _valor_ es _unkown_.
+
 También podemos hacer un casting a lo bruto, pero ojo que tenemos que estar seguros de lo que hacemos:
 
 ```ts
@@ -59,6 +62,20 @@ En muchos proyectos trabajamos con TS como si fuera una ayuda para obtener tipad
 - No aceptar que una función devuelva _any_ por defecto.
 - Que no te dejará imports o variables declaras pero sin utilizar.
 - Si trabajas con clases avisarte si un _this_ no está bien enlazado.
+
+En este boilerplate tenemos una configuración específica en el _tsconfig_
+
+_./tsconfig.json_
+
+```ts
+// (...)
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
+// (...)
+```
 
 Vamos a ver ejemplos :
 
@@ -85,7 +102,7 @@ interface ClientViewModel {
 }
 
 const mapClienteModelToViewModel = (
-  cliente: clienteModel
+  cliente: ClienteModel
 ): ClientViewModel => ({
   nombre: cliente.nombre,
   apellido: cliente.apellido,
@@ -118,6 +135,32 @@ console.log(resultadoB);
 
 ¿Qué pasa aquí? Pues que el mapper revienta, no puede acceder a la propiedad _nombre_ de _ciudad_ porque es _null_.
 
+Es decir el dato no puede ser nulo, si espera que sea nulo tienes que tocar el interfaz:
+
+```diff
+interface ClienteModel {
+  nombre: string;
+  apellido: string;
+   ciudad: {
+    id: number;
+    nombre: string;
+-  };
++  } | null;
+}
+
+Esto me abre otro melón:
+
+```diff
+const mapClienteModelToViewModel = (
+  cliente: ClienteModel
+): ClientViewModel => ({
+  nombre: cliente.nombre,
+  apellido: cliente.apellido,
+-  ciudad: cliente.ciudad.nombre,
++  ciudad: cliente.ciudad?.nombre ?? 'desconocida',
+});
+```
+
 ¿Qué tendríamos que hacer si no usaramos modo estricto?
 
 - Añadir lógica para chequear si el caso es nulo.
@@ -128,8 +171,10 @@ console.log(resultadoB);
 > Muy bien pero que pasa si tiro de una API REST que va en "modo gamberro", aquí:
 
 - Podemos modelar entidades de API Rest que acepten nulos etc (utilizando _?_).
+
 - Podemos implementar mappers acordes a la API Rest.
-- En el caso de que se salten los contrato, podemos ayudarnos de ZOD para validar los datos que nos llegan.
+
+- En el caso de que se salten los contratos, podemos ayudarnos de ZOD para validar los datos que nos llegan.
 
 #### Parámetros nulos o undefined
 
@@ -142,21 +187,11 @@ const clienteC: ClienteModel = null;
 
 const resultadoC = mapClienteModelToViewModel(clienteC);
 console.log(resultadoC);
-```
+````
+
+Como estamos en modo estricto nos avisa, si no... ahí lo llevas
 
 En este caso puede parecer fácil, pero en una estructura compleja es fácil que se nos pase algo y tengamos un bombazo cuando ejecutemos el programa (sonríe cuando salgas en la foto con el cliente).
-
-¿Y si cambiamos esto a modo estricto?
-
-_tsconfig.json_
-
-```json
-{
-  "compilerOptions": {
-    "strict": true
-  }
-}
-```
 
 Ahora este código nos avisa de que hay cosas mal, las podemos arreglar.
 
@@ -193,7 +228,8 @@ C) Y vamos a por otro chapu, le metemos un comentario para decirle al compilador
 
 ```diff
 - const clienteC: ClienteModel  = null!;
-+ const clienteC: ClienteModel  = null!; // @ts-ignore
++ // @ts-ignore
++ const clienteC: ClienteModel  = null; 
 ```
 
 Si ves cosas como estás a menudo en el proyecto que has entrado ¡¡ HUYE !!
@@ -288,11 +324,17 @@ interface CustomWindow extends Window {
   __REDUX_DEVTOOLS_EXTENSION__: any;
 }
 
-const reduxDevTools = (window as unkown as CustomWindow)[
+const reduxDevTools = (window as unknown as CustomWindow)[
   "__REDUX_DEVTOOLS_EXTENSION__"
 ];
 console.log(reduxDevTools);
 ```
+
+o mejor:
+
+```typescript
+const reduxDevTools = (window as unknown as CustomWindow).__REDUX_DEVTOOLS_EXTENSION__;
+``````
 
 ## TsConfig adicionales
 
