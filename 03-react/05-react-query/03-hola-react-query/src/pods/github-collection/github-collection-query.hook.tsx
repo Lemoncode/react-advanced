@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getGithubMembersCollection } from "./github-collection.repository";
-
+import { githubKeys } from "@/core/react-query/query-keys";
 
 export const useGithubCollectionQuery = (filter: string) => {
   const {
@@ -8,7 +8,7 @@ export const useGithubCollectionQuery = (filter: string) => {
     isSuccess,
     refetch,
   } = useQuery({
-    queryKey: ["githubMembers", filter],
+    queryKey: githubKeys.members(filter),
     queryFn: () => getGithubMembersCollection(filter),
     enabled: filter !== "",
   });

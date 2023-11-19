@@ -554,17 +554,109 @@ export const GithubMemberPod: React.FC<Props> = (props) => {
 
 ## Mejora estructura keys
 
+Toca el momento de arreglar el hardcodeo de las "keys"... eso de ir metiendo strings mágicos por todos sitios no es buena idea ¿Los podemos meter en un fichero de constantes? Si... pero podemos hacer algo mejor... ¿ Y si creamos una jerarquía de objetos? Imaginate que ya tienes el módulo de Github y el de lista de Tareas, ¿Y si hay un cambio de BBDD grande y enviamos una señal al cliente para que invalide todo lo qu tiene en cache? Sería un rollo ir _key_ por _key_ podríamos agruparlo y decir... pues mirar todo lo que sea "github" ya no vale, o todo lo que sea "task"...
 
+Vamos a crearnos la siguiente estructura en _core_:
 
-Manual
+_./src/core/react-query/query-keys.ts_
 
-Librería
+```ts
+export const githubKeys = {
+  all: ["github"] as const,
+  members: (org: string) => [...githubKeys.all, "members", org] as const,
+  member: (id: string) => [...githubKeys.all, "member", id] as const,
+};
+```
 
-Dev tool
+Vamos a hacer refactor en las queries:
+
+_./src/pods/github-member/github-collection-query.hook.tsx_
+
+```diff
+import { useQuery } from "@tanstack/react-query";
+import { getGithubMembersCollection } from "./github-collection.repository";
++ import { githubKeys } from "@/core/react-query/query-keys";
+
+export const useGithubCollectionQuery = (filter: string) => {
+  const {
+    data: githubMembers = [],
+    isSuccess,
+    refetch,
+  } = useQuery({
+-    queryKey: ["githubMembers", filter],
++    queryKey: githubKeys.members(filter),
+    queryFn: () => getGithubMembersCollection(filter),
+    enabled: filter !== "",
+  });
+
+  return { githubMembers, isSuccess, refetch };
+};
+```
+
+Y en el pod de detalle:
+
+_./src/pods/github-member/github-member.pod.tsx_
+
+```diff
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getGithubMemberDetail } from "./github-member.repository";
+import { createDefaultMemberDetail } from "./github-member.vm";
+import { GithubMemberComponent } from "./github-member.component";
++ import { githubKeys } from "@/core/react-query/query-keys";
+
+interface Props {
+  id: string;
+}
+
+export const GithubMemberPod: React.FC<Props> = (props) => {
+  const { id } = props;
+
+  const { data: member = createDefaultMemberDetail() } = useQuery({
+-    queryKey: ["githubMember", id],
++    queryKey: githubKeys.member(id),
+    queryFn: () => getGithubMemberDetail(id),
+  });
+```
+
+Y vamos a añadir un botón para invalidar la cache en todas las consultas de github:
+
+_./src/pods/github-collection/github-collection.pod.tsx_
+
+```diff
++ import { queryClient } from "@/core/react-query";
++ import { githubKeys } from "@/core/react-query/query-keys";
+
+// (...)
+
+export const GithubCollectionPod: React.FC = () => {
+  const [filter, setFilter] = React.useState("");
+
+  const { githubMembers, isSuccess, refetch } =
+    useGithubCollectionQuery(filter);
+
+  React.useEffect(() => {
+    if (isSuccess) {
+      console.log("Aquí puedes hacer lo que quieras");
+    }
+  }, [githubMembers, isSuccess]);
+
+  return (
+    <div>
++     <button onClick={() => queryClient.invalidateQueries({ queryKey: githubKeys.all })}>Invalidar todas las consultas de github</button>
+      <button onClick={() => refetch()}>Refrescar</button>
+      <FilterComponent
+```
+
+Abrimos las dev tools y vemos como funciona:
+
+```bash
+npm run dev
+```
+
+También existe una librería que te ayuda a crear este fichero: [@lukemorales/query-key-factory](https://github.com/lukemorales/query-key-factory)
 
 ¿Listo para el siguiente paso? Edición...
-
-# Ejericicio busqueda organizacíon y key
 
 # Para saber más
 
