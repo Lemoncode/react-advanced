@@ -394,11 +394,56 @@ Vamos a cubrir algunas aristas (después avanzaremos e iremos a por más)
 +  }, [githubMembers, isSuccess]);
 ```
 
-Y si... También tengo _onError_ para gestionar errores
+> Si quiero manejar errores también tengo un _isError_
+
+Oye y ¿Si quiero que la consulta no se lance? En este caso, imaginate que el filtro empieza vacio, sólo quiero lanzarla cuando el filtro tenga datos, para ello puedo jugar on _isEnabled_
+
+```diff
+export const GithubCollectionPod: React.FC = () => {
+-  const [filter, setFilter] = React.useState("lemoncode");
++ const [filter, setFilter] = React.useState("");
+
+  const { data: githubMembers = [], isSuccess } = useQuery({
+    queryKey: ["githubMembers", filter],
+    queryFn: () => getGithubMembersCollection(filter),
++   enabled: !!filter,
+  });
+```
+
+> Esto tambíen me puede ser útil si tengo que lanzar queries dependientes (ojo que esto suele ser un mal olor, a veces es mejor que un endpoint del server te de esos datos)
+
+> También me puede servir si muestro datos y quiero entrar en modo edición (aunque aquí lo suyo es sacar a otro objeto y no tocar el original)
 
 Y si... ¿Quiero que la consulta deje de refrescarse de forma automática? Puede jugar con el _enabled_ y ponerlo a false bajo alguna condición.
 
 ¿Y al contrario? Quiero que el usuario pueda hacer un refresh manual, para eso tengo el _refetch_.
+
+```diff
+  const {
+    data: githubMembers = [],
+    isSuccess
++   refetch
+  } = useQuery({
+    queryKey: ["githubMembers", filter],
+    queryFn: () => getGithubMembersCollection(filter),
+    enabled: filter !== "",
+  });
+```
+
+Y podemos añadir un botón
+
+```diff
+return (
+  <div>
++    <button onClick={() => refetch()}>Refrescar</button>
+    <FilterComponent
+      initialValue={filter}
+      onSearch={(value) => setFilter(value)}
+    />
+    <GithubCollectionComponent githubMembers={githubMembers} />
+  </div>
+);
+```
 
 Oye y... ¿Ese string harcodeado no es peligroso? ¿Y si tengo parámetros en la búsqueda? ¿ Cómo lo cachea?
 

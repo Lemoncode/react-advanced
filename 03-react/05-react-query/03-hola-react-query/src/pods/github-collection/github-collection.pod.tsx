@@ -5,11 +5,16 @@ import { useQuery } from "@tanstack/react-query";
 import { FilterComponent } from "./components";
 
 export const GithubCollectionPod: React.FC = () => {
-  const [filter, setFilter] = React.useState("lemoncode");
+  const [filter, setFilter] = React.useState("");
 
-  const { data: githubMembers = [], isSuccess } = useQuery({
+  const {
+    data: githubMembers = [],
+    isSuccess,
+    refetch,
+  } = useQuery({
     queryKey: ["githubMembers", filter],
     queryFn: () => getGithubMembersCollection(filter),
+    enabled: filter !== "",
   });
 
   React.useEffect(() => {
@@ -20,6 +25,7 @@ export const GithubCollectionPod: React.FC = () => {
 
   return (
     <div>
+      <button onClick={() => refetch()}>Refrescar</button>
       <FilterComponent
         initialValue={filter}
         onSearch={(value) => setFilter(value)}
