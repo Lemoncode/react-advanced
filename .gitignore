@@ -13,3 +13,4 @@ yarn.lock
 .next
 .DS_Store
 06-rest-api/05-oauth/02-implemented/.env
+.vite
