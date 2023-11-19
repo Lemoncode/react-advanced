@@ -1,0 +1,46 @@
+.modal {
+  position: fixed;
+  inset: 0; /* inset sets all 4 values (top right bottom left) much like how we set padding, margin etc., */
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+  padding: 40px 20px 20px;
+  z-index: 999;
+}
+
+.modal-content {
+  width: 70%;
+  height: 70%;
+  background-color: #282c34;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+.modal-enter-done {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+.modal-exit {
+  opacity: 0;
+  transform: scale(0.4);
+}
+
+.close-btn {
+  padding: 1rem;
+  border-radius: 0.25rem;
+  border: none;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  -webkit-border-radius: 0.25rem;
+  -moz-border-radius: 0.25rem;
+  -ms-border-radius: 0.25rem;
+  -o-border-radius: 0.25rem;
+}
