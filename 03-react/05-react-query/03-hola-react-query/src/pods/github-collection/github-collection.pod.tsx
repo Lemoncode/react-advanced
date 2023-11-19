@@ -1,21 +1,13 @@
 import React from "react";
 import { getGithubMembersCollection } from "./github-collection.repository";
-import { GithubMemberVm } from "./github-collection.vm";
 import { GithubCollectionComponent } from "./github-collection.component";
+import { useQuery } from "@tanstack/react-query";
 
 export const GithubCollectionPod: React.FC = () => {
-  const [githubMembers, setGithubMembers] = React.useState<GithubMemberVm[]>(
-    []
-  );
-
-  React.useEffect(() => {
-    const loadGithubMembers = async () => {
-      const members = await getGithubMembersCollection("lemoncode");
-      setGithubMembers(members);
-    };
-
-    loadGithubMembers();
-  }, []);
+  const { data: githubMembers = [] } = useQuery({
+    queryKey: ["githubMembers", "lemoncode"],
+    queryFn: () => getGithubMembersCollection("lemoncode"),
+  });
 
   return (
     <div>
