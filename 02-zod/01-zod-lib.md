@@ -27,27 +27,27 @@ Vamos a ver tanto la opción de JSON Schema como la de ZOD en acción.
 Partamos de un ejemplo, tenemos la ficha de un paciente de un hospital:
 
 ```typescript
-  {
-    NIF: "12345678A",
-    nombre: "Juan",
-    apellidos: "Gómez Pérez",
-    edad: 45,
-    fechaNacimiento: new Date("1978-05-20"),
-    alergias: ["Polen", "Penicilina"],
-    medicacion: ["Aspirina", "Ibuprofeno"],
-    medidasPresionArterial: [
-      {
-        fechaHora: new Date("2023-01-15T08:30:00"),
-        sistolica: 120,
-        diastolica: 80,
-      },
-      {
-        fechaHora: new Date("2022-09-10T14:15:00"),
-        sistolica: 130,
-        diastolica: 85,
-      },
-    ],
-  },
+const paciente = {
+  nif: "12345678A",
+  nombre: "Juan",
+  apellidos: "Gómez Pérez",
+  edad: 45,
+  fechaNacimiento: new Date("1978-05-20"),
+  alergias: ["Polen", "Penicilina"],
+  medicacion: ["Aspirina", "Ibuprofeno"],
+  medidasPresionArterial: [
+    {
+      fechaHora: new Date("2023-01-15T08:30:00"),
+      sistolica: 120,
+      diastolica: 80,
+    },
+    {
+      fechaHora: new Date("2022-09-10T14:15:00"),
+      sistolica: 130,
+      diastolica: 85,
+    },
+  ],
+};
 ```
 
 Tenemos la siguientes restricciones:
@@ -72,7 +72,7 @@ Esto lo podemos definir con un JSON Schema, sería algo así como:
     "ID": {
       "type": "integer"
     },
-    "NIF": {
+    "nif": {
       "type": "string",
       "pattern": "^[0-9]{8}[A-Z]$"
     },
@@ -130,7 +130,7 @@ Esto lo podemos definir con un JSON Schema, sería algo así como:
     }
   },
   "required": [
-    "NIF",
+    "nif",
     "nombre",
     "edad",
     "fechaNacimiento",
@@ -149,7 +149,7 @@ interface MedidaPresionArterial {
 }
 
 interface Paciente {
-  NIF: string;
+  nif: string;
   nombre: string;
   edad: number;
   fechaNacimiento: string;
@@ -187,6 +187,8 @@ Un ejemplo de un paciente sería:
 Hasta aquí todo de color de rosa, tenemos ya un JSON Server para simular una API Rest y vamos a traernos datos,
 
 ```ts
+const API_URL = "http://localhost:3000";
+
 const getPaciente = async (id: number): Promise<Paciente> => {
   const response = await fetch(`${API_URL}/pacientes/${id}`);
   const paciente = await response.json();
@@ -197,11 +199,15 @@ const getPaciente = async (id: number): Promise<Paciente> => {
 E imaginate que nos hace falta extraer el número del NIF y la letra, como hemos acordado con Backend que siempre va a venir en el formato 8 números y una letra, pues lo hacemos así:
 
 ```ts
-const paciente = await getPaciente(1);
-const nif = paciente.NIF;
-const numero = nif.substring(0, 8);
-const letra = nif.substring(8, 9);
-console.log(numero, letra);
+const loadPacienteUno = async () => {
+  const paciente = await getPaciente(1);
+  const nif = paciente.nif;
+  const numero = nif.substring(0, 8);
+  const letra = nif.substring(8, 9);
+  console.log(numero, letra);
+};
+
+loadPacienteUno();
 ```
 
 Peeero... resulta que se hizo una importación de datos de un sistema de terceros y digamos que a alguien se le olvidó ese pequeño de datos y los datos vienen tal que así:
@@ -227,11 +233,34 @@ Podemos instalar la librería _ajv_ (Another JSON Schema Validator) y hacer algo
 npm install ajv
 ```
 
-```ts
-import Ajv from "ajv";
+```diff
++ import Ajv from "ajv";
++ import schema from "./schema.json";
++
++ const ajv = new Ajv();
++ const validate = ajv.compile(schema);
 
-const ajv = new Ajv();
-const validate = ajv.compile(schema);
+// (...)
+
+const loadPacienteUno = async () => {
+  const paciente = await getPaciente(1);
+
++  const valid = validate(paciente);
++  if (!valid) {
++    console.log(validate.errors);
++    // Aquí podemos:
++    //  - Si estamos en desarrollo sacar un aviso por consola, y por ejemplo loggearlo o mostrar un aviso.
++    //  - Si estamos en producción, ver como gestionar el problema (degradación, mostrar un mensaje de error, ...) y enviarlo a un sistema de log.
++  } else {
++   console.log("Paciente Ok");
++ }
+
+  const nif = paciente.nif;
+  const numero = nif.substring(0, 8);
+  const letra = nif.substring(8, 9);
+  console.log(numero, letra);
+};
+
 const valid = validate(paciente);
 if (!valid) {
   console.log(validate.errors);
@@ -241,7 +270,38 @@ if (!valid) {
 }
 ```
 
-¿Qué hecho de menos aquí? Por un lado tener que aprender a validar con JSON Schema (hay tooling, aunque no es tan natural como ZOD), por otro lado tener que definir el modelado (aunque existe tooling para generar lel modelo a partir del JSON Schema)
+ESTO NOS DA UN PETE: para que a esta librería no le gusta el format _date-time_ para ese string.
+
+lo quitamos (schema.json)
+
+```diff
+    "fechaNacimiento": {
+      "type": "string",
+-      "format": "date-time"
+    },
+```
+
+y
+
+```diff
+        "properties": {
+          "fechaHora": {
+            "type": "string",
+-            "format": "date-time"
+          },
+```
+
+Vamos a cambiar el nif de paciente 1 (añadimos un guion).
+
+¿Qué hecho de menos aquí?
+
+- Me tengo que aprender JSON Schema...
+- No tengo strong typing, si me equivoco ahí lo llevas...
+- Escribir JSON es un ... comillas, no puedes comentar...
+- Es muy fácil cometer un fallo tonto (aunque hay tooling que te convierte de TS a Schema pero paso adicional de build)
+- Mira como está el campo nif y abajo los required.
+
+¿No estaría mejor definir todo eso en TypeScript y que se generara el módelo de forma automático?
 
 ## ZOD
 
@@ -253,27 +313,67 @@ npm install zod
 
 Y ahora vamos a definir el modelo:
 
+_./src/paciente-zod.ts_
+
 ```ts
 import { z } from "zod";
 
-const MedidaPresionArterial = z.object({
-  fechaHora: z.date(),
+export const MedidaPresionArterialSchema = z.object({
+  fechaHora: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/),
   sistolica: z.number().min(0).max(200),
   diastolica: z.number().min(0).max(200),
 });
 
-const Paciente = z.object({
-  NIF: z.string().regex(/^[0-9]{8}[A-Z]$/),
+export const PacienteSchema = z.object({
+  nif: z.string().regex(/^[0-9]{8}[A-Z]$/),
   nombre: z.string().min(1),
   edad: z.number().int().min(0).max(150),
-  fechaNacimiento: z.date(),
+  fechaNacimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/),
   alergias: z.array(z.string()).nullable(),
   medicacion: z.array(z.string()).nullable(),
-  medidasPresionArterial: z.array(MedidaPresionArterial),
+  medidasPresionArterial: z.array(MedidaPresionArterialSchema),
 });
 ```
 
 Y ahora podemos validar:
+
+_./main.ts_
+
+```diff
+- import Ajv from "ajv";
+- import schema from "./schema.json";
++ import { PacienteSchema } from "./paciente-zod";
+
+- const ajv = new Ajv();
+- const validate = ajv.compile(schema);
+```
+
+```diff
+const loadPacienteUno = async () => {
+  const paciente = await getPaciente(1);
+
+-  const valid = validate(paciente);
+-  if (!valid) {
+-    console.log(validate.errors);
+-    // Aquí podemos:
+-    //  - Si estamos en desarrollo sacar un aviso por consola, y por ejemplo loggearlo o mostrar un aviso.
+-    //  - Si estamos en producción, ver como gestionar el problema (degradación, mostrar un mensaje de error, ...) y enviarlo a un sistema de log.
+-  } else {
+-    console.log("Paciente Ok");
+-  }
+
++ try {
++  PacienteSchema.parse(paciente);
++ } catch (error) {
++  console.log(error);
++ }
+
+  const nif = paciente.nif;
+  const numero = nif.substring(0, 8);
+  const letra = nif.substring(8, 9);
+  console.log(numero, letra);
+};
+```
 
 ```ts
 const paciente = await getPaciente(1);
@@ -290,23 +390,57 @@ try {
 
 Si no queremos que suelte una excepción, podemos usar el método _safeParse_:
 
-```ts
-const paciente = await getPaciente(1);
+```diff
+const loadPacienteUno = async () => {
+  const paciente = await getPaciente(1);
 
-const result = Paciente.safeParse(paciente);
-if (!result.success) {
-  console.log(result.error);
-  // Aquí podemos:
-  //  - Si estamos en desarrollo sacar un aviso por consola, y por ejemplo loggearlo o mostrar un aviso.
-  //  - Si estamos en producción, ver como gestionar el problema (degradación, mostrar un mensaje de error, ...) y enviarlo a un sistema de log.
-}
+-  try {
+-    PacienteSchema.parse(paciente);
+-  } catch (error) {
+-    console.log(error);
+-  }
+
++ const result = PacienteSchema.safeParse(paciente);
++ if (!result.success) {
++  console.log(result.error);
++ }
 ```
 
 Ahora vienen varios temas interesantes de ZOD, puede inferir sacar los interfaces de TypeScript a partir de un esquema de ZOD:
 
-```ts
-type MedidaPresionArterial = z.infer<typeof MedidaPresionArterial>;
-type Paciente = z.infer<typeof Paciente>;
+_./model.ts_
+
+```diff
++ import { z } from "zod";
++ import { PacienteSchema, MedidaPresionArterialSchema } from "./paciente-zod";
+
++ export type MedidaPresionArterial = z.infer<typeof MedidaPresionArterialSchema>;
++ export type Paciente = z.infer<typeof PacienteSchema>;
+
+- interface MedidaPresionArterial {
+-  fechaHora: string;
+-  sistolica: number;
+-  diastolica: number;
+- }
+-
+- interface Paciente {
+-  nif: string;
+-  nombre: string;
+-  edad: number;
+-  fechaNacimiento: string;
+-  alergias: string[] | null;
+-  medicacion: string[] | null;
+-  medidasPresionArterial: MedidaPresionArterial[];
+- }
+```
+
+Y puedo usarlo como un modelo:
+
+_./main.ts_
+
+```diff
+import { PacienteSchema } from "./paciente-zod";
++ import { Paciente } from "./model";
 ```
 
 Esto no esta mal, ¿Pero y al contrario? ¿Podemos generar un esquema de ZOD a partir de un interface de TypeScript? Hay varias librerías para ello:
@@ -317,16 +451,54 @@ Esto no esta mal, ¿Pero y al contrario? ¿Podemos generar un esquema de ZOD a p
 
 una es _@runtpying/zod_
 
+creamos una carpeta vacia (nuevo proyecto)
+
+```bash
+mkdir prueba-runtyping
+```
+
 vamos a crear un proyecto nuevo:
 
 ```bash
-npm init
+npm init -y
 ```
+
+Instalamos zod y runtyping:
+
+```bash
+npm install zod
+npm install -D @runtyping/zod
+```
+
 
 Añadimos un tsconfig estandar
 
-```json
+_./tsconfig.json_
 
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src"]
+}
 ```
 
 Creamos desde la carpeta model un fichero _paciente.ts_ con el siguiente contenido:
@@ -353,12 +525,12 @@ interface Paciente {
 
 Añadimos un fichero _yml_ para generar el esquema de ZOD:
 
-_./runtpying.yml_
+_./runtyping.yml_
 
 ```yml
-targetFile: ./model/paciente.zod.ts # The file to create
+targetFile: ./src/model/paciente.zod.ts # The file to create
 sourceTypes:
-  file: ./model/paciente.model.ts # The file where your type lives
+  file: ./src/model/paciente.model.ts # The file where your type lives
   type: Paciente
 ```
 
@@ -368,6 +540,53 @@ Y ejecutamos el comando para generar el esquema:
 npx runtyping
 ```
 
-Esta solución también te permite pasar una lisa de ficheros.
+Esta solución también te permite pasar una lista de ficheros.
 
 https://github.com/johngeorgewright/runtyping/blob/master/packages/zod/README.md
+
+
+# Prompt e IA
+
+Otra forma muy cómoda es tirar de _chatGPT_ y después revisar.
+
+## Opción 1
+
+La más básica
+
+¿Me puedes generar el schema ZOD de estos interfaces?
+
+```ts
+interface MedidaPresionArterial {
+  fechaHora: string;
+  sistolica: number;
+  diastolica: number;
+}
+
+interface Paciente {
+  nif: string;
+  nombre: string;
+  edad: number;
+  fechaNacimiento: string;
+  alergias: string[] | null;
+  medicacion: string[] | null;
+  medidasPresionArterial: MedidaPresionArterial[];
+}
+```
+
+## Refinando
+
+Le indicamos en el siguiente punto de la charla...
+
+```
+Muchas gracias, además necesito:
+
+- Que el campo _nif_ sea de 8 digitos y una letra en mayuscula.
+- Que el de presión sistólica esté entre 60 y 200.
+- Que el de presión diasoticla esté entre 60 y 150.
+```
+
+Si no nos gusta la solución con Refine, podemos decirle
+
+```
+Para el campo nif, en vez de refine ¿Podrías encadenar directamente la RegEx?
+```
