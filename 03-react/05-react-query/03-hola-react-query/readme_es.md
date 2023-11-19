@@ -496,7 +496,6 @@ export const GithubCollectionPod: React.FC = () => {
 -  });
 + const { githubMembers, isSuccess, refetch } = useGithubCollectionQuery(filter);
 
-
   React.useEffect(() => {
 
 ```
@@ -516,10 +515,46 @@ Pistas:
   - Primer parámetro, podemos usar "githubMember" (ya aprenderemos como eliminar estos harcodeos).
   - Segundo parámetro, el id del usuario que nos viene por parámetro.
 - Eliminamos en _useEffect_
+- Nos podemos plantear crear un custom hook para encapsular la lógica de la query.
 
-## Diferencia
+** Solución **
+
+_./src/pods/github-member/github-member.pod.tsx_
+
+```diff
+import React from "react";
++ import { useQuery } from "@tanstack/react-query";
+import { getGithubMemberDetail } from "./github-member.repository";
+- import { createDefaultMemberDetail } from "./github-member.vm";
+import { GithubMemberComponent } from "./github-member.component";
+
+interface Props {
+  id: string;
+}
+
+export const GithubMemberPod: React.FC<Props> = (props) => {
+  const { id } = props;
+-  const [member, setMember] = React.useState(createDefaultMemberDetail());
+
+-  React.useEffect(() => {
+-    const loadGithubMember = async () => {
+-      const member = await getGithubMemberDetail(id);
+-      setMember(member);
+-    };
+-    loadGithubMember();
+-  }, []);
+
++   const {
++    data: member = createDefaultMemberDetail(),
++  } = useQuery({
++    queryKey: ["githubMember", id],
++    queryFn: () => getGithubMemberDetail(id),
++  });
+```
 
 ## Mejora estructura keys
+
+
 
 Manual
 
