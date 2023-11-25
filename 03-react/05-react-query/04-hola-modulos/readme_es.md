@@ -16,28 +16,7 @@ npm install
 
 ## Estructura
 
-Vamos a crear una carpeta que llamaremos _modules_.
-
-Creamos una subcarpeta que llamaremos _teams_
-
-```bash
-cd src
-mkdir modules
-cd modules
-mkdir teams
-```
-
-Dentro de teams arrastramos los pods de _team_ y _team-collection_ y las escenas.
-
-Tenemos una página que es común tanto a todo como a team, la vamos a separar en el módulo de home.
-
-Creamos carpeta:
-
-```bash
-cd src
-cd modules
-mkdir home
-```
+Nuestro objetivo es tener una estructura como esta:
 
 ```
 modules
@@ -55,81 +34,15 @@ modules
   ├── pods
 ```
 
-Copiamos la escena de dashboard.
+La idea es que:
 
-Vamos a crear un conjunto de rutas por cada módulo:
+- El módulo principal cargue todas las dependencias.
+- El de _home_ va a ser cajón desastre, va a tirar de rutas de otros módulos, incluso de pods (esto se podría resolver de otras maneras).
+- Los de _teams_ y _tasks_ van a ser estancos (debería de ser lo normal).
 
-## Modulo Team
+Vamos a definir nuevos alias:
 
-_./src/modules/teams/core/routing/router.const.ts_
-
-```ts
-export const ROUTES = {
-  GITHUB_MEMBER_COLLECTION: "/github-members",
-  GITHUB_MEMBER: "/github-member/:id",
-};
-```
-
-_./src/modules/teams/core/routing/router.router.ts_
-
-```ts
-import React from "react";
-import { Route, Routes } from "react-router-dom";
-import { ROUTES } from "./routes.const";
-
-import {
-  GithubMemberCollectionScene,
-  GithubMemberScene,
-} from "@/modules/teams/scenes";
-
-export const Router: React.FC = () => {
-  return (
-    <Router>
-      <Routes>
-        <Route
-          path={ROUTES.GITHUB_MEMBER_COLLECTION}
-          element={<GithubMemberCollectionScene />}
-        />
-        <Route path={ROUTES.GITHUB_MEMBER} element={<GithubMemberScene />} />
-      </Routes>
-    </Router>
-  );
-};
-```
-
-_./src/modules/teams/core/routing/index.ts_
-
-```ts
-export * from "./router.const";
-export * from "./router.router";
-```
-
-Y creamos el punto de entrada:
-
-_./src/modules/teams/index.ts_
-
-```ts
-export * from "./core/routing";
-```
-
-Si te fijas tenemos un problema, este import, no queda muy bien:
-
-```ts
-import {
-  GithubMemberCollectionScene,
-  GithubMemberScene,
-} from "@/modules/teams/scenes";
-```
-
-Si lo tuviéramos en un proyecto separado podríamos hacer que ese _@_ estuviera justo apuntado a las carpetas adecuadas, como estamos dentro, tenemos varias opciones:
-
-- Dejarlo como está.
-- Usar otro comodín para cada submódulo, por ejemplo _#_, esto sería un rollo en este caso (cada proyecto con su alias)... como curiosidad esta solución se usa en Turbo Repo en proyectos de tipo librería (ver manfredExport).
-- Usar un alias más verboso como por ejemplo _@teams_.
-
-Vamos a tirar por la tercera vía:
-
-_./vite.config.ts_
+_./vite.config.js_
 
 ```diff
 export default defineConfig({
@@ -138,71 +51,81 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
-+   "@home": fileURLToPath(new URL("./src/modules/home", import.meta.url)),
-+    "@teams": fileURLToPath(new URL("./src/modules/teams", import.meta.url)),
-+   "@tasks": fileURLToPath(new URL("./src/modules/tasks", import.meta.url)),
++      "@home": fileURLToPath(new URL("./src/modules/home", import.meta.url)),
++      "@teams": fileURLToPath(new URL("./src/modules/teams", import.meta.url)),
++      "@tasks": fileURLToPath(new URL("./src/modules/tasks", import.meta.url)),
     },
   },
   css: {
+    modules: {
+      localsConvention: "camelCaseOnly",
+    },
+  },
+});
 ```
 
-Le indicamos a TypeScript que se coma ese alias:
-
-_./typing.d.ts_
-
-```ts
-declare module "@home/*";
-declare module "@teams/*";
-declare module "@tasks/*";
-```
-
-Refactorizamos:
-
-_./src/modules/teams/core/routing/router.router.ts_
+_./tsconfig.json_
 
 ```diff
-import React from "react";
-import { HashRouter, Route, Routes } from "react-router-dom";
-import { ROUTES } from "./routes.const";
+    "baseUrl": "src",
+    "paths": {
+      "@/*": ["*"],
++      "@home/*": ["./modules/home/*"],
++      "@teams/*": ["./modules/teams/*"],
++      "@tasks/*": ["./modules/tasks/*"]
++    },
+```
 
+Arrancamos por migrar la carpeta de _teams_:
+
+Vamos a crearnos un listado de rutas:
+
+_./src/modules/teams/core/routing/teams-routes.const_
+
+```ts
+const baseTeamsModuleRoutes = "/teams";
+
+const genPath = (path: string) => `${baseTeamsModuleRoutes}${path}`;
+
+export const MODULE_TEAMS_ROUTES = {
+  GITHUB_MEMBER_COLLECTION: genPath("/github-members"),
+  GITHUB_MEMBER: genPath("/github-member/:id"),
+};
+```
+
+## Teams
+
+Vamos a exponer las rutas de una manera que la pueda consumir el módulo principal:
+
+_./src/modules/teams/core/routing/teams.router.ts_
+
+```ts
+import { MODULE_TEAMS_ROUTES } from "./teams-routes.const";
+
+// TODO: esto va a fallar porque no tenemos las escenas migradas
 import {
   GithubMemberCollectionScene,
   GithubMemberScene,
-- } from "@/modules/teams/scenes";
-+ } from "@teams/scenes";
+} from "@/modules/teams/scenes";
 
-export const Router: React.FC = () => {
+export const moduleTeamsRoutes = [
+  {
+    path: MODULE_TEAMS_ROUTES.GITHUB_MEMBER_COLLECTION,
+    element: <GithubMemberCollectionScene />,
+  },
+  { path: MODULE_TEAMS_ROUTES.GITHUB_MEMBER, element: <GithubMemberScene /> },
+];
 ```
 
-Y vamos a refactorizar los imports de las escena:
+Bajamos tambíen la parte de React Query...
 
-_./src/modules/teams/scenes/github-member-collection.scene.tsx_
+### Pod github collection
 
-```diff
-import React from "react";
-import { Link, useParams } from "react-router-dom";
-- import { ROUTES } from "@/core/routing";
-+ import { ROUTES } from "@teams/core/routing";
-- import { GithubMemberPod } from "@/pods";
-+ import { GithubCollectionPod } from "@teams/pods";
-```
+Vamos ahora a copiar los pods (tendremos que hacer cambios).
 
-_./src/modules/teams/scenes/github-member-scene.tsx_
+Creamos carpeta de _pods_ debajo del modulo y copiamos los pods de teams, vamos a modificarlos.
 
-```diff
-import React from "react";
-import { Link, useParams } from "react-router-dom";
-- import { ROUTES } from "@/core/routing";
-+ import { ROUTES } from "@teams/core/routing";
-- import { GithubMemberPod } from "@/pods";
-+ import { GithubMemberPod } from "@teams/pods";
-
-export const GithubMemberScene: React.FC = () => {
-```
-
-Y el componente:
-
-_./src/modules/teams/pods/github-collectionc.component.tsx_
+_./src/modules/teams/pods/github-collection.component.tsx_
 
 ```diff
 import React from "react";
@@ -210,33 +133,193 @@ import { GithubMemberVm } from "./github-collection.vm";
 import classNames from "classnames";
 import { Link, generatePath } from "react-router-dom";
 - import { ROUTES } from "@/core/routing";
-+ import { ROUTES } from '@teams/core/routing';
++ import { MODULE_TEAMS_ROUTES } from "@teams/core/routing";
 import classes from "./github-collection.component.module.css";
+
+interface Props {
+  githubMembers: GithubMemberVm[];
+}
+
+export const GithubCollectionComponent: React.FC<Props> = (props) => {
+  const { githubMembers } = props;
+
+  return (
+    <div className={classNames(classes.container, classes.someAdditionalClass)}>
+      <span className={classes.header}>Avatar</span>
+      <span className={classes.header}>Id</span>
+      <span className={classes.header}>Name</span>
+      {githubMembers.map((member) => (
+        <React.Fragment key={member.id}>
+          <img src={member.avatarUrl} />
+          <span>{member.id}</span>
+          <Link
+-          to={generatePath(ROUTES.GITHUB_MEMBER, { id: member.name })}>
++         to={generatePath(MODULE_TEAMS_ROUTES.GITHUB_MEMBER, {
++              id: member.name,
++            })}
+          >
+            {member.name}
+          </Link>
+        </React.Fragment>
+      ))}
+    </div>
+  );
+};
 ```
 
-> Si un día quisieramos refactorizar a proyecto separado sería relativamente fácil cambiar el alias.
+> Fíjate que aquí el principal escollo es el enrutado, nos podríamos plantear implementar un wrapper global de rutas, o del componente Link.
 
-# Home
+### Scenes
 
-Vamos a por el módulo de home.
+Copiamos las escenas de teams.
 
-Esté módulo es "el perro verde" ya que comparte rutas con y escenas con otros módulos, aquí podemos seguir varias aproximaciones (no hay bala de plata)
+### github-member-collection.scene.tsx
 
-1. Evitar esto, si realmente tienes módulos separados, tienes módulos separados, y en este ruta común si usas componentes de otros módulos, ¿Porqué nos los promocionas a una librería común?
+Vamos a quitar código de prueba que se había quedado
 
-2. Llevarte a común ciertas rutas y pods.
+_./src/modules/teams/scenes/github-member-collection.scene.tsx_
 
-3. Aceptar que el mundo es así, y que vas a tener un "modulo de guarrería"... y que sea lo más pequeño posible, si empieza a creer ¿Realmente sabes cortar en módulos separados? ¿No te hará falta otra aproximación?
+```diff
+import React from "react";
+import { Link, generatePath } from "react-router-dom";
+- import { ROUTES } from "@/core/routing";
+import { GithubCollectionPod } from "@/pods";
 
-Retocamos la escena
+export const GithubMemberCollectionScene: React.FC = () => {
+
+  return (
+    <div>
+      <h1>Github Member Collection</h1>
+      <GithubCollectionPod />
+-      <Link to={generatePath(ROUTES.GITHUB_MEMBER, { id: "23" })}>
+-        Go to member
+-      </Link>
+
+        Go to member
+      </Link>
+    </div>
+  );
+};
+```
+
+_./src/modules/teams/scenes/github-member.scene.tsx_
+
+```diff
+import React from "react";
+import { Link, useParams } from "react-router-dom";
+- import { ROUTES } from "@/core/routing";
++ import { MODULE_TEAMS_ROUTES } from "@teams/core/routing";
+import { GithubMemberPod } from "@/pods";
+
+export const GithubMemberScene: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+
+  return (
+    <div>
+      <GithubMemberPod id={id ?? ""} />
+-      <Link to={ROUTES.GITHUB_MEMBER_COLLECTION}>
++       <Link to={MODULE_TEAMS_ROUTES.GITHUB_MEMBER_COLLECTION}>
+        Back to member collection
+      </Link>
+    </div>
+  );
+};
+```
+
+### Conectando...
+
+Vamos a crear unos barrels cada módulo para que el módulo principal pueda tirar de ellos.
+
+_./src/modules/teams/index.ts_
+
+```ts
+export * from "./core/routing";
+
+// Esta guarrería hay que hacerla para el módulo de dashboard
+export * from "./pods/github-collection.component";
+```
+
+### Ract Query
+
+Vamos a mover nuestro React Query a la carpeta de core en Teams.
+
+### RootProvider
+
+Vamos a crear un rootProvider que instanciaremos como layout en el router principal.
+
+_./src/modules/teams/root-provider/index.tsx_
+
+```ts
+import React from "react";
+import { queryClient } from "@teams/core/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
+
+interface Props {
+  children: React.ReactNode;
+}
+
+export const ModuleTeamRootProviders: React.FC<Props> = (props) => {
+  const { children } = props;
+  return (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+};
+```
+
+## Home
+
+El módulo de home va a ser más sucio porque va a tirar de rutas y pods de otros módulos, aquí podemos plantear:
+
+- Que esto va a ocurrir en contadas ocasiones y vivir con esta dependencia.
+- Sacar un módulo común.
+- Pensar si realmente estamos haciendo un corte modular correcto.
+
+Creamos la carpeta de _home_ debajo de modules.
+
+### Core
+
+Vamos a crear las constantes de rutas:
+
+_./src/modules/home/core/routing/home-routes.const.ts_
+
+```ts
+const baseHomeModuleRoutes = "";
+
+const genPath = (path: string) => `${baseHomeModuleRoutes}${path}`;
+
+export const MODULE_HOME_ROUTES = {
+  DASHBOARD: genPath("/"),
+};
+```
+
+_./src/modules/home/core/routing/home.router.tsx_
+
+```ts
+import { MODULE_HOME_ROUTES } from "./home-routes.const";
+
+import { DashboardScene } from "@home/scenes";
+
+export const moduleHomeRoutes = [
+  {
+    path: MODULE_HOME_ROUTES.DASHBOARD,
+    element: <DashboardScene />,
+  },
+];
+```
+
+### Scenes
+
+Es hora de actualizar la escena de dashboard:
+
+_./src/modules/home/scenes/dashboard.scene.tsx_
 
 ```diff
 import React from "react";
 import { Link } from "react-router-dom";
 - import { ROUTES } from "@/core/routing";
-+ import { ROUTES as TEAM_ROUTES } from "@teams/core/routing";
 - import { GithubCollectionPod } from "@/pods";
-+ import { GithubCollectionPod } from "@teams/pods";
++ import { MODULE_TEAMS_ROUTES } from "@teams/";
++ import { GithubCollectionPod } from "@teams/";
 import classes from "./dashboard.scene.module.css";
 
 export const DashboardScene: React.FC = () => {
@@ -250,55 +333,17 @@ export const DashboardScene: React.FC = () => {
         </div>
       </div>
 -      <Link to={ROUTES.GITHUB_MEMBER_COLLECTION}>Go to member collection</Link>
-+     <Link to={teamsRoutes.GITHUB_MEMBER_COLLECTION}>Go to member collection</Link>
++      <Link to={MODULE_TEAMS_ROUTES.GITHUB_MEMBER_COLLECTION}>
++        Go to member collection
++      </Link>
     </div>
   );
 };
-
 ```
 
-Vamos a por los pods y escenas de dashboard.
+### Conectando...
 
-_./src/modules/home/core/routing/router.const.ts_
-
-```ts
-export const ROUTES = {
-  DASHBOARD: "/",
-};
-```
-
-Y ahora el _router_
-
-_./src/modules/home/core/routing/router.tsx_
-
-```ts
-import React from "react";
-import { Route, Routes } from "react-router-dom";
-import { ROUTES } from "./routes.const";
-import { DashboardScene } from "@home/scenes";
-
-export const Router: React.FC = () => {
-  return (
-    <Routes>
-      <Route
-        path={ROUTES.DASHBOARD}
-        element={<GithubMemberCollectionScene />}
-      />
-    </Routes>
-  );
-};
-```
-
-Creamos un barrel:
-
-_./src/modules/home/core/routing/index.ts_
-
-```ts
-export * from "./router";
-export * from "./routes.const.ts";
-```
-
-Y añadimos el barrel en el módulo:
+Vamos a crear unos barrel para para el módulo de home:
 
 _./src/modules/home/index.ts_
 
@@ -306,63 +351,75 @@ _./src/modules/home/index.ts_
 export * from "./core/routing";
 ```
 
-## Shell
+## App principal
 
-Vamos ahora a juntar todo esto en la aplicación principal.
+Vamos ahora a configurar la aplicación principal:
 
-Primero las rutas.
+** App
 
-Cambiamos el de constantes
+** Router y root provider y ñapa
 
-_./src/core/routing/router.const.ts_
+Y lo levantamos
 
-```ts
-export const MODULES = {
-  HOME_MODULE: "",
-  TEAMS_MODULE: "/teams",
-  TASKS_MODULE: "/tasks",
-};
+# Que le queda a esto
+
+Idealmente podríamos dividir esto entre varios proyectos (librería externa o interna), pero seguimos teniendo un gran problema:
+
+- Estamos acoplados a una versión de React concreta.
+- Estamos acoplados a una versión de React Router concreta.
+
+Lo idea sería que: cada módulo pudiera estar escrito con la tecnología que quisiéramos.
+
+Esto nos permite poder ir actualizando módulos de manera independiente, y no atar una aplicación a una tecnología y versión.
+
+Aquí nos meteríamos en un buen jardin:
+
+- Por un lado manejo de rutas:
+
+  - Podemos optar por que cada aplicación maneje su subconjunto de rutas (esto asumiendo que cada router va a respetar al otro).
+
+  - Podemos optar por utilizar una router orientado a Micro Front Ends como [Single SPA](https://github.com/single-spa/single-spa)
+
+- Por otro manejo de estado común y otros eventos:
+
+  - Aquí podemos implementar un shell en javascript plano.
+
+  - Podemos construir adaptadores para cada lenguaje.
+
+- Evitar conflictos de estilado:
+
+  - Está la opción clásica de meterlo todo en iframes :).
+
+  - No podemos utilizar estilos globales, o acordar para todos los MFE un reset CSS concreto.
+
+  - Se podrían optar por wrapear en webcomponents, aún así diversión con los CSS :)).
+
+  - Ojo con las librerías de componentes que a veces traen sorpresas.
+
+- Una que se te puede liar buena es versionado:
+
+  - Se supone que cada MFE va encapsulado, pero me he encontrado (2019) con una versión de React que rompía :-@
+  - Ojo a las librerías que uses.
+
+- Otro tema importante es cargar los módulos cuando se vayan a usar:
+  - Aquí hay aproximaciones como Webpack Module Federation, pero ya te estás "casando" con Webpack.
+
+Cómo recomendación:
+
+- No os metáis en Micro Front ends si no os hace falta.
+- Es algo complejo.
+- Piensa si no se podría resolver con una librería.
+- En una aplicación que no tengan que compartir datos entre módulos (sólo el token de seguridad), crear aplicaciones totalmente separadas (con librerías comunes).
+- Si tienes una aplicación que va a ser enorme y van a compartir datos entre módulos... es necesario que te vayas a este enfoque de Micro Frotn Ends... enhorabuena te vas a comer un marró considerable.
+
+Por otro lado hay muchas formas de enfocar MicroFrontEnds:
+
+- El que más me gusta es el de trocear un monolito en módulos, este me parece muy práctico, ya que te permite ir migrando submodulos de forma gradual.
+
+- Otro es el de sustituir páginas con componentes ricos (como estáis haciendo en Caché).
+
+- Otro que he visto es crear Microfront ends independientes que se combinan y uno puede tirar de otro (un señor lio)
+
 ```
 
-Y vamos a actualizar las rutas:
-
-_./src/core/routing/router.ts_
-
-```diff
-import React from "react";
-import { HashRouter, Route, Routes } from "react-router-dom";
-- import { ROUTES } from "./routes.const";
-+ import { MODULES } from "./routes.const";
-+ import { HomeRouter } from "@home/";
-+ import { TeamsRouter } from "@teams/";
-
-import { GithubMemberCollectionScene, GithubMemberScene } from "@teams/scenes";
-
-export const Router: React.FC = () => {
-  return (
-    <HashRouter>
-      <Routes>
--        <Route
--          path={ROUTES.GITHUB_MEMBER_COLLECTION}
--          element={<GithubMemberCollectionScene />}
--        />
--        <Route path={ROUTES.GITHUB_MEMBER} element={<GithubMemberScene />} />
-+        <Route
-+          path={`${MODULES.HOME_MODULE}/*`}
-+          element={<HomeRouter />}
-+        />
-+        <Route
-+          path={`${MODULES.TEAMS_MODULE}/*`}
-+          element={<TeamsRouter />}
-+        />
-      </Routes>
-    </HashRouter>
-  );
-};
-```
-
-Vamos a ver que tal funciona la aplicación.
-
-```bash
-npm run dev
 ```

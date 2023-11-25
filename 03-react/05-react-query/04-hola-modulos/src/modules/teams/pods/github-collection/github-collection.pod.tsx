@@ -2,8 +2,8 @@ import React from "react";
 import { GithubCollectionComponent } from "./github-collection.component";
 import { FilterComponent } from "./components";
 import { useGithubCollectionQuery } from "./github-collection-query.hook";
-import { queryClient } from "@/core/react-query";
-import { githubKeys } from "@/core/react-query/query-keys";
+import { queryClient } from "@/modules/teams/core/react-query";
+import { githubKeys } from "@/modules/teams/core/react-query/query-keys";
 
 export const GithubCollectionPod: React.FC = () => {
   const [filter, setFilter] = React.useState("");

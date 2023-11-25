@@ -7,7 +7,10 @@
     "skipLibCheck": true,
     "baseUrl": "src",
     "paths": {
-      "@/*": ["*"]
+      "@/*": ["*"],
+      "@home/*": ["./modules/home/*"],
+      "@teams/*": ["./modules/teams/*"],
+      "@tasks/*": ["./modules/tasks/*"]
     },
 
     /* Bundler mode */
