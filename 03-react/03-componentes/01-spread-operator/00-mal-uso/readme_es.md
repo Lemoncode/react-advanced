@@ -2,13 +2,13 @@
 
 ## Resumen
 
-Hay ocasiones en las que se utiliza el operador de propagación en las *props* de un componente. Esto puede ser peligroso, ya que se nos pueden colar *props* que no esperábamos y provocarnos problemas.
+Hay ocasiones en las que se utiliza el operador de propagación en las _props_ de un componente. Esto puede ser peligroso, ya que se nos pueden colar _props_ que no esperábamos y provocarnos problemas.
 
 Veamos un ejemplo.
 
 ## Paso a Paso
 
-- Primero copiamos el *00-boiler-plate* , y hacemos un _npm install_
+- Primero copiamos el _00-boiler-plate_ , y hacemos un _npm install_
 
 ```bash
 npm install
@@ -100,7 +100,7 @@ export const App = () => {
 };
 ```
 
-- Vamos a suponer que el componente _name-component_ tiene que estar optimizado para evitar *rerenders*, vamos a *wrappearlo* con React.memo.
+- Vamos a suponer que el componente _name-component_ tiene que estar optimizado para evitar _rerenders_, vamos a _wrappearlo_ con React.memo.
 
 _./src/demo/name-component.component.tsx_
 
@@ -121,7 +121,7 @@ _./src/demo/name-component.component.tsx_
 + );
 ```
 
-- Si te fijas el componente _my-form_ y _name-edit_ reciben las mismas *props*, ¿Podríamos pasárselas directamente?
+- Si te fijas el componente _my-form_ y _name-edit_ reciben las mismas _props_, ¿Podríamos pasárselas directamente?
 
 Si intentamos algo así no funciona ¿Me decís por qué?
 
@@ -147,7 +147,7 @@ export const MyForm = (props: Props) => {
 };
 ```
 
-Pero si podemos aplanar las *props*:
+Pero si podemos aplanar las _props_:
 
 _./src/demo/my-form.component.tsx_
 
@@ -158,7 +158,7 @@ _./src/demo/my-form.component.tsx_
     </div>
 ```
 
-Si ejecutamos todo parece que funciona a la perfección, peeerooo.... y si pasa el tiempo y otro desarrollador mete una nueva propiedad en el componente *myform*?
+Si ejecutamos todo parece que funciona a la perfección, peeerooo.... y si pasa el tiempo y otro desarrollador mete una nueva propiedad en el componente _myform_?
 
 _./src/demo/home.page.tsx_
 
@@ -175,7 +175,7 @@ export const HomePage = () => {
 
   return (
     <div>
-      <MyForm 
+      <MyForm
         name={name}
         onChange={setName}
 +        time={time}
@@ -185,7 +185,7 @@ export const HomePage = () => {
 };
 ```
 
-- Actualizamos el *myForm*:
+- Actualizamos el _myForm_:
 
 _./src/my-form.component.tsx_
 
@@ -218,9 +218,9 @@ export const MyForm = (props: Props) => {
 npm start
 ```
 
-El _NameComponent_ se renderiza cada segundo ¿Por qué? Pero si tenemos un _React.Memo_, el caso es que le estamos pasando una propiedad más que cambia cada segundo... y se ha colado con el *spread operator*.
+El _NameComponent_ se renderiza cada segundo ¿Por qué? Pero si tenemos un _React.Memo_, el caso es que le estamos pasando una propiedad más que cambia cada segundo... y se ha colado con el _spread operator_.
 
-Si en vez del *spread operator*, le indicamos de forma explícita las *props*, veremos que ya no pasa esto:
+Si en vez del _spread operator_, le indicamos de forma explícita las _props_, veremos que ya no pasa esto:
 
 _./src/demo/my-form.component.tsx_
 

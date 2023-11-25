@@ -907,7 +907,7 @@ export const Column: React.FC<Props> = (props) => {
 +        name: `DropColumn`,
 +      };
 +    },
-+    collect: (monitor: any) => ({
++    collect: (monitor: DropTargetMonitor<CardContent, unknown>) => ({
 +      isOver: monitor.isOver(),
 +      canDrop: monitor.canDrop(),
 +    }),
@@ -924,6 +924,8 @@ export const Column: React.FC<Props> = (props) => {
   );
 };
 ```
+
+*** Hasta aqui
 
 - Si probamos y vemos la consola vemos que se ejecuta tanto el _drop_ como el _drag_... seguimos en racha :), ahora toca que se realiza la operación "de verdad".
 
@@ -2692,7 +2694,7 @@ _./src/kanban/components/column.tsx_
           content={card} />
 ```
 
-> En esta caso podemos busar una opcion más elaborada pero no ayudaría a la legibilidad del código
+> En esta caso podemos buscar una opcion más elaborada pero no ayudaría a la legibilidad del código
 
 Ya parece que lo tengo, vamos a implementar un método que teniendo en cuenta la coordenada X,Y del _drop_, me lo compare con las X,Y de las _card_ y si encuentra una que este en esa zona me devuelva el índice en el array de _cards_ (se podría hacer algo más fino y si cae en la mitad superior que del índice anterior y si es la mitad inferior que del índice siguiente... esto para la lista de _martillo fino_ :)).
 

@@ -215,6 +215,8 @@ _./src/providers/kanban.provider.ts_
   };
 ```
 
+***
+
 - Vamos a probar a ver qué tal funciona :)... pues va bien siempre y cuando soltemos encima de una carta.... Pero ¿qué pasa con el trozo de columna que sale en blanco? Vamos a hacer un truco, en el _column_ aprovechamos que tenemos un _container_ _flexbox_ y vamos a añadir un elemento que ocupa todo el espacio restante y que sea área de _drop_, en cuanto se suelte algo allí le pasamos como _id_ -1 y en _movecard_ añadimos el elemento al final del _array_ (lo marcamos en azul para tenerlo localizado :), después lo eliminaremos).
 
 - Creamos un elemento que llamaremos _EmptySpaceDropZone_

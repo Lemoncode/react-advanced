@@ -372,7 +372,7 @@ _./src/pages/character-collection/character-collection.page.tsx_
        setCharacters(characters);
        characterCollectionContext.setCharacters(characters);
 -     });
-+    }, { area: "non-blocking-area" });
++    }, "non-blocking-area");
   }, []);
 ```
 
