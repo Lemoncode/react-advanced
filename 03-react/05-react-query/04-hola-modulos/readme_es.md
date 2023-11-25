@@ -353,11 +353,77 @@ export * from "./core/routing";
 
 ## App principal
 
-Vamos ahora a configurar la aplicación principal:
+Vamos ahora a configurar el router principal:
 
-** App
+_./src/core/routing/main-app-router.tsx_
 
-** Router y root provider y ñapa
+```tsx
+import React from "react";
+import { BrowserRouter, Route, Routes, Outlet } from "react-router-dom";
+import { moduleHomeRoutes } from "@home/core/routing";
+import { moduleTeamsRoutes, ModuleTeamRootProviders } from "@teams/index";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
+export const MainAppRouter: React.FC = () => {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route
+          element={
+            <ModuleTeamRootProviders>
+              <Outlet />
+              <ReactQueryDevtools />
+            </ModuleTeamRootProviders>
+          }
+        >
+          {/* Ojo a la ñapa aquí */}
+          {moduleHomeRoutes.map((route: any) => (
+            <Route key={route.path} path={route.path} element={route.element} />
+          ))}
+
+          {moduleTeamsRoutes.map((route: any) => (
+            <Route key={route.path} path={route.path} element={route.element} />
+          ))}
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
+};
+```
+
+Y vamos a configurar el App:
+
+_./src/app.tsx_
+
+```diff
+import "./App.css";
+
+- import { Router } from "@/core/routing";
+
++ import { MainAppRouter } from "@/core/routing";
+
+- import { QueryClientProvider } from "@tanstack/react-query";
+- import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+- import { queryClient } from "@/core/react-query";
+
+function App() {
+return (
+<>
+
+-      <QueryClientProvider client={queryClient}>
+        <Router />
+
++       <MainAppRouter />
+
+-        <ReactQueryDevtools />
+-      </QueryClientProvider>
+      </>
+  );
+  }
+
+export default App;
+
+```
 
 Y lo levantamos
 
@@ -419,6 +485,10 @@ Por otro lado hay muchas formas de enfocar MicroFrontEnds:
 - Otro es el de sustituir páginas con componentes ricos (como estáis haciendo en Caché).
 
 - Otro que he visto es crear Microfront ends independientes que se combinan y uno puede tirar de otro (un señor lio)
+
+```
+
+```
 
 ```
 

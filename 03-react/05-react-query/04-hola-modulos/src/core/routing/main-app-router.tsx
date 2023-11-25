@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter, Route, Routes, Outlet } from "react-router-dom";
 import { moduleHomeRoutes } from "@home/core/routing";
 import { moduleTeamsRoutes, ModuleTeamRootProviders } from "@teams/index";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 export const MainAppRouter: React.FC = () => {
   return (
@@ -11,6 +12,7 @@ export const MainAppRouter: React.FC = () => {
           element={
             <ModuleTeamRootProviders>
               <Outlet />
+              <ReactQueryDevtools />
             </ModuleTeamRootProviders>
           }
         >
