@@ -716,7 +716,7 @@ import React from "react";
     <div>
 -      <h3>Here goes editing thing...</h3>
 -      <button onClick={onCancel}>Cancel</button>
-+        {/* Recordar onAppend en destrucutring props*/}
++        {/* Recordar onAppend en destructuring props*/}
 +         <TaskItemEdit
 +           item={createEmptyTodoItem()}
 +           onSave={onAppend}
@@ -733,3 +733,148 @@ npm run dev
 ```
 
 Ya lo tenemos todo enlazado, vamos ahora a implementar la api que va a conectar para guardar d verdad los datos:
+
+Primero el _post_ con _axios_:
+
+_./src/modules/tasks/pods/task-collection/api/api.ts_
+
+```diff
+import axios from "axios";
+import { ENV_VARIABLES } from "@/core/env";
+import { taskApiCollectionSchema, TaskModel } from "./api.model";
+
+export const getTaskCollection = async (): Promise<TaskModel[]> => {
+  const { data } = await axios.get<TaskModel[]>(
+    `${ENV_VARIABLES.TASKS_API_BASE_URL}/todos`
+  );
+
+  const result = taskApiCollectionSchema.safeParse(data);
+  if (!result.success) {
+    console.error(result.error);
+  }
+
+  return data ?? [];
+};
+
++ export const insertTask = async (task: TaskModel): Promise<TaskModel> => {
++   const { data } = await axios.post<TaskModel>(
++     `${ENV_VARIABLES.TASKS_API_BASE_URL}/todos`,
++     task
++   );
++
++  return data;
++ };
+```
+
+Pero lo que tenemos es un _viewModel_ así que vamos a implementar, un mapper para pasar de _viewModel_ a _apiModel_ y crear el método en el repositorio:
+
+_./src/modules/tasks/pods/task-collection/task-collection.mapper.ts_
+
+```diff
+import * as apiModel from "./api/api.model";
+import * as vm from "./task-collection.vm";
+
+export const mapTaskFromApiToVm = (task: apiModel.TaskModel): vm.TaskVm => ({
+  ...task,
+});
+
++ export const mapTaskFromVmToApi = (task: vm.TaskVm): apiModel.TaskModel => ({
++   ...task,
++ });
+```
+
+Y creamos la entrada en el repositorio:
+
+_./src/modules/tasks/pods/task-collection/task-collection.repository.ts_
+
+```diff
+import * as apiModel from "./api/api.model";
+import { mapTaskFromApiToVm,
++        mapTaskFromVmToApi
+} from "./task-collection.mapper";
+import * as vm from "./task-collection.vm";
+import { getTaskCollection as getTaskCollecionApi,
++        insertTask as insertTaskApi
+ } from "./api/api";
+
+export const getTaskCollection = async (): Promise<vm.TaskVm[]> => {
+  const apiTaskCollection: apiModel.TaskModel[] = await getTaskCollecionApi();
+  return apiTaskCollection.map(mapTaskFromApiToVm);
+};
+
++ export const insertTask = async (task: vm.TaskVm): Promise<vm.TaskVm> => {
++   const apiTask = mapTaskFromVmToApi(task);
++   const insertedTask = await insertTaskApi(apiTask);
++   return mapTaskFromApiToVm(insertedTask);
++ };
+```
+
+Toca ahora implementar la mutación con _React Query_, de momento lo hacemos en el POD:
+
+_./src/modules/tasks/pods/task-collection/task-collection.pod.tsx_
+
+```diff
+import React from "react";
+import { useTaskCollectionQuery } from "./use-task-collection-query.hook";
+import { Mode } from "./task-collection.vm";
+import classes from "./task-collection.pod.module.css";
+import { TaskAppendComponent } from "./components";
++ import { useMutation } from "@tanstack/react-query";
++ import { insertTask } from "./task-collection.repository";
+```
+
+```diff
+export const TaskCollectionPod: React.FC = () => {
+  const [mode, setMode] = React.useState<Mode>("Readonly");
+  const [connectionLost, setConnectionLost] = React.useState(false);
+  const { taskCollection, isError } = useTaskCollectionQuery(!connectionLost);
++ const { mutate: insertTaskMutation } = useMutation({
++    mutationFn: insertTask,
++  });
+
++ const handleAppend = (item: TaskVm) => {
++   insertTaskMutation(item);
++   setMode("Readonly");
++ };
+```
+
+Y lo enlazamos en el JSX
+
+```diff
+      <TaskAppendComponent
+        mode={mode}
+        setAppendMode={() => setMode("Append")}
+        onCancel={() => setMode("Readonly")}
+-        onAppend={(item) => {
+-          console.log("TODO... save", item);
+-        }}
++        onAppend={handleAppend}
+      />
+```
+
+Con esto grabamos, pero... ¿No se ve en la lista? Qué está pasando?
+
+Pues que como no perdemos foco, y no se recarga el componente, se queda con la query de caché, tendrámos que esperar unos minutos para que se recargara ¿Qué podemos hacer? Pues _useMutation_ tiene un segundo parámetro en el que podemos indicarle un callback al que llamar cuando se haya grabado, y ahí podemos indicarle que query queremos que se recargue:
+
+_Nos toca antes del refactor importar queryClient y querykeys_
+
+```diff
+  const { mutate: insertTaskMutation } = useMutation({
+    mutationFn: insertTask,
++    onSuccess: () => {
++      queryClient.invalidateQueries({
++        queryKey: queryKeys.all(),
++      });
++    },
+```
+
+Vamos a probar que funciona:
+
+```bash
+npm run dev
+```
+
+Vamos a hacer un refactor, metemos la mutación en un hook, aquí podemos elegir:
+
+- Si lo metemos en el _use-task-collection-query.hook.ts_.
+- O si creamos un nuevo fichero, se podría llamar _use-task-mutation.hook.ts_.

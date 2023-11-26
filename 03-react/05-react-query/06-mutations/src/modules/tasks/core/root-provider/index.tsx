@@ -1,5 +1,5 @@
 import React from "react";
-import { queryClient } from "@teams/core/react-query";
+import { queryClient } from "@tasks/core/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
 
 interface Props {

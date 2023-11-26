@@ -17,42 +17,22 @@
     },
     {
       "id": 4,
-      "description": "test",
-      "isDone": true
+      "description": "prueba",
+      "isDone": false
     },
     {
       "id": 5,
-      "description": "test2",
+      "description": "troa",
       "isDone": false
     },
     {
       "id": 6,
-      "description": "test3",
+      "description": "prueba5",
       "isDone": false
     },
     {
       "id": 7,
-      "description": "Esto ya no tiene letras chorras",
-      "isDone": false
-    },
-    {
-      "id": 8,
-      "description": "actualiza",
-      "isDone": false
-    },
-    {
-      "id": 9,
-      "description": "nuevo",
-      "isDone": true
-    },
-    {
-      "id": 10,
-      "description": "test",
-      "isDone": false
-    },
-    {
-      "id": 11,
-      "description": "test",
+      "description": "prueba8",
       "isDone": false
     }
   ]
