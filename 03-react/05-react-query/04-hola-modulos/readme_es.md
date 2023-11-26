@@ -73,14 +73,14 @@ _./tsconfig.json_
 +      "@home/*": ["./modules/home/*"],
 +      "@teams/*": ["./modules/teams/*"],
 +      "@tasks/*": ["./modules/tasks/*"]
-+    },
+    },
 ```
 
 Arrancamos por migrar la carpeta de _teams_:
 
 Vamos a crearnos un listado de rutas:
 
-_./src/modules/teams/core/routing/teams-routes.const_
+_./src/modules/teams/core/routing/teams-routes.const.ts_
 
 ```ts
 const baseTeamsModuleRoutes = "/teams";
@@ -103,10 +103,7 @@ _./src/modules/teams/core/routing/teams.router.ts_
 import { MODULE_TEAMS_ROUTES } from "./teams-routes.const";
 
 // TODO: esto va a fallar porque no tenemos las escenas migradas
-import {
-  GithubMemberCollectionScene,
-  GithubMemberScene,
-} from "@/modules/teams/scenes";
+import { GithubMemberCollectionScene, GithubMemberScene } from "@teams/scenes";
 
 export const moduleTeamsRoutes = [
   {
@@ -117,7 +114,14 @@ export const moduleTeamsRoutes = [
 ];
 ```
 
-Bajamos tambíen la parte de React Query...
+Creamos un barrel:
+
+_./src/modules/teams/core/routing/index.ts_
+
+```ts
+export * from "./teams-routes.const";
+export * from "./teams.router";
+```
 
 ### Pod github collection
 
@@ -167,7 +171,7 @@ export const GithubCollectionComponent: React.FC<Props> = (props) => {
 };
 ```
 
-> Fíjate que aquí el principal escollo es el enrutado, nos podríamos plantear implementar un wrapper global de rutas, o del componente Link.
+> Fíjate que aquí el principal escollo es el enrutado, nos podríamos plantear implementar un wrapper global de rutas, o del componente Link (o podríamos usar un enrutador agnóstico de framework).
 
 ### Scenes
 
@@ -181,7 +185,7 @@ _./src/modules/teams/scenes/github-member-collection.scene.tsx_
 
 ```diff
 import React from "react";
-import { Link, generatePath } from "react-router-dom";
+- import { Link, generatePath } from "react-router-dom";
 - import { ROUTES } from "@/core/routing";
 import { GithubCollectionPod } from "@/pods";
 
@@ -194,7 +198,6 @@ export const GithubMemberCollectionScene: React.FC = () => {
 -      <Link to={generatePath(ROUTES.GITHUB_MEMBER, { id: "23" })}>
 -        Go to member
 -      </Link>
-
         Go to member
       </Link>
     </div>
@@ -226,6 +229,15 @@ export const GithubMemberScene: React.FC = () => {
 };
 ```
 
+Y creamos un barrel:
+
+_./src/modules/teams/scenes/index.ts_
+
+```ts
+export * from "./github-member-collection.scene";
+export * from "./github-member.scene";
+```
+
 ### Conectando...
 
 Vamos a crear unos barrels cada módulo para que el módulo principal pueda tirar de ellos.
@@ -236,12 +248,20 @@ _./src/modules/teams/index.ts_
 export * from "./core/routing";
 
 // Esta guarrería hay que hacerla para el módulo de dashboard
-export * from "./pods/github-collection.component";
+export * from "./pods/github-collection";
 ```
 
-### Ract Query
+### React Query provider
 
 Vamos a mover nuestro React Query a la carpeta de core en Teams.
+
+Movemos la carpeta:
+
+_./src/core/react-query_
+
+a
+
+_./src/modules/teams/core/react-query_
 
 ### RootProvider
 
@@ -264,6 +284,19 @@ export const ModuleTeamRootProviders: React.FC<Props> = (props) => {
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 };
+```
+
+Y añadimos al index.ts del modulo:
+
+_./src/modules/teams/index.ts_
+
+```diff
+export * from "./core/routing";
+
+// Esta guarrería hay que hacerla para el módulo de dashboard
+export * from "./pods/github-collection";
+
++ export * from './root-provider';
 ```
 
 ## Home
@@ -297,6 +330,7 @@ _./src/modules/home/core/routing/home.router.tsx_
 ```ts
 import { MODULE_HOME_ROUTES } from "./home-routes.const";
 
+// TODO: Va a petar por ahora porque no hemos migrado las scenes todavía
 import { DashboardScene } from "@home/scenes";
 
 export const moduleHomeRoutes = [
@@ -307,9 +341,21 @@ export const moduleHomeRoutes = [
 ];
 ```
 
+Creamos Barrel:
+
+_./src/modules/home/core/routing/index.ts_
+
+```ts
+export * from "./home-routes.const";
+export * from "./home.router";
+```
+
 ### Scenes
 
 Es hora de actualizar la escena de dashboard:
+
+** MOVEMOS CONTENIDO DE PRINCIPAL A MODULO HOME SCENE **
+** CSS y Scene **
 
 _./src/modules/home/scenes/dashboard.scene.tsx_
 
@@ -318,8 +364,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 - import { ROUTES } from "@/core/routing";
 - import { GithubCollectionPod } from "@/pods";
-+ import { MODULE_TEAMS_ROUTES } from "@teams/";
-+ import { GithubCollectionPod } from "@teams/";
++ import { MODULE_TEAMS_ROUTES } from "@teams/index";
++ import { GithubCollectionPod } from "@teams/index";
 import classes from "./dashboard.scene.module.css";
 
 export const DashboardScene: React.FC = () => {
@@ -341,6 +387,14 @@ export const DashboardScene: React.FC = () => {
 };
 ```
 
+Creamos un barrel:
+
+_./src/modules/home/scenes/index.ts_
+
+```ts
+export * from "./dashboard.scene";
+```
+
 ### Conectando...
 
 Vamos a crear unos barrel para para el módulo de home:
@@ -352,6 +406,12 @@ export * from "./core/routing";
 ```
 
 ## App principal
+
+Eliminamos el routing que teníamos antes
+
+_./src/core/router.tsx_
+_./src/core/router.const.ts_
+_./src/core/index.ts_
 
 Vamos ahora a configurar el router principal:
 
@@ -389,6 +449,14 @@ export const MainAppRouter: React.FC = () => {
     </BrowserRouter>
   );
 };
+```
+
+Creamos un barrel:
+
+_./src/core/routing/index.ts_
+
+```ts
+export * from "./main-app-router";
 ```
 
 Y vamos a configurar el App:
@@ -438,7 +506,7 @@ Lo idea sería que: cada módulo pudiera estar escrito con la tecnología que qu
 
 Esto nos permite poder ir actualizando módulos de manera independiente, y no atar una aplicación a una tecnología y versión.
 
-Aquí nos meteríamos en un buen jardin:
+Aquí nos meteríamos en un buen jardín:
 
 - Por un lado manejo de rutas:
 
