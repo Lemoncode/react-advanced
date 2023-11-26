@@ -954,4 +954,584 @@ Comprobamos que no hemos roto nada :)
 npm run dev
 ```
 
+Podemos simplifcar el POD, vamos a crear un hook que almacene el modo y el estado de la conexión (se podría haber roto en dos separados, per ahorramos poco?)
+
+_./src/modules/tasks/pods/task-collection/task-collection.hook.ts_
+
+```diff
++ const usePodQuery = () => {
++  const [mode, setMode] = React.useState<Mode>("Readonly");
++  const [connectionLost, setConnectionLost] = React.useState(false);
++  const { taskCollection, isError } = useTaskCollectionQuery(!connectionLost);
++  const { insertTaskMutation } = useTaskMutation();
++
++  React.useEffect(() => {
++    if (isError) {
++      setConnectionLost(true);
++    }
++  }, [isError]);
++
++  return {
++    mode,
++    setMode,
++    connectionLost,
++    setConnectionLost,
++    taskCollection,
++    insertTaskMutation,
++    isError,
++  };
++ };
++
+ export const TaskCollectionPod: React.FC = () => {
+-  const [mode, setMode] = React.useState<Mode>("Readonly");
+-  const [connectionLost, setConnectionLost] = React.useState(false);
+-  const { taskCollection, isError } = useTaskCollectionQuery(!connectionLost);
+-  const { insertTaskMutation } = useTaskMutation();
+-
+-  const handleAppend = (item: TaskVm) => {
+-    insertTaskMutation(item);
+-    setMode("Readonly");
+-  };
+-
+-  React.useEffect(() => {
+-    if (isError) {
+-      setConnectionLost(true);
+-    }
+-  }, [isError]);
++  const {
++    mode,
++    setMode,
++    taskCollection,
++    insertTaskMutation,
++    isError,
++    setConnectionLost,
++  } = usePodQuery();
+
+  const handleAppend = (item: TaskVm) => {
+    insertTaskMutation(item);
+    setMode("Readonly");
+  };
+```
+
+En cuanto a la lista de tareas, vamos a crear un componente para visualizar una tarea, de paso le añadimos un botón para poder editarla:
+
+_./src/modules/tasks/pods/task-collection/components/task-display.component.tsx_
+
+```tsx
+import React from "react";
+import { TaskVm } from "../task-collection.vm";
+
+interface Props {
+  item: TaskVm;
+  onEdit: (id: number) => void;
+}
+
+export const TaskDisplayComponent: React.FC<Props> = (props: Props) => {
+  const { item, onEdit } = props;
+
+  return (
+    <>
+      <div>{item.isDone ? "✅" : "⭕️"}</div>
+      <div>{item.description}</div>
+      <button onClick={() => onEdit(item.id)}>Edit</button>
+    </>
+  );
+};
+```
+
+Lo añadimos al barrer:
+
+_./src/modules/tasks/pods/task-collection/components/index.ts_
+
+```diff
+export * from "./task-append.component";
++ export * from "./task-display.component";
+```
+
+Y le damos uso:
+
+_./src/modules/tasks/pods/task-collection/task-collection.pod.tsx_
+
+```diff
+import classes from "./task-collection.pod.module.css";
+- import { TaskAppendComponent } from "./components";
++ import { TaskAppendComponent, TaskDisplayComponent } from "./components";
+```
+
+```diff
+  return (
+    <div>
+      <h1>Task Collection POD</h1>
+      <div className={classes.todoList}>
+        {taskCollection.map((task) => (
+-          <React.Fragment key={task.id}>
+-            <div>{task.isDone ? "✅" : "⭕️"}</div>
+-            <div>{task.description}</div>
+-          </React.Fragment>
++         <TaskDisplayComponent
++           key={task.id}
++           item={task}
++           onEdit={(id) => console.log("TODO... edit", id)}
++         />
+        ))}
+      </div>
+      <TaskAppendComponent
+        mode={mode}
+        setAppendMode={() => setMode("Append")}
+        onCancel={() => setMode("Readonly")}
+        onAppend={handleAppend}
+      />
+    </div>
+  );
+};
+```
+
+_./src/modules/tasks/pods/task-collection/task-collection.pod.module.css_
+
+```diff
+.todo-list {
+  display: grid;
+-  grid-template-columns: 1fr 3fr;
++  grid-template-columns: 1fr 3fr 1fr;
+  grid-gap: 1rem;
+  margin: 1rem;
+}
+```
+
+Si pinchamos en _edit_ vemos que no pasa nada, toca ponerse manos a la obra:
+
+- Por un lado, nos hace falta saber que TODO queremos editar, así que toca guardarlo en el estado.
+- Por otro lado nos hace falta un componente para editar el TODO.
+- Para rematar, en el _map_ tenemos que ver si estamos en modo edición y ver si usamos el _item display_ o el _item edit_ que acabamos de crear\_ y ya que estamos cuando pulsemos en guardar que almacene esos datos.
+
+Vamos primero a por el estado:
+
+_./src/modules/tasks/pods/task-collection/task-collection.pod.ts_
+
+```diff
+const usePodQuery = () => {
+  const [mode, setMode] = React.useState<Mode>("Readonly");
++ // TODO: Mover ese -1 a una constante
++ const [editingId, setEditingId] = React.useState(-1);
+  const [connectionLost, setConnectionLost] = React.useState(false);
+  const { taskCollection, isError } = useTaskCollectionQuery(!connectionLost);
+  const { insertTaskMutation } = useTaskMutation();
+
+  React.useEffect(() => {
+    if (isError) {
+      setConnectionLost(true);
+    }
+  }, [isError]);
+
+  return {
+    mode,
+    setMode,
++   editingId,
++   setEditingId,
+    connectionLost,
+    setConnectionLost,
+    taskCollection,
+    insertTaskMutation,
+    isError,
+  };
+};
+```
+
+```diff
+export const TaskCollectionPod: React.FC = () => {
+  const {
+    mode,
+    setMode,
++  editingId,
++  setEditingId,
+    taskCollection,
+    insertTaskMutation,
+    isError,
+    setConnectionLost,
+  } = usePodQuery();
+
+  const handleAppend = (item: TaskVm) => {
+    insertTaskMutation(item);
+    setMode("Readonly");
+  };
+
++   const handleEnterEditMode = (id: number) => {
++         console.log("** Enter Edit mode");
++     setMode("Edit");
++   // TODO... más cosas por venir
++    setEditingId(id);
++  };
+
+  if (isError) {
+```
+
+```diff
+          <TaskDisplayComponent
+            key={task.id}
+            item={task}
+-            onEdit={(item) => console.log("TODO... edit", item)}
++            onEdit={handleEnterEditMode}
+          />
+```
+
+En solo lectura utilizamos el _task-display-row_ component, vamos a crear un componente _task-edit-row.component_
+
+_./src/modules/tasks/pods/task-collection/components/task-edit-row.component.tsx_
+
+```tsx
+import React from "react";
+import { TaskVm } from "../task-collection.vm";
+
+interface Props {
+  item: TaskVm;
+  onSave: (item: TaskVm) => void;
+  onCancel: () => void;
+}
+
+export const TaskEditRowComponent: React.FC<Props> = (props: Props) => {
+  const { item, onSave, onCancel } = props;
+  const [editItem, setEditItem] = React.useState({ ...item });
+
+  return (
+    <>
+      <label>
+        <input
+          type="checkbox"
+          checked={editItem.isDone}
+          onChange={(e) =>
+            setEditItem({ ...editItem, isDone: e.target.checked })
+          }
+        />
+        Done
+      </label>
+      <input
+        type="text"
+        value={editItem.description}
+        onChange={(e) =>
+          setEditItem({ ...editItem, description: e.target.value })
+        }
+      />
+      <div>
+        <button onClick={() => onSave(editItem)}>Save</button>
+        <button onClick={() => onCancel()}>Cancel</button>
+      </div>
+    </>
+  );
+};
+```
+
+¿Qué pasa ahora? Pues que ahora tendríamos que irnos al POD y fila por fila ver si esa row está en modo display o append y elegir el componente toque, esto puede quedar muy guarreras... mejor crear un componente intermedio.
+
+Vamos a primero a meter _taskDisplayRow_ y _taskEditRow_ en una subcarpeta _row_ dentro de component
+
+```
+mkdir rows
+```
+
+Movemos los dos componentes
+
+Y creamos un barrel:
+
+_./src/modules/tasks/pods/task-collection/components/rows/index.ts_
+
+```ts
+export * from "./task-display-row.component";
+export * from "./task-edit-row.component";
+```
+
+Y vamos a crearnos el componente _taskRowComponent_:
+
+_./src/modules/tasks/pods/task-collection/components/task-row.component.tsx_
+
+```tsx
+import React from "react";
+import { Mode, TaskVm } from "../task-collection.vm";
+import { TaskDisplayRowComponent, TaskEditRowComponent } from "./rows";
+
+interface Props {
+  editingId: number;
+  mode: Mode;
+  todo: TaskVm;
+  onEnterEditMode: (id: number) => void;
+  onUpdate: (item: TaskVm) => void;
+  onCancel: () => void;
+}
+
+export const TaskRowComponent: React.FC<Props> = (props: Props) => {
+  const { todo, editingId, mode, onEnterEditMode, onUpdate, onCancel } = props;
+
+  return (
+    <>
+      {mode === "Readonly" || todo.id !== editingId ? (
+        <TaskDisplayRowComponent
+          key={todo.id}
+          item={todo}
+          onEdit={onEnterEditMode}
+        />
+      ) : (
+        <TaskEditRowComponent
+          key={todo.id}
+          item={todo}
+          onSave={onUpdate}
+          onCancel={onCancel}
+        />
+      )}
+    </>
+  );
+};
+```
+
+Vamos a exponer el componente en el _index_:
+
+_./src/modules/tasks/pods/task-collection/components/index.ts_
+
+```diff
+export * from "./task-append.component";
+- export * from "./task-display.component";
++ export * from "./task-row.component";
+```
+
+Y lo usamos en el POD:
+
+_./src/modules/tasks/pods/task-collection/task-collection.pod.tsx_
+
+```diff
+import React from "react";
+import { Mode } from "./task-collection.vm";
+import classes from "./task-collection.pod.module.css";
+- import { TaskAppendComponent, TaskDisplayRowComponent } from "./components";
++ import { TaskAppendComponent, TaskRowComponent } from "./components";
+import { useTaskCollectionQuery, useTaskMutation } from "./queries";
+import { TaskVm } from "./task-collection.vm";
+
+```
+
+```diff
+export const TaskCollectionPod: React.FC = () => {
+  const {
+    mode,
+    setMode,
++  editingId,
+    setEditingId,
+    taskCollection,
+
+```
+
+```diff
+  return (
+    <div>
+      <h1>Task Collection POD</h1>
+      <div className={classes.todoList}>
+        {taskCollection.map((task) => (
+-          <TaskDisplayRowComponent
+-            key={task.id}
+-            item={task}
+-            onEdit={handleEnterEditMode}
+-          />
++          <TaskRowComponent
++            key={task.id}
++            editingId={editingId}
++            mode={mode}
++            todo={task}
++            onEnterEditMode={handleEnterEditMode}
++            onUpdate={handleUpdate}
++            onCancel={handleCancel}
++          />
+        ))}
+        ))}
+      </div>
+```
+
+Nos falta el _handleUpdate_ y el _handleCancel_, vamos a dejar en blanco el update (después lo implementamos) y a implentar el cancel:
+
+_./src/modules/tasks/pods/task-collection/task-collection.pod.tsx_
+
+```diff
+  const handleAppend = (item: TaskVm) => {
+    insertTaskMutation(item);
+    setMode("Readonly");
+  };
+
++ const handleUpdate = (item: TaskVm) => {
++   console.log("TODO... update", item);
++ };
++
++  const handleCancel = () => {
++    setMode("Readonly");
++    setEditingId(-1);
++  };
+
+  if (isError) {
+```
+
+Vamos ahora a por el put, primero en la API:
+
+_./src/modules/tasks/pods/task-collection/api/api.ts_
+
+```diff
+export const insertTask = async (task: TaskModel): Promise<TaskModel> => {
+  const { data } = await axios.post<TaskModel>(
+    `${ENV_VARIABLES.TASKS_API_BASE_URL}/todos`,
+    task
+  );
+
+  return data;
+};
+
++ export const updateTask = async (task: TaskModel): Promise<TaskModel> => + {
++   const { data } = await axios.put<TaskModel>(
++     `${ENV_VARIABLES.TASKS_API_BASE_URL}/todos/${task.id}`,
++     task
++   );
++
++  return data;
++ };
+```
+
+El mapper, ya lo tenemos (lo creamos para el insert).
+
+Implementamos el repositorio:
+
+_./src/modules/tasks/pods/task-collection/task-collection.repository.ts_
+
+```diff
+import {
+  getTaskCollection as getTaskCollecionApi,
+  insertTask as insertTaskApi,
++  updateTask as updateTaskApi,
+} from "./api/api";
+
+// (...)
+
+export const insertTask = async (task: vm.TaskVm): Promise<vm.TaskVm> => {
+  const apiTask = mapTaskFromVmToApi(task);
+  const insertedTask = await insertTaskApi(apiTask);
+  return mapTaskFromApiToVm(insertedTask);
+};
+
++ export const updateTask = async (task: vm.TaskVm): Promise<vm.TaskVm> => {
++   const apiTask = mapTaskFromVmToApi(task);
++   const updatedTask = await updateTaskApi(apiTask);
++   return mapTaskFromApiToVm(updatedTask);
++ };
+```
+
+Y ahora vamos a por la query de update, en el hook de mutation
+
+_./src/modules/tasks/pods/task-collection/mutations/use-task-mutation.hook.ts_
+
+```diff
+import { useMutation } from "@tanstack/react-query";
+- import { insertTask } from "../task-collection.repository";
++ import { insertTask, updateTask } from "../task-collection.repository";
+import { queryClient, queryKeys } from "@tasks/core/react-query";
+
+export const useTaskMutation = () => {
+  const { mutate: insertTaskMutation } = useMutation({
+    mutationFn: insertTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.taskCollection(),
+      });
+    },
+  });
+
++  const { mutate: updateTaskMutation } = useMutation({
++    mutationFn: updateTask,
++    onSuccess: () => {
++      queryClient.invalidateQueries({
++        queryKey: queryKeys.taskCollection(),
++      });
++    },
++  });
+
+  return {
+    insertTaskMutation,
++    updateTaskMutation,
+  };
+  };
+};
+```
+
+Y nos vamos al pod:
+
+_./src/modules/tasks/pods/task-collection/task-collection.pod.tsx_
+
+```diff
+const usePodQuery = () => {
+  const [mode, setMode] = React.useState<Mode>("Readonly");
+  // TODO: Mover ese -1 a una constante
+  const [editingId, setEditingId] = React.useState(-1);
+  const [connectionLost, setConnectionLost] = React.useState(false);
+  const { taskCollection, isError } = useTaskCollectionQuery(!connectionLost);
+-  const { insertTaskMutation } = useTaskMutation();
++  const { insertTaskMutation, updateTaskMutation } = useTaskMutation();
+
+
+  React.useEffect(() => {
+    if (isError) {
+      setConnectionLost(true);
+    }
+  }, [isError]);
+
+  return {
+    mode,
+    setMode,
+    editingId,
+    setEditingId,
+    connectionLost,
+    setConnectionLost,
+    taskCollection,
+    insertTaskMutation,
++    updateTaskMutation
+    isError,
+  };
+};
+```
+
+```diff
+  const handleUpdate = (item: TaskVm) => {
+-    console.log("TODO... update", item);
++   updateTaskMutation(item);
++    setMode("Readonly");
++    setEditingId(-1);
+  };
+
+  const handleCancel = () => {
+    setMode("Readonly");
+    setEditingId(-1);
+  };
+```
+
+Vamos a probar
+
+```bash
+npm run dev
+```
+
+Un pequeño detaslle, en _handleAppend_, _handleUpdate_ y _handleCancel_ hay dos pasos iguales (volver a modo lectura), vamos a sacar esto en un método:
+
+_./src/modules/tasks/pods/task-collection/task-collection.pod.tsx_
+
+```diff
++ // TODO: esto lo podemos mover al hook usePodQuery
++ const setReadonlyMode = () => {
++  setMode("Readonly");
++  setEditingId(-1);
++ };
++
+ const handleAppend = (item: TaskVm) => {
+   insertTaskMutation(item);
++   setReadonlyMode();
+ };
++
++ const handleUpdate = (item: TaskVm) => {
++   updateTaskMutation(item);
++   setReadonlyMode();
++ };
++
++ const handleCancel = () => {
++   setReadonlyMode();
++ };
+```
 

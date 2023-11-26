@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { insertTask } from "../task-collection.repository";
+import { insertTask, updateTask } from "../task-collection.repository";
 import { queryClient, queryKeys } from "@tasks/core/react-query";
 
 export const useTaskMutation = () => {
@@ -12,7 +12,17 @@ export const useTaskMutation = () => {
     },
   });
 
+  const { mutate: updateTaskMutation } = useMutation({
+    mutationFn: updateTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.taskCollection(),
+      });
+    },
+  });
+
   return {
     insertTaskMutation,
+    updateTaskMutation,
   };
 };
