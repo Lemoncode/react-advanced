@@ -3,14 +3,17 @@ import { getTaskCollection } from "./task-collection.repository";
 import { useQuery } from "@tanstack/react-query";
 import { TaskVm } from "./task-collection.vm";
 
-export const useTaskCollectionQuery = () => {
-  const { data: taskCollection = [] } = useQuery<TaskVm[]>({
+export const useTaskCollectionQuery = (enabled: boolean) => {
+  const { data: taskCollection = [], isError } = useQuery<TaskVm[]>({
     queryKey: queryKeys.taskCollection(),
     queryFn: () => getTaskCollection(),
     refetchOnWindowFocus: false,
+    retry: false,
+    enabled,
   });
 
   return {
     taskCollection,
+    isError,
   };
 };
