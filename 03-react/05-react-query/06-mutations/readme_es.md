@@ -878,3 +878,80 @@ Vamos a hacer un refactor, metemos la mutación en un hook, aquí podemos elegir
 
 - Si lo metemos en el _use-task-collection-query.hook.ts_.
 - O si creamos un nuevo fichero, se podría llamar _use-task-mutation.hook.ts_.
+
+Usamos un hook para el mutation:
+
+_./src/modules/tasks/pods/task-collection/mutations/use-task-mutation.hook.ts_
+
+```ts
+import { useMutation } from "@tanstack/react-query";
+import { insertTask } from "./task-collection.repository";
+import { queryClient, queryKeys } from "@tasks/core/react-query";
+
+export const useTaskMutation = () => {
+  const { mutate: insertTaskMutation } = useMutation({
+    mutationFn: insertTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.taskCollection(),
+      });
+    },
+  });
+
+  return {
+    insertTaskMutation,
+  };
+};
+```
+
+Ya aprovechamos y lo metemos y metemos los dos hooks de queries / mutation en una carpeta:
+
+_./src/modules/tasks/pods/task-collection/queries_
+
+Y creamos un barrel:
+
+_./src/modules/tasks/pods/task-collection/queries/index.ts_
+
+```ts
+export * from "./use-task-collection-query.hook";
+export * from "./use-task-mutation.hook";
+```
+
+Y vamos a refactorizar el POD:
+
+_./src/modules/tasks/pods/task-collection/task-collection.pod.tsx_
+
+```diff
+import React from "react";
+-import { useTaskCollectionQuery } from "./queries/use-task-collection-query.hook";
+import { Mode } from "./task-collection.vm";
+import classes from "./task-collection.pod.module.css";
+import { TaskAppendComponent } from "./components";
+- import { insertTask } from "./task-collection.repository";
+- import { useMutation } from "@tanstack/react-query";
++ import { useTaskCollectionQuery, useTaskMutation } from "./queries";
+import { TaskVm } from "./task-collection.vm";
+import { queryClient, queryKeys } from "@tasks/core/react-query";
+
+export const TaskCollectionPod: React.FC = () => {
+  const [mode, setMode] = React.useState<Mode>("Readonly");
+  const [connectionLost, setConnectionLost] = React.useState(false);
+  const { taskCollection, isError } = useTaskCollectionQuery(!connectionLost);
++ const { insertTaskMutation } = useTaskMutation();
+-  const { mutate: insertTaskMutation } = useMutation({
+-    mutationFn: insertTask,
+-    onSuccess: () => {
+-      queryClient.invalidateQueries({
+-        queryKey: queryKeys.taskCollection(),
+-      });
+-    },
+-  });
+```
+
+Comprobamos que no hemos roto nada :)
+
+```bash
+npm run dev
+```
+
+

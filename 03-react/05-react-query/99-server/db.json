@@ -17,22 +17,7 @@
     },
     {
       "id": 4,
-      "description": "prueba",
-      "isDone": false
-    },
-    {
-      "id": 5,
-      "description": "troa",
-      "isDone": false
-    },
-    {
-      "id": 6,
-      "description": "prueba5",
-      "isDone": false
-    },
-    {
-      "id": 7,
-      "description": "prueba8",
+      "description": "roto",
       "isDone": false
     }
   ]
