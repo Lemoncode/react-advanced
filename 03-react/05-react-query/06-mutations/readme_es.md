@@ -1642,12 +1642,14 @@ Hacer optimistic updates bien no es fácil, hay varios casos arista, veamos este
 
 - Si hay error, restauramos los datos viejos.
 
-- Y haya habido erro o no, volvemos a pedir datos de servidor por si acaso (aún así, el usuario ya ha visto el cambio)
+- Y haya habido error o no, volvemos a pedir datos de servidor por si acaso (aún así, el usuario ya ha visto el cambio)
 
 ¿Por qué tantas vueltas? Para evitar casos aristas:
 
 - Oye justo actualizo caché, pero venían un refresh del servidor antes de que llegara el update y se carga la caché sin mi dato.
+
 - Oye que el server esta caido, y quiero que el usuario se de cuenta de que el update ha ido mal (incluso podría mostrar una tostada de error).
+
 - Que mira, que se ha actualizado todo... pues por si acaso vamos a pedir un refetch y nos traemos un corte limpio.
 
 [Para saber más sobre mutations en React Query](https://tkdodo.eu/blog/mastering-mutations-in-react-query)
