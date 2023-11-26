@@ -1535,3 +1535,119 @@ _./src/modules/tasks/pods/task-collection/task-collection.pod.tsx_
 + };
 ```
 
+# Optimistic updates
+
+Otro caso interesante son los _optimistic updates_, hay escenarios en lo que sabemos al 99% que un dato se va guardar con éxito, ¿Por qué no asumir que todo va a ir bien, y si ya ha un fallo hacer una recarga? De esta forma podemos ofrecer una mejor experiencia de usuario.
+
+En nuestro caso de TODO y edit, ¿Qué podríamos hacer?
+
+- En el handleUpdate, modifico la caché de de React Query y añado el elemento.
+- De esta manera, antes de que reciba la respuesta del servidor, el usuario ya ve el TODO en la lista.
+
+Vamos a tocar la _cache_ de _React Query_, en concreto modificar un elemento, para no liarnos la manta a la cabeza con estructuras inmutables, vamos a ayudarnos de _immer_
+
+```bash
+npm install immer
+```
+
+_./src/modules/tasks/pods/task-collection/queries/use-task-mutation.hook_
+
+```diff
++ import {produce} from "immer";
++ import { TaskVm } from "../task-collection.vm";
+import { useMutation } from "@tanstack/react-query";
+import { insertTask, updateTask } from "../task-collection.repository";
+import { queryClient, queryKeys } from "@tasks/core/react-query";
+```
+
+```diff
+  const { mutate: updateTaskMutation } = useMutation({
+    mutationFn: updateTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.taskCollection(),
+      });
+    },
++   onMutate: async (newTask : TaskVm) => {
++      // TODO Aquí hay que hacer más cosas, ver este ejemplo
++      // https://tanstack.com/query/latest/docs/react/guides/optimistic-updates
++      queryClient.setQueryData(queryKeys.taskCollection(), (old : TaskVm[]) => {
++        return produce(old, (draft: TaskVm[]) => {
++            const index = draft.findIndex((item) => item.id === newTask.id);
++            if(index !== -1) {
++              draft[index] = newTask;
++            }
++         })
++      });
++   }
+  });
+```
+
+Para probar que esto funciona vamos a deshabilitar el refresco automático:
+
+_./src/modules/tasks/pods/task-collection/queries/use-task-mutation.hook.ts_
+
+```diff
+export const useTaskMutation = () => {
+  const { mutate: insertTaskMutation } = useMutation({
+    mutationFn: insertTask,
+    onSuccess: () => {
+-      queryClient.invalidateQueries({
+-        queryKey: queryKeys.taskCollection(),
+-      });
++   // Comentar esto sólo para la prueba
++   //   queryClient.invalidateQueries({
++   //     queryKey: queryKeys.taskCollection(),
++   //   });
+
+
+    },
+  });
+
+  const { mutate: updateTaskMutation } = useMutation({
+    mutationFn: updateTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.taskCollection(),
+      });
+    },
+
+```
+
+```diff
+const useTodoQueries = () => {
+  const queryClient = useQueryClient();
+
+  const mutationSucceeded = () => {
+-    queryClient.invalidateQueries(todoKeys.todoList());
++   // Comentar esto sólo para la prueba
++   // queryClient.invalidateQueries(todoKeys.todoList());
+  };
+  };
+```
+
+Hacer optimistic updates bien no es fácil, hay varios casos arista, veamos este ejemplo de la documentación:
+
+[Ejemplo optimistic update](https://tanstack.com/query/latest/docs/react/guides/optimistic-updates)
+
+¿Qué hacemos aquí?
+
+- Cancelamos cualquier refetch de TODOs que pudiera estar en marcha, así no aseguramos que nuestra caché manda.
+
+- Almacenamos los datos previos por si acaso.
+
+- Hacemos la actualización optimista en la caché.
+
+- Devolvemos los datos viejos por si acaso
+
+- Si hay error, restauramos los datos viejos.
+
+- Y haya habido erro o no, volvemos a pedir datos de servidor por si acaso (aún así, el usuario ya ha visto el cambio)
+
+¿Por qué tantas vueltas? Para evitar casos aristas:
+
+- Oye justo actualizo caché, pero venían un refresh del servidor antes de que llegara el update y se carga la caché sin mi dato.
+- Oye que el server esta caido, y quiero que el usuario se de cuenta de que el update ha ido mal (incluso podría mostrar una tostada de error).
+- Que mira, que se ha actualizado todo... pues por si acaso vamos a pedir un refetch y nos traemos un corte limpio.
+
+[Para saber más sobre mutations en React Query](https://tkdodo.eu/blog/mastering-mutations-in-react-query)
