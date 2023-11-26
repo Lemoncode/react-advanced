@@ -306,3 +306,133 @@ export const TaskCollectionPod: React.FC = () => {
 -  });
 + const { taskCollection } = useTaskCollectionQuery();
 ```
+
+Probamos que funciona:
+
+```bash
+npm run dev
+```
+
+Vamos a empezar a jugar con las opciones que nos ofrece React Query, primero nos fijamos en _refetchOnWindowFocus_.
+
+Está opción está por defecto a true ¿Qué quiere decir esto?
+
+Vamos a abrir side by side fichero de datos json y la aplicación, y vamos a modificar el json, en cuanto pinchamos en la ventana los datos se recargan sólos.
+
+Si ahora ponemos este flag a false...
+
+_./src/modules/tasks/pods/tasks-collection/use-task-collection-query.hook.ts_
+
+```diff
+export const useTaskCollectionQuery = () => {
+  const { data: taskCollection = [] } = useQuery<TaskVm[]>({
+    queryKey: queryKeys.taskCollection(),
+    queryFn: () => getTaskCollection(),
++    refetchOnWindowFocus: false
+  },
+  );
+```
+
+Y volvemos a hacer la operación, verás que no se recarga.
+
+Si nos vamos a las devtool, podemos ver:
+
+- Me dice que consultas tengo.
+
+- Qué estado tienen.
+
+- Puedo incluso relanzarlas.
+
+Bueno, hasta aquí el happy path, vamos a tirar abajo la api rest y ver que pasa:
+
+_Paramos al rest api de todos_
+
+Si ponemos un breakpoint en la API podemos ver que no para de llamarse (abrir pestaña network), ¿No sería mejor avisar al usuario y que este reintentará?
+
+_./src/modules/tasks/pods/tasks-collection/use-task-collection-query.hook.ts_
+
+```diff
+- export const useTaskCollectionQuery = () => {
++ export const useTaskCollectionQuery = (enabled: boolean) => {
+  const {
+    data: taskCollection = []
++   isError,
+  } = useQuery<TaskVm[]>({
+    queryKey: queryKeys.taskCollection(),
+    queryFn: () => getTaskCollection(),
+  },
+  {
+    refetchOnWindowFocus: false,
++    enabled
+  });
+
+  return {
+    taskCollection,
++   isError
+  };
+};
+```
+
+Y ahora en el pod cubrimos este caso:
+
+_./src/modules/tasks/pods/tasks-collection/task-collection.pod.tsx_
+
+```diff
+export const TaskCollectionPod: React.FC = () => {
++ const [connectionLost, setConnectionLost] = React.useState(false);
++
+-  const { taskCollection } = useTaskCollectionQuery();
++ const { taskCollection, isError } = useTaskCollectionQuery(!connectionLost);
+
++ React.useEffect(() => {
++   if (isError) {
++     setConnectionLost(true);
++   }
++ }, [isError]);
+
++ if(isError) {
++   return (<button onClick={() => setConnectionLost(false)}>Reconectar</button>)
++ }
+
+  return (
+    <div>
+      <h1>Task Collection POD</h1>
+      {taskCollection.map((task) => (
+        <div key={task.id}>
+          <span>{task.description}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+```
+
+Vale, esto va pero al rato ¿Qué está pasando? Que por defecto react-query antes de dar por perdida una llamada, realiza varios reintentos, vamos a desactivarlo:
+
+_./src/modules/tasks/pods/tasks-collection/use-task-collection-query.hook.ts_
+
+```diff
+  } = useQuery<TaskVm[]>({
+    queryKey: queryKeys.taskCollection(),
+    queryFn: () => getTaskCollection(),
+  },
+  {
+    refetchOnWindowFocus: false,
+    enabled,
++   retry: false
+  });
+```
+
+Vamos a probar a ver que tal
+
+```bash
+npm run dev
+```
+
+Vamos ahora a levantar el server y ver que pasa.
+
+¿Para qué casos adicionales nos puede servir esto?
+
+- Si entramos en modo edición y no queremos que se hagan recargas.
+- Queremos pausar temporalmente el refetch (incluso probar a trabajar con modo offline).
+- ...

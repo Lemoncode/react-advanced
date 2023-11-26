@@ -7,6 +7,7 @@ export const useTaskCollectionQuery = () => {
   const { data: taskCollection = [] } = useQuery<TaskVm[]>({
     queryKey: queryKeys.taskCollection(),
     queryFn: () => getTaskCollection(),
+    refetchOnWindowFocus: false,
   });
 
   return {
