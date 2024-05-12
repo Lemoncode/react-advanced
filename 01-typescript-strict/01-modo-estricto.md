@@ -213,7 +213,7 @@ A) Podemos decirle que el tipo es _ClienteModel_ o _null_.
 + const clienteC: ClienteModel | null = null;
 ```
 
-Esto tufa un poco...
+Y Esta otra opcíon tufa un poco...
 
 B) Podemos decirle que que sabemos lo que hacemos que no nos de la matraca, para ello usamos la exclamación _!_.
 
@@ -263,6 +263,10 @@ Si no usamos _diAdios_ en _main.ts_ nos lo canta como error.
 ### Parametros opcionales más seguros
 
 Volvemos al _diHola_, apaga el modo estricto y vamos a ver los fuego artificiales:
+
+_Borramos todo el contenido de main_
+
+_main.ts_
 
 ```typescript
 interface Persona {
