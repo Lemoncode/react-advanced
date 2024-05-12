@@ -26,6 +26,8 @@ Vamos a ver tanto la opción de JSON Schema como la de ZOD en acción.
 
 Partamos de un ejemplo, tenemos la ficha de un paciente de un hospital:
 
+> Creamos un fichero `dummy.ts` (después lo podemos borrar)
+
 ```typescript
 const paciente = {
   nif: "12345678A",
@@ -63,6 +65,8 @@ Tenemos la siguientes restricciones:
 ## JSON Schema
 
 Esto lo podemos definir con un JSON Schema, sería algo así como:
+
+> Crear `dummy.json`
 
 ```json
 {
@@ -163,7 +167,7 @@ Un ejemplo de un paciente sería:
 
 ```ts
  {
-    NIF: "12345678A",
+    nif: "12345678A",
     nombre: "Juan",
     edad: 45,
     fechaNacimiento: "1978-05-20T00:00:00.000Z",
@@ -408,7 +412,7 @@ const loadPacienteUno = async () => {
 
 Ahora vienen varios temas interesantes de ZOD, puede inferir sacar los interfaces de TypeScript a partir de un esquema de ZOD:
 
-_./model.ts_
+_./main.ts_
 
 ```diff
 + import { z } from "zod";
@@ -590,3 +594,31 @@ Si no nos gusta la solución con Refine, podemos decirle
 ```
 Para el campo nif, en vez de refine ¿Podrías encadenar directamente la RegEx?
 ```
+
+## Solucíon final
+
+Aquí tenemos una solucíon sin validacíon esquema con ZOD.
+
+¿Nos animamos a añadirlo?
+
+## Patient List API
+
+Vamos a sustituir el esquema por ZOD.
+
+De ahí generamos el módulo
+
+Lo validamos en la API, si no funciona mostramos un warning.
+
+## Patient API
+
+¿Te animas a implementarlo?
+
+## Repetición discusión, api y repository
+
+
+
+## Más info
+
+¿Y sobre rendimiento de esta librería?
+
+https://github.com/colinhacks/zod/issues/205
