@@ -1,9 +1,7 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getCharacter } from "./character-detail.api";
-import { Character } from "./character-detail.model";
 
 export const CharacterDetailPage = () => {
   const { characterId } = useParams();
