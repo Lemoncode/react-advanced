@@ -1,6 +1,6 @@
 import React from "react";
 
-const StopIcon: React.FC = () => (
+export const StopIcon: React.FC = () => (
   <svg
     width="24"
     height="24"
@@ -12,4 +12,3 @@ const StopIcon: React.FC = () => (
   </svg>
 );
 
-export default StopIcon;
