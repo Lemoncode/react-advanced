@@ -893,16 +893,18 @@ export const AudioPlayer: React.FC = () => {
 Cosas que se podrían mejorar:
 
 - `useAudioVolume`y `useAudioDuration`:
+
   - Deberían de devolver un objeto mejor que sólo el valor, ya que esto podría crecer a futuro.
   - También AudioVolume y Audio Duration podríamos haberlo agrupado en un hook, pero eso ya depende un poco de las preferencias de cada uno.
 
 - El elemento audio lo podrámos meter en un subcomponente, eso lo haremos con las forwardref.
 
 Una opción más tipo "fumada":
-  - Podríamos crear un elemento audio:
-    - Que fuera sin diseño, es decir la funcionalidad pura.
-    - Este tiene un children para renderizar.
-    - Con render props podemos pasarle los handlers y los valores.
+
+- Podríamos crear un elemento audio:
+  - Que fuera sin diseño, es decir la funcionalidad pura.
+  - Este tiene un children para renderizar.
+  - Con render props podemos pasarle los handlers y los valores.
 
 Sería como un "headless audio".
 
@@ -954,3 +956,5 @@ export const HeadlessAudioPlayer: React.FC = ({ children }) => {
   });
 };
 ```
+
+¿Quieres que lo probemos?
