@@ -1,40 +1,16 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useRef } from "react";
 import styles from "./audio-player.module.css";
-import { PlayIcon, PauseIcon, StopIcon } from "./icons";
-import { Header } from "./components";
+import { Header, Controls, ProgressBar, Volume } from "./components";
+import { useAudioDuration, useAudioProgress, useAudioVolume } from "./hooks";
 
 export const AudioPlayer: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
-  const [volume, setVolume] = useState<number>(1);
-  const [currentTime, setCurrentTime] = useState<number>(0);
-  const [duration, setDuration] = useState<number>(0);
+  const [volume, setVolume] = useAudioVolume(audioRef);
+  const currentTime = useAudioProgress(audioRef);
+  const duration = useAudioDuration(audioRef);
 
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.onloadedmetadata = () => {
-        setDuration(audioRef.current?.duration ?? 0);
-      };
-    }
-  }, []);
-
-  useEffect(() => {
-    const updateProgress = () => {
-      if (audioRef.current) {
-        setCurrentTime(audioRef.current.currentTime);
-      }
-    };
-
-    const interval = setInterval(updateProgress, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleVolumeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newVolume = parseFloat(event.target.value);
+  const handleVolumeChange = (newVolume: number) => {
     setVolume(newVolume);
-    if (audioRef.current) {
-      audioRef.current.volume = newVolume;
-    }
   };
 
   const handlePlay = () => {
@@ -62,39 +38,10 @@ export const AudioPlayer: React.FC = () => {
         />
         Your browser does not support the audio element.
       </audio>
-      <div className={styles.controls}>
-        <button className={styles.button} onClick={handlePlay}>
-          <PlayIcon />
-        </button>
-        <button className={styles.button} onClick={handlePause}>
-          <PauseIcon />
-        </button>
-        <button className={styles.button} onClick={handleStop}>
-          <StopIcon />
-        </button>
-      </div>
-      <div className={styles.progressBarContainer}>
-        <div className={styles.progressBar}>
-          <div
-            className={styles.progressFilled}
-            style={{ width: `${(currentTime / duration) * 100}%` }}
-          ></div>
-        </div>
-        <p>Current Time: {Math.floor(currentTime)} seconds</p>
-      </div>
-      <div className={styles.volume}>
-        <label htmlFor="volume">Volume: </label>
-        <input
-          id="volume"
-          className={styles.slider}
-          type="range"
-          min="0"
-          max="1"
-          step="0.01"
-          value={volume}
-          onChange={handleVolumeChange}
-        />
-      </div>
+      <Controls onPlay={handlePlay} onPause={handlePause} onStop={handleStop} />
+
+      <ProgressBar currentTime={currentTime} duration={duration} />
+      <Volume volume={volume} onVolumeChange={handleVolumeChange} />
     </div>
   );
 };
