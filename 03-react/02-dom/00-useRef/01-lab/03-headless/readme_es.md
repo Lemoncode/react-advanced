@@ -159,3 +159,76 @@ export const AudioPlayer: React.FC = () => {
   );
 };
 ```
+
+# ¿Y esto?
+
+Es útil dependiende del escenario, algunas librerías famosas:
+
+- Tan Stack headless table (no es exactamente render props pero se parece).
+
+- [Downshift](https://github.com/downshift-js/downshift): Downshift es una librería para crear componentes de selección como autocompletados, menús desplegables, y más. Utiliza render props para proporcionar control total sobre el comportamiento y la apariencia de los componentes.
+
+```tsx
+<Downshift
+  onChange={(selection) => alert(`You selected ${selection}`)}
+  itemToString={(item) => (item ? item.value : "")}
+>
+  {({
+    getInputProps,
+    getItemProps,
+    getMenuProps,
+    isOpen,
+    inputValue,
+    highlightedIndex,
+    selectedItem,
+  }) => (
+    <div>
+      <input {...getInputProps()} />
+      <ul {...getMenuProps()}>
+        {isOpen
+          ? items
+              .filter((item) => !inputValue || item.value.includes(inputValue))
+              .map((item, index) => (
+                <li
+                  {...getItemProps({
+                    key: item.id,
+                    index,
+                    item,
+                    style: {
+                      backgroundColor:
+                        highlightedIndex === index ? "lightgray" : "white",
+                      fontWeight: selectedItem === item ? "bold" : "normal",
+                    },
+                  })}
+                >
+                  {item.value}
+                </li>
+              ))
+          : null}
+      </ul>
+    </div>
+  )}
+</Downshift>
+```
+
+- [React-Motion](https://github.com/chenglou/react-motion): React-Motion es una librería para animaciones en React. Utiliza render props para permitir a los desarrolladores definir cómo se deben renderizar las animaciones.
+
+```tsx
+<Motion defaultStyle={{ x: 0 }} style={{ x: spring(10) }}>
+  {(value) => <div>{value.x}</div>}
+</Motion>
+```
+
+- Y incluso alguna tool simple como [React CopyToClipboard](https://github.com/nkbt/react-copy-to-clipboard):
+
+```tsx
+import { CopyToClipboard } from "react-copy-to-clipboard";
+
+function MyComponent() {
+  return (
+    <CopyToClipboard text="Hello, world!" onCopy={() => alert("Copied!")}>
+      {({ copy }) => <button onClick={copy}>Copy to clipboard</button>}
+    </CopyToClipboard>
+  );
+}
+```
