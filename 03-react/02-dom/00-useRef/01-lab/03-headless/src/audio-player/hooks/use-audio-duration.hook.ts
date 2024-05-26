@@ -7,7 +7,9 @@ export const useAudioDuration = (
 
   useEffect(() => {
     if (audioRef.current) {
-      setDuration(audioRef.current.duration);
+      audioRef.current.onloadedmetadata = () => {
+        setDuration(audioRef.current?.duration ?? 0);
+      };
     }
   }, [audioRef.current]);
 
