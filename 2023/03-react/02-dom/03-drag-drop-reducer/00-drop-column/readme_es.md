@@ -394,8 +394,7 @@ export const loadKanbanContent = async (): Promise<KanbanContent> => {
 };
 ```
 
-¿Por qué no empotramos los datos directamente en el _container_ y a tirar millas? Es importante que la parte de UI se quede con el menor ruido posible, y es buena práctica sacar todo el código que se pueda que no tenga
-que ver con UI a ficheros TS planos, de esta manera:
+¿Por qué no empotramos los datos directamente en el _container_ y a tirar millas? Es importante que la parte de UI se quede con el menor ruido posible, y es buena práctica sacar todo el código que se pueda que no tenga que ver con UI a ficheros TS planos, de esta manera:
 
 - Ayudamos a evitar que el componente se vuelva un monstruo: el típico fichero con 5000 lineas de código, con un _sphaguetti_.
 
