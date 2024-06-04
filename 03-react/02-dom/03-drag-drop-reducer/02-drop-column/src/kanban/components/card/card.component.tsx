@@ -21,6 +21,7 @@ export const Card: React.FC<Props> = (props) => {
 
     return draggable({
       element: el,
+      getInitialData: () => ({ card: content }),
       onDragStart: () => setDragging(true),
       onDrop: () => setDragging(false),
     });

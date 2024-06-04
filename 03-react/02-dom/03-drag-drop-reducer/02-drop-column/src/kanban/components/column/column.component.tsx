@@ -6,12 +6,13 @@ import { CardContent } from "../../model";
 import { Card } from "../card/card.component";
 
 interface Props {
+  columnId : number;  
   name: string;
   content: CardContent[];
 }
 
 export const Column: React.FC<Props> = (props) => {
-  const { name, content } = props;
+  const { name, content, columnId } = props;
   const ref = useRef(null);
   const [isDraggedOver, setIsDraggedOver] = useState(false);
 
@@ -21,6 +22,7 @@ export const Column: React.FC<Props> = (props) => {
 
     return dropTargetForElements({
       element: el,
+      getData: () => ({columnId}),      
       onDragEnter: () => setIsDraggedOver(true),
       onDragLeave: () => setIsDraggedOver(false),
       onDrop: () => setIsDraggedOver(false),
