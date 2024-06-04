@@ -29,6 +29,12 @@ const dropCardAfter = (
   destinationCardId: number,
   destinationColumn: Column
 ): Column => {
+  if (destinationCardId === -1) {
+    return produce(destinationColumn, (draft) => {
+      draft.content.push(origincard);
+    });
+  }
+
   return produce(destinationColumn, (draft) => {
     const index = draft.content.findIndex(
       (card) => card.id === destinationCardId

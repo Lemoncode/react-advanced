@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
-import invariant from "tiny-invariant";
 import classes from "./column.component.module.css";
 import { CardContent } from "../../model";
 import { Card } from "../card/card.component";
+import { EmptySpaceDropZone } from "../empty-space-drop-zone.component";
 
 interface Props {
   columnId: number;
@@ -19,6 +18,7 @@ export const Column: React.FC<Props> = (props) => {
       {content.map((card) => (
         <Card key={card.id} content={card} columnId={columnId} />
       ))}
+      <EmptySpaceDropZone columnId={columnId} />
     </div>
   );
 };

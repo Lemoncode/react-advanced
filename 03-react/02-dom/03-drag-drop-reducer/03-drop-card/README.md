@@ -137,6 +137,17 @@ export const Card: React.FC<Props> = (props) => {
 +      onDrop: () => setIsDraggedOver(false),
 +    });
 +  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={classes.card}
+      style={{
+        opacity: dragging ? 0.4 : 1,
++        background: isDraggedOver ? "lightblue" : "white",
+      }}
+    >
+
 ```
 
 Y en el monitor, tenemos que tener en cuenta el nuevo campo _cardId_ para intercarlo en el drop.
@@ -245,24 +256,92 @@ Parece que fucniona, peeeerooo si soltamos al card en el fondo de la columna pod
 
 Vamos a hacer un cosa la pintamos de un color para que se distinga, despues le aplicaremos color transparente.
 
-```tsx
+_./src/kanban/components/empty-space-drop-zone.component.tsx_
 
+```tsx
+import React from "react";
+import { useEffect, useRef } from "react";
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import invariant from "tiny-invariant";
+
+interface Props {
+  columnId: number;
+}
+
+export const EmptySpaceDropZone: React.FC<Props> = (props) => {
+  const { columnId } = props;
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    invariant(el);
+
+    return dropTargetForElements({
+      element: el,
+      getData: () => ({ columnId, cardId: -1 }),
+    });
+  }, []);
+
+  return (
+    <div ref={ref} style={{ flexGrow: 1, width: "100%", background: "blue" }} />
+  );
+};
+```
+
+Vamos a añadirlo al final de cada columna:
+
+_./src/kanban/components/column/column.component.tsx_
+
+```diff
+import classes from "./column.component.module.css";
+import { CardContent } from "../../model";
+import { Card } from "../card/card.component";
++ import { EmptySpaceDropZone } from "../empty-space-drop-zone.component";
+
+interface Props {
+  columnId: number;
+  name: string;
+  content: CardContent[];
+}
+
+export const Column: React.FC<Props> = (props) => {
+  const { name, content, columnId } = props;
+
+  return (
+    <div className={classes.container}>
+      <h4>{name}</h4>
+      {content.map((card) => (
+        <Card key={card.id} content={card} columnId={columnId} />
+      ))}
++     <EmptySpaceDropZone columnId={columnId} />
+    </div>
+  );
+};
 ```
 
 Ahora probamos y a lo tenemos.
 
 Vamos a poner el color transparente
 
-```tsx
+_./src/kanban/components/empty-space-drop-zone.component.tsx_
 
+```diff
+  return (
+    <div ref={ref} style={{ flexGrow: 1,
+                            width: "100%",
+-                            background: "blue"
++                            background: "transparent"
+                            }} />
+  );
 ```
 
 Siguientes pasos, ... el objetivo de este ejemplo es que te familiarices con esta librería de drag & drop, ¿Cómo se podría mejorar?
 
+- Intercalar card fantasma en el drop.
 - En los cards definiendo dos areas de drop, una que haga que suelte la card arriba y otra que la suelte abajo.
 - Implementando el scroll automático cuando se acerque a los bordes de la pantalla.
 - Haciendo el drag and drop accesible.
-- Intercalar card fantasma en el drop.
+
 - También es buena idea implementar más operaciones:
   - Añadir Card.
   - Eliminar Card.

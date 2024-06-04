@@ -49,7 +49,10 @@ export const Card: React.FC<Props> = (props) => {
     <div
       ref={ref}
       className={classes.card}
-      style={{ opacity: dragging ? 0.4 : 1 }}
+      style={{
+        opacity: dragging ? 0.4 : 1,
+        background: isDraggedOver ? "lightblue" : "white",
+      }}
     >
       {content.title}
     </div>
