@@ -1,4 +1,7 @@
-import { CardContent, KanbanContent } from "./model";
+import { CardContent, Column, KanbanContent } from "./model";
+import { produce } from "immer";
+
+type DropArgs = { columnId: number; cardId: number };
 
 // Esto se podría hacer más optimo
 
@@ -21,17 +24,27 @@ const removeCardFromColumn = (
   };
 };
 
+const dropCardAfter = (
+  origincard: CardContent,
+  destinationCardId: number,
+  destinationColumn: Column
+): Column => {
+  return produce(destinationColumn, (draft) => {
+    const index = draft.content.findIndex(
+      (card) => card.id === destinationCardId
+    );
+    draft.content.splice(index, 0, origincard);
+  });
+};
+
 const addCardToColumn = (
   card: CardContent,
-  columnId: number,
+  dropArgs: DropArgs,
   kanbanContent: KanbanContent
 ): KanbanContent => {
   const newColumns = kanbanContent.columns.map((column) => {
-    if (column.id === columnId) {
-      return {
-        ...column,
-        content: [...column.content, card],
-      };
+    if (column.id === dropArgs.columnId) {
+      return dropCardAfter(card, dropArgs.cardId, column);
     }
     return column;
   });
@@ -44,9 +57,9 @@ const addCardToColumn = (
 
 export const moveCard = (
   card: CardContent,
-  destinationColumnId: number,
+  dropArgs: DropArgs,
   kanbanContent: KanbanContent
 ): KanbanContent => {
   const newKanbanContent = removeCardFromColumn(card, kanbanContent);
-  return addCardToColumn(card, destinationColumnId, newKanbanContent);
+  return addCardToColumn(card, dropArgs, newKanbanContent);
 };

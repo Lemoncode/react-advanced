@@ -1,6 +1,10 @@
 import React from "react";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { CardContent, KanbanContent, createDefaultKanbanContent } from "./model";
+import {
+  CardContent,
+  KanbanContent,
+  createDefaultKanbanContent,
+} from "./model";
 import { loadKanbanContent } from "./api";
 import { moveCard } from "./kanban.container.business";
 import { Column } from "./components";
@@ -26,10 +30,11 @@ export const KanbanContainer: React.FC = () => {
 
         const card = source.data.card as CardContent;
         const columnId = destination.data.columnId as number;
+        const destinationCardId = destination.data.cardId as number;
 
         // También aquí nos aseguramos de que estamos trabajando con el último estado
         setKanbanContent((kanbanContent) =>
-          moveCard(card, columnId, kanbanContent)
+          moveCard(card, { columnId, cardId: destinationCardId }, kanbanContent)
         );
       },
     });

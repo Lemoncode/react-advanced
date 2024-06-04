@@ -16,17 +16,224 @@ npm run dev
 
 Para hacernos más fácil buscar en que columna queremos hacerle el drop a la card, vamos a pasar el id de la columna al componente card:
 
-```tsx
+_./src/kanban/components/card/card.component.tsx_
+
+```diff
+interface Props {
++ columnId: number;
+  content: CardContent;
+}
+
+export const Card: React.FC<Props> = (props) => {
+-  const { content } = props;
++  const { content, columnId } = props;
+  const [dragging, setDragging] = useState<boolean>(false);
+  const ref = useRef(null);
+```
+
+_./src/kanban/components/column/column.component.tsx_
+
+```diff
+  {content.map((card) => (
+    <Card
+      key={card.id}
+      content={card}
++      columnId={columnId}
+    />
+  ))}
+```
+
+Ahora que lo tenemos lo único que vamos a hacer es quitar el drop de la columna y pasarlo a la card (informandole la columna).
+
+_./src/kanban/components/column/column.component.tsx_
+
+```diff
+import React, { useState, useEffect, useRef } from "react";
+- import invariant from "tiny-invariant";
+- import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import classes from "./column.component.module.css";
+import { CardContent } from "../../model";
+import { Card } from "../card/card.component";
+```
+
+```diff
+export const Column: React.FC<Props> = (props) => {
+  const { name, content, columnId } = props;
+-  const ref = useRef(null);
+-  const [isDraggedOver, setIsDraggedOver] = useState(false);
+
+-  useEffect(() => {
+-    const el = ref.current;
+-    invariant(el);
+-
+-    return dropTargetForElements({
+-      element: el,
+-      getData: () => ({columnId}),
+-      onDragEnter: () => setIsDraggedOver(true),
+-      onDragLeave: () => setIsDraggedOver(false),
+-      onDrop: () => setIsDraggedOver(false),
+-    });
+-  }, []);
+```
+
+```diff
+  return (
+    <div
+      className={classes.container}
+-      ref={ref}
+-      style={{ backgroundColor: isDraggedOver ? "white" : "aliceblue" }}
+    >
+      <h4>{name}</h4>
+      {content.map((card) => (
+        <Card key={card.id} content={card} />
+      ))}
+    </div>
+  );
+```
+
+Y vamos a añadirlo al card, pero esta vez le indicamos también el card Id destino.
+
+_./src/kanban/components/card/card.component.tsx_
+
+```diff
+import React from "react";
+import { useEffect, useRef, useState } from "react";
+- import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
++ import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { CardContent } from "../../model";
+import classes from "./card.component.module.css";
+import invariant from "tiny-invariant";
+```
+
+```diff
+export const Card: React.FC<Props> = (props) => {
+  const { content } = props;
+  const [dragging, setDragging] = useState<boolean>(false);
++ const [isDraggedOver, setIsDraggedOver] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const el = ref.current;
+
+    invariant(el);
+
+    return draggable({
+      element: el,
+      getInitialData: () => ({ card: content }),
+      onDragStart: () => setDragging(true),
+      onDrop: () => setDragging(false),
+    });
+  }, []);
+
++  useEffect(() => {
++    const el = ref.current;
++    invariant(el);
++
++    return dropTargetForElements({
++      element: el,
++      getData: () => ({columnId, cardId: content.id}),
++      onDragEnter: () => setIsDraggedOver(true),
++      onDragLeave: () => setIsDraggedOver(false),
++      onDrop: () => setIsDraggedOver(false),
++    });
++  }, []);
+```
+
+Y en el monitor, tenemos que tener en cuenta el nuevo campo _cardId_ para intercarlo en el drop.
+
+_./src/kanban/kanban.container.tsx_
+
+```diff
+  React.useEffect(() => {
+    return monitorForElements({
+      onDrop({ source, location }) {
+        const destination = location.current.dropTargets[0];
+        if (!destination) {
+          // si se suelta fuera de cualquier target
+          return;
+        }
+
+        const card = source.data.card as CardContent;
+        const columnId = destination.data.columnId as number;
++       const destinationCardId = destination.data.cardId as number;
+        // También aquí nos aseguramos de que estamos trabajando con el último estado
+        setKanbanContent((kanbanContent) =>
+-          moveCard(card, columnId, kanbanContent)
++          moveCard(card, {columnId, cardId: destinationCardId}, kanbanContent)
+        );
+      },
+    });
+  }, [kanbanContent]);
 
 ```
 
-```tsx
+Toca modificar la función de negocio, para no liarnos demasiado con actualizaciones inmutables, vamos a instalar la librería _immer_.
 
+```bash
+npm install immer
 ```
 
-Ahora que lo tenemos lo único que tenemos que hacer es quitar el drop de la columna y pasarlo a la card (informandole la columna).
+Y ahora en negocio:
 
-Ya con esto debería de funcionar (le estamos pasando exactamente la misma informacíon al monitor de drag and drop que tenemos en el container).
+_./src/kanban/kanban.container.business.ts_
+
+```diff
++ type DropArgs = {columnId : number, cardId: number};
+
+export const moveCard = (
+  card: CardContent,
+-  destinationColumnId: number,
++  dropArgs: DropArgs,
+  kanbanContent: KanbanContent
+): KanbanContent => {
+ const newKanbanContent = removeCardFromColumn(card, kanbanContent);
+- return addCardToColumn(card, destinationColumnId, newKanbanContent);
++ return addCardToColumn(card, dropArgs, newKanbanContent);
+};
+```
+
+```diff
+- import { CardContent, KanbanContent } from "./model";
++ import { CardContent, Column, KanbanContent } from "./model";
++ import { produce } from "immer";
+// (...)
+
++ const dropCardAfter = (
++  origincard: CardContent,
++  destinationCardId: number,
++  destinationColumn: Column,
++ ) : Column => {
++  return produce(destinationColumn, (draft) => {
++    const index = draft.content.findIndex((card) => card.id === destinationCardId);
++    draft.content.splice(index, 0, origincard);
++  });
++ }
+
+
+const addCardToColumn = (
+  card: CardContent,
+-  columnId: number,
++  dropArgs: DropArgs,
+  kanbanContent: KanbanContent
+): KanbanContent => {
+  const newColumns = kanbanContent.columns.map((column) => {
+-    if (column.id === columnId) {
++   if (column.id === dropArgs.columnId) {
+-      return {
+-        ...column,
+-        content: [...column.content, card],
+-      };
++      return dropCardAfter(card, dropArgs.cardId, column);
+    }
+    return column;
+  });
+
+  return {
+    ...kanbanContent,
+    columns: newColumns,
+  };
+};
+```
 
 Probamos
 
@@ -55,4 +262,9 @@ Siguientes pasos, ... el objetivo de este ejemplo es que te familiarices con est
 - En los cards definiendo dos areas de drop, una que haga que suelte la card arriba y otra que la suelte abajo.
 - Implementando el scroll automático cuando se acerque a los bordes de la pantalla.
 - Haciendo el drag and drop accesible.
-- ...
+- Intercalar card fantasma en el drop.
+- También es buena idea implementar más operaciones:
+  - Añadir Card.
+  - Eliminar Card.
+  - Modificar Card.
+- Otra opción es crear una card más rica.
