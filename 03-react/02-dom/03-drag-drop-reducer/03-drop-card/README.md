@@ -341,7 +341,6 @@ Siguientes pasos, ... el objetivo de este ejemplo es que te familiarices con est
 - En los cards definiendo dos areas de drop, una que haga que suelte la card arriba y otra que la suelte abajo.
 - Implementando el scroll automático cuando se acerque a los bordes de la pantalla.
 - Haciendo el drag and drop accesible.
-
 - También es buena idea implementar más operaciones:
   - Añadir Card.
   - Eliminar Card.
