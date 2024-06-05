@@ -74,8 +74,6 @@ export const GhostCard: React.FC<Props> = ({ show }) => {
 };
 ```
 
-\*\*\* TODO fix stylings and were is place ghost card cambio a div
-
 Y vamos a reemplazarlo en nuestro componente card.
 
 _./src/kanban/components/card/card.component.tsx_
@@ -130,13 +128,16 @@ export const EmptySpaceDropZone: React.FC<Props> = (props) => {
   }, []);
 
   return (
-+   <>
++   <div
++     ref={ref}
++     style={{ flexGrow: 1, width: "100%", background: "transparent" }}
++   >
 +     <GhostCard show={isDraggedOver} />
       <div
-        ref={ref}
-        style={{ flexGrow: 1, width: "100%", background: "transparent" }}
+-        ref={ref}
+-        style={{ flexGrow: 1, width: "100%", background: "transparent" }}
       />
-+   </>
++   </div>
   );
 };
 ```
