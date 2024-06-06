@@ -7,11 +7,11 @@ interface Props {
 }
 
 export const MyForm = (props: Props) => {
-  const { time } = props;
+  const { name, onChange, time } = props;
 
   return (
     <div>
-      <NameComponent {...props} />
+      <NameComponent name={name} onChange={onChange} />
       <span>Current time: {time}</span>
     </div>
   );

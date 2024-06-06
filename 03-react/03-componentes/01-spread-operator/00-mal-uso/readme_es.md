@@ -226,6 +226,10 @@ Si en vez del _spread operator_, le indicamos de forma explícita las _props_, v
 _./src/demo/my-form.component.tsx_
 
 ```diff
+-  const { time } = props;
++ const { name, onChange, time } = props;
+
+  return (
     <div>
 -      <NameComponent {...props} />
 +      <NameComponent name={name} onChange={onChange} />
