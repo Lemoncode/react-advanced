@@ -224,8 +224,6 @@ export const moveCard = (
 };
 ```
 
-// TODO: Instead of cardId pass whole card !!?
-
 Vamos ahora a utilizar esta función en el container:
 
 Fijate que en el `useEffect` que usamos le decimos que salta como dependencia cuando `kanbanContent` cambie, esto lo hacemos para evitar que se queda con datos antiguos de `kanbanContent` y no se actualice bien.
@@ -268,31 +266,6 @@ export const KanbanContainer: React.FC = () => {
    return (
      <div className={classes.container}>
 
-```
-
-Vamos a modificar el business para que en el -1 lo ponga al final de la columna:
-
-_./src/kanban/kanban.business.ts_
-
-```diff
-const dropCardAfter = (
-  origincard: CardContent,
-  destinationCardId: number,
-  destinationColumn: Column
-): Column => {
-+  if (destinationCardId === -1) {
-+    return produce(destinationColumn, (draft) => {
-+      draft.content.push(origincard);
-+    });
-+  }
-
-  return produce(destinationColumn, (draft) => {
-    const index = draft.content.findIndex(
-      (card) => card.id === destinationCardId
-    );
-    draft.content.splice(index, 0, origincard);
-  });
-};
 ```
 
 Si ahora lo probamos

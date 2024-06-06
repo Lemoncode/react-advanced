@@ -319,6 +319,31 @@ export const Column: React.FC<Props> = (props) => {
 };
 ```
 
+Vamos a modificar el business para que en el -1 lo ponga al final de la columna:
+
+_./src/kanban/kanban.business.ts_
+
+```diff
+const dropCardAfter = (
+  origincard: CardContent,
+  destinationCardId: number,
+  destinationColumn: Column
+): Column => {
++  if (destinationCardId === -1) {
++    return produce(destinationColumn, (draft) => {
++      draft.content.push(origincard);
++    });
++  }
+
+  return produce(destinationColumn, (draft) => {
+    const index = draft.content.findIndex(
+      (card) => card.id === destinationCardId
+    );
+    draft.content.splice(index, 0, origincard);
+  });
+};
+```
+
 Ahora probamos y a lo tenemos.
 
 Vamos a poner el color transparente
