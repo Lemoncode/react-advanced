@@ -1,11 +1,12 @@
-import './App.css'
+import "./App.css";
+import { PlayGround } from "./components/playground";
 
 function App() {
   return (
     <div>
-      <h1>React Boiler plate</h1>
+      <PlayGround />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
