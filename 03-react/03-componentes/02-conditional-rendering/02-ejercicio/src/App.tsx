@@ -1,11 +1,12 @@
-import './App.css'
+import "./App.css";
+import { BadClientComponent } from "./components/client";
 
 function App() {
   return (
     <div>
-      <h1>React Boiler plate</h1>
+      <BadClientComponent />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
