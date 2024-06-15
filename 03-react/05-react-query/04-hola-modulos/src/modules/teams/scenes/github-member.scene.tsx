@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useParams } from "react-router-dom";
 import { MODULE_TEAMS_ROUTES } from "@teams/core/routing";
-import { GithubMemberPod } from "@/pods";
+import { GithubMemberPod } from "@teams/pods/github-member";
 
 export const GithubMemberScene: React.FC = () => {
   const { id } = useParams<{ id: string }>();

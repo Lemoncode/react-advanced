@@ -493,6 +493,8 @@ export default App;
 
 ```
 
+Aprovechamos para borrar las carpetas `pods` y `scenes` que colgaban directamente de `src`, ojo que igual nos da algún problema algún import que nos hayamos dejado colgando.
+
 Y lo levantamos
 
 # Que le queda a esto

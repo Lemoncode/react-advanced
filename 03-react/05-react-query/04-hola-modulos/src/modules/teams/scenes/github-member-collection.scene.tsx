@@ -1,5 +1,5 @@
 import React from "react";
-import { GithubCollectionPod } from "@/pods";
+import { GithubCollectionPod } from "@teams/pods/github-collection";
 
 export const GithubMemberCollectionScene: React.FC = () => {
   return (
