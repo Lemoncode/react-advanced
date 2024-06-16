@@ -668,3 +668,280 @@ export const Card: React.FC<Props> = (props) => {
   return (
     <div ref={ref}>
 ```
+
+Vamos a refactorizar ahora el Drag and Drop de columns, aquí podríamos hacer dos cosas:
+
+- Seguir la misma aproximación que con Card.
+- Intentar sacar algo genérico para aprovechar los hooks de card drag y drop y hacer algo genérico.
+
+Salvo que lo veamos muy claro, mi consejo es ir a por la primera opción, ¿Por qué?
+
+- Ibamos a complicar mucho el hook de drag y drop.
+- Vamos a por algo genérico cuando sólo hacemos drag and drop de dos elementos.
+
+Si salieran más elementos a futuro, si podríamos plantear ver si se puede hacer algo común.
+
+¿Te animas tu a hacer el refactor?
+
+TE TOCA :)
+
+Pistas:
+
+- Es una aproximación muy parecida a la de los card hooks.
+- Prueba primera el drag, refactoriza y mira si funciona, después ver a por el drop.
+
+Solución:
+
+_./src/kanban/components/column/column-drag.hook.tsx_
+
+```tsx
+import { useEffect, useState } from "react";
+import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import invariant from "tiny-invariant";
+
+export const useColumnDragHook = (
+  ref: React.MutableRefObject<null>,
+  columnId: number
+) => {
+  const [dragging, setDragging] = useState<boolean>(false);
+
+  useEffect(() => {
+    const el = ref.current;
+
+    invariant(el);
+
+    return draggable({
+      element: el,
+      getInitialData: () => ({ dragType: "COLUMN", columnOriginId: columnId }),
+      onDragStart: () => setDragging(true),
+      onDrop: () => setDragging(false),
+    });
+  }, []);
+
+  return {
+    dragging,
+  };
+};
+```
+
+Y actualizamos en el `column.component`:
+
+_./src/kanban/components/column/column.component.tsx_
+
+```diff
+import { useEffect, useRef, useState } from "react";
+import classes from "./column.component.module.css";
+import { CardContent } from "../../model";
+import { Card } from "../card/card.component";
+import { EmptySpaceDropZone } from "../empty-space-drop-zone.component";
+import {
+-  draggable,
+  dropTargetForElements,
+} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import invariant from "tiny-invariant";
++ import {useColumnDragHook} from './column-drag.hook';
+```
+
+```diff
+interface Props {
+  columnId: number;
+  name: string;
+  content: CardContent[];
+}
+
+export const Column: React.FC<Props> = (props) => {
+  const ref = useRef(null);
+  const { name, content, columnId } = props;
+-  const [dragging, setDragging] = useState<boolean>(false);
+  const [isDraggedOver, setIsDraggedOver] = useState(false);
+
+-  useEffect(() => {
+-    const el = ref.current;
+-
+-    invariant(el);
+-
+-    return draggable({
+-      element: el,
+-      getInitialData: () => ({ dragType: "COLUMN", columnOriginId: columnId }),
+-      onDragStart: () => setDragging(true),
+-      onDrop: () => setDragging(false),
+-    });
+-  }, []);
+
++ const { dragging } = useColumnDragHook(ref, columnId);
+
+  useEffect(() => {
+    const el = ref.current;
+```
+
+Vamos ahora a por el drop:
+
+_./src/kanban/components/column/column-drop.hook.tsx_
+
+```tsx
+import { useEffect, useState } from "react";
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import invariant from "tiny-invariant";
+
+export const useColumnDropHook = (
+  ref: React.MutableRefObject<null>,
+  columnId: number
+) => {
+  const [isDraggedOver, setIsDraggedOver] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    invariant(el);
+
+    return dropTargetForElements({
+      element: el,
+      getData: () => ({ ColumnDestinationId: columnId }),
+      canDrop: ({ source }) => source.data.dragType === "COLUMN",
+      onDragEnter: () => setIsDraggedOver(true),
+      onDragLeave: () => setIsDraggedOver(false),
+      onDrop: () => setIsDraggedOver(false),
+    });
+  }, []);
+
+  return {
+    isDraggedOver,
+  };
+};
+```
+
+Y actualizamos en el `column.component`:
+
+_./src/kanban/components/column/column.component.tsx_
+
+```diff
+- import { useEffect, useRef, useState } from "react";
++ import { useRef } from "react";
+import classes from "./column.component.module.css";
+import { CardContent } from "../../model";
+import { Card } from "../card/card.component";
+import { EmptySpaceDropZone } from "../empty-space-drop-zone.component";
+- import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+- import invariant from "tiny-invariant";
+import { useColumnDragHook } from "./column-drag.hook";
+```
+
+```diff
+interface Props {
+  columnId: number;
+  name: string;
+  content: CardContent[];
+}
+
+export const Column: React.FC<Props> = (props) => {
+  const ref = useRef(null);
+  const { name, content, columnId } = props;
+-  const [isDraggedOver, setIsDraggedOver] = useState(false);
+
+  const { dragging } = useColumnDragHook(ref, columnId);
+
+-  useEffect(() => {
+-    const el = ref.current;
+-    invariant(el);
+-
+-    return dropTargetForElements({
+-      element: el,
+-      getData: () => ({ ColumnDestinationId: columnId }),
+-      canDrop: ({ source }) => source.data.dragType === "COLUMN",
+-      onDragEnter: () => setIsDraggedOver(true),
+-      onDragLeave: () => setIsDraggedOver(false),
+-      onDrop: () => setIsDraggedOver(false),
+-    });
+-  }, []);
++ const { isDraggedOver } = useColumnDropHook(ref, columnId);
+
+  const calculateBackgroundColor = () => {
+    if (dragging) {
+      return "white";
+    }
+    if (isDraggedOver) {
+      return "lightblue";
+    }
+    return "aliceblue";
+  };
+
+  return (
+    <div
+      className={classes.container}
+      ref={ref}
+      style={{ background: calculateBackgroundColor() }}
+    >
+      <h4>{name}</h4>
+      {content.map((card) => (
+        <Card key={card.id} content={card} columnId={columnId} />
+      ))}
+      <EmptySpaceDropZone columnId={columnId} />
+    </div>
+  );
+};
+```
+
+Probamos a ver:
+
+```bash
+npm run dev
+```
+
+Para terminar, la función que calcula el color, podemos sacarla a un fichero `business`, así simplificamos el componente y podrámos añadirle pruebas unitarias.
+
+_./src/kanban/components/column/column.business.ts_
+
+```ts
+export const calculateBackgroundColor = () => {
+  if (dragging) {
+    return "white";
+  }
+  if (isDraggedOver) {
+    return "lightblue";
+  }
+  return "aliceblue";
+};
+```
+
+Y lo usamos en el componente:
+
+_./src/kanban/components/column/column.component.tsx_
+
+```diff
+import { useRef } from "react";
+import classes from "./column.component.module.css";
+import { CardContent } from "../../model";
+import { Card } from "../card/card.component";
+import { EmptySpaceDropZone } from "../empty-space-drop-zone.component";
+import { useColumnDragHook } from "./column-drag.hook";
+import { useDropHook } from "./column-drop.hook";
++ import {calculateBackgroundColor} from './column.business';
+```
+
+```diff
+export const Column: React.FC<Props> = (props) => {
+  const ref = useRef(null);
+  const { name, content, columnId } = props;
+
+  const { dragging } = useColumnDragHook(ref, columnId);
+  const { isDraggedOver } = useDropHook(ref, columnId);
+
+-  const calculateBackgroundColor = () => {
+-    if (dragging) {
+-      return "white";
+-    }
+-    if (isDraggedOver) {
+-      return "lightblue";
+-    }
+-    return "aliceblue";
+-  };
+
+  return (
+    <div
+      className={classes.container}
+      ref={ref}
+-      style={{ background: calculateBackgroundColor() }}
++     style={{ background: calculateBackgroundColor(dragging, isDraggedOver) }}
+    >
+```
+
+¿A qué ha merecido la pena el refactor?

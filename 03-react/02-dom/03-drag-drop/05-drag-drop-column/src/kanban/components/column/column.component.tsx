@@ -1,13 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import classes from "./column.component.module.css";
 import { CardContent } from "../../model";
 import { Card } from "../card/card.component";
 import { EmptySpaceDropZone } from "../empty-space-drop-zone.component";
-import {
-  draggable,
-  dropTargetForElements,
-} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import invariant from "tiny-invariant";
+import { useColumnDragHook } from "./column-drag.hook";
+import { useDropHook as useColumnDropHook } from "./column-drop.hook";
+import { calculateBackgroundColor } from "./column.business";
 
 interface Props {
   columnId: number;
@@ -18,51 +16,15 @@ interface Props {
 export const Column: React.FC<Props> = (props) => {
   const ref = useRef(null);
   const { name, content, columnId } = props;
-  const [dragging, setDragging] = useState<boolean>(false);
-  const [isDraggedOver, setIsDraggedOver] = useState(false);
 
-  useEffect(() => {
-    const el = ref.current;
-
-    invariant(el);
-
-    return draggable({
-      element: el,
-      getInitialData: () => ({ dragType: "COLUMN", columnOriginId: columnId }),
-      onDragStart: () => setDragging(true),
-      onDrop: () => setDragging(false),
-    });
-  }, []);
-
-  useEffect(() => {
-    const el = ref.current;
-    invariant(el);
-
-    return dropTargetForElements({
-      element: el,
-      getData: () => ({ ColumnDestinationId: columnId }),
-      canDrop: ({ source }) => source.data.dragType === "COLUMN",
-      onDragEnter: () => setIsDraggedOver(true),
-      onDragLeave: () => setIsDraggedOver(false),
-      onDrop: () => setIsDraggedOver(false),
-    });
-  }, []);
-
-  const calculateBackgroundColor = () => {
-    if (dragging) {
-      return "white";
-    }
-    if (isDraggedOver) {
-      return "lightblue";
-    }
-    return "aliceblue";
-  };
+  const { dragging } = useColumnDragHook(ref, columnId);
+  const { isDraggedOver } = useColumnDropHook(ref, columnId);
 
   return (
     <div
       className={classes.container}
       ref={ref}
-      style={{ background: calculateBackgroundColor() }}
+      style={{ background: calculateBackgroundColor(dragging, isDraggedOver) }}
     >
       <h4>{name}</h4>
       {content.map((card) => (
