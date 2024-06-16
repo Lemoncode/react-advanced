@@ -302,7 +302,7 @@ Se nos ha quedado un bombazo de código en los componetes, hora de hacer limpia 
 Vamos a empezar por el `kanbanContainer`, aquí que tenemos:
 
 - Un funciondalida bien definida que es la de monitorizar y hacer drop.
-- ¿Qué dependencias tiene? En principio el `setKanbanContent`
+- ¿Qué dependencias tiene? En principio dos, el `kanbanContainer` (se usa en el `useEffect`) `setKanbanContent` (se usa en el drop).
 
 Podríamos:
 
@@ -487,5 +487,184 @@ export const KanbanContainer: React.FC = () => {
 
   return (
     <div className={classes.container}>
+```
 
+Vamos a echarle un ojo al card:
+
+Aquí podemos plantearnos:
+
+- Hacer como con el monitor y tener el drag y drop en un hook.
+- Podemos separarlo en dos hooks, uno para el drag y otro para el drop.
+
+Siempre es complicado jugar a ser la _bruja local_ pero en principio parece que tiene lógica dividir el drag en un hook y el drop en otro ¿Por qué? Imaginate que a futuro creamos un elemento papelera en el que podemos mover las cartas, si tenemos el drop en un hook separado podemos reutilizarlo.
+
+Vamos a por ello, analizamos que dependencias tendrías y se las pasamos por parámetro.
+
+_./src/kanban/components/card/card-drag.hook.tsx_
+
+```tsx
+import React from "react";
+import { useEffect, useState } from "react";
+import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { CardContent } from "../../model";
+import invariant from "tiny-invariant";
+
+export const useCardDragHook = (
+  ref: React.MutableRefObject<null>,
+  content: CardContent
+) => {
+  const [dragging, setDragging] = useState<boolean>(false);
+
+  useEffect(() => {
+    const el = ref.current;
+
+    invariant(el);
+
+    return draggable({
+      element: el,
+      getInitialData: () => ({ dragType: "CARD", card: content }),
+      onDragStart: () => setDragging(true),
+      onDrop: () => setDragging(false),
+    });
+  }, []);
+
+  return {
+    dragging,
+  };
+};
+```
+
+> Si tuvieramos más de dos parámetros, nos plantearíamos o bien meter esa info en el hook, o crear una estrutura para pasarselos al hook.
+
+Vamos a darle uso:
+
+_./src/kanban/components/card/card.component.tsx_
+
+```diff
+import React from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+-  draggable,
+  dropTargetForElements,
+} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { CardContent } from "../../model";
+import classes from "./card.component.module.css";
+import invariant from "tiny-invariant";
+import { GhostCard } from "../ghost-card.component/ghost-card.component";
++ import { useCardDragHook } from "./card-drag.hook";
+```
+
+```diff
+export const Card: React.FC<Props> = (props) => {
+  const { content, columnId } = props;
+-  const [dragging, setDragging] = useState<boolean>(false);
+  const [isDraggedOver, setIsDraggedOver] = useState(false);
+  const ref = useRef(null);
+
+-  useEffect(() => {
+-    const el = ref.current;
+-
+-    invariant(el);
+-
+-    return draggable({
+-      element: el,
+-      getInitialData: () => ({ dragType: "CARD", card: content }),
+-      onDragStart: () => setDragging(true),
+-      onDrop: () => setDragging(false),
+-    });
+-  }, []);
++ const { dragging } = useCardDragHook(ref, content);
+
+  useEffect(() => {
+    const el = ref.current;
+```
+
+Vemos que sigue funcionando.
+
+Y ahora vamos a por el drop
+
+_./src/kanban/components/card/card-drop.hook.tsx_
+
+```tsx
+import React from "react";
+import { useEffect, useState } from "react";
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { CardContent } from "../../model";
+import invariant from "tiny-invariant";
+
+interface DropInfo {
+  columnId: number;
+  content: CardContent;
+}
+
+export const useCardDropHook = (
+  ref: React.MutableRefObject<null>,
+  dropInfo: DropInfo
+) => {
+  const { content, columnId } = dropInfo;
+  const [isDraggedOver, setIsDraggedOver] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    invariant(el);
+
+    return dropTargetForElements({
+      element: el,
+      getData: () => ({ columnId, cardId: content.id }),
+      canDrop: ({ source }) => source.data.dragType === "CARD",
+      onDragEnter: () => setIsDraggedOver(true),
+      onDragLeave: () => setIsDraggedOver(false),
+      onDrop: () => setIsDraggedOver(false),
+    });
+  }, []);
+
+  return { isDraggedOver };
+};
+```
+
+Y como quedaría el componente:
+
+_./src/kanban/components/card/card.component.tsx_
+
+```diff
+import React from "react";
+- import { useEffect, useRef, useState } from "react";
++ import { useRef } from "react";
+- import {
+-  dropTargetForElements,
+- } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { CardContent } from "../../model";
+import classes from "./card.component.module.css";
+- import invariant from "tiny-invariant";
+import { GhostCard } from "../ghost-card.component/ghost-card.component";
+import { useCardDragHook } from "./card-drag.hook";
++ import { useCardDropHook } from "./card-drop.hook";
+```
+
+```diff
+export const Card: React.FC<Props> = (props) => {
+  const { content, columnId } = props;
+-  const [isDraggedOver, setIsDraggedOver] = useState(false);
+  const ref = useRef(null);
+
+  const { dragging } = useCardDragHook(ref, content);
+
+-  useEffect(() => {
+-    const el = ref.current;
+-    invariant(el);
+-
+-    return dropTargetForElements({
+-      element: el,
+-      getData: () => ({ columnId, cardId: content.id }),
+-      canDrop: ({ source }) => source.data.dragType === "CARD",
+-      onDragEnter: () => setIsDraggedOver(true),
+-      onDragLeave: () => setIsDraggedOver(false),
+-      onDrop: () => setIsDraggedOver(false),
+-    });
+-  }, []);
+
++ const { isDraggedOver } = useCardDropHook(ref, { columnId, content });
+
+  return (
+    <div ref={ref}>
 ```

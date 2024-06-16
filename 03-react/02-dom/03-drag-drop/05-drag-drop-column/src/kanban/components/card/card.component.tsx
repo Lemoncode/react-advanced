@@ -1,13 +1,10 @@
 import React from "react";
-import { useEffect, useRef, useState } from "react";
-import {
-  draggable,
-  dropTargetForElements,
-} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { useRef } from "react";
 import { CardContent } from "../../model";
 import classes from "./card.component.module.css";
-import invariant from "tiny-invariant";
 import { GhostCard } from "../ghost-card.component/ghost-card.component";
+import { useCardDragHook } from "./card-drag.hook";
+import { useCardDropHook } from "./card-drop.hook";
 
 interface Props {
   columnId: number;
@@ -16,36 +13,10 @@ interface Props {
 
 export const Card: React.FC<Props> = (props) => {
   const { content, columnId } = props;
-  const [dragging, setDragging] = useState<boolean>(false);
-  const [isDraggedOver, setIsDraggedOver] = useState(false);
   const ref = useRef(null);
 
-  useEffect(() => {
-    const el = ref.current;
-
-    invariant(el);
-
-    return draggable({
-      element: el,
-      getInitialData: () => ({ dragType: "CARD", card: content }),
-      onDragStart: () => setDragging(true),
-      onDrop: () => setDragging(false),
-    });
-  }, []);
-
-  useEffect(() => {
-    const el = ref.current;
-    invariant(el);
-
-    return dropTargetForElements({
-      element: el,
-      getData: () => ({ columnId, cardId: content.id }),
-      canDrop: ({ source }) => source.data.dragType === "CARD",
-      onDragEnter: () => setIsDraggedOver(true),
-      onDragLeave: () => setIsDraggedOver(false),
-      onDrop: () => setIsDraggedOver(false),
-    });
-  }, []);
+  const { dragging } = useCardDragHook(ref, content);
+  const { isDraggedOver } = useCardDropHook(ref, { columnId, content });
 
   return (
     <div ref={ref}>
