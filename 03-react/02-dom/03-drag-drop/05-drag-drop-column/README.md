@@ -56,12 +56,12 @@ _./src/kanban/components/card/card.component.tsx_
 
 Vamos a por las columnas:
 
-- Nos treamos los imports que hagan falta:
+- Nos traemos los imports que hagan falta:
 
 _./src/kanban/components/column/column.component.tsx_
 
 ```diff
-import { useEffect, useRef, useState } from "react";
++ import { useEffect, useRef, useState } from "react";
 import classes from "./column.component.module.css";
 import { CardContent } from "../../model";
 import { Card } from "../card/card.component";
@@ -173,7 +173,7 @@ _./src/kanban/components/column/column.component.tsx_
     >
 ```
 
-Ahora nos queda el `monitor`, aquí refactorizamos ahora tenemos dos casos card y column.
+Ahora nos queda el `monitor`, lo tenemos que refactorizar ahora tenemos dos casos card y column.
 
 Lo primero añadir un método de negocio para hacer swap entre dos columnas:
 
