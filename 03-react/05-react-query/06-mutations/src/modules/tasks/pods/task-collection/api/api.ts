@@ -14,3 +14,21 @@ export const getTaskCollection = async (): Promise<TaskModel[]> => {
 
   return data ?? [];
 };
+
+export const insertTask = async (task: TaskModel): Promise<TaskModel> => {
+  const { data } = await axios.post<TaskModel>(
+    `${ENV_VARIABLES.TASKS_API_BASE_URL}/todos`,
+    task
+  );
+
+  return data;
+};
+
+export const updateTask = async (task: TaskModel): Promise<TaskModel> => {
+  const { data } = await axios.put<TaskModel>(
+    `${ENV_VARIABLES.TASKS_API_BASE_URL}/todos/${task.id}`,
+    task
+  );
+
+  return data;
+};
