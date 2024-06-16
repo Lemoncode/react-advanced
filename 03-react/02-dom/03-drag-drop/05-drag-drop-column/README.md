@@ -299,4 +299,193 @@ npm run dev
 
 Se nos ha quedado un bombazo de código en los componetes, hora de hacer limpia y refactorizar a negocio o custom hooks.
 
-TODO
+Vamos a empezar por el `kanbanContainer`, aquí que tenemos:
+
+- Un funciondalida bien definida que es la de monitorizar y hacer drop.
+- ¿Qué dependencias tiene? En principio el `setKanbanContent`
+
+Podríamos:
+
+- Sacar un hook para drag, otro para drop y dejar el monitor en el container.
+- Sacar un hook con el drag y el drop y dejar el monitor en el container.
+- Sacar un hook con drag, drop y monitor.
+- Sacar toda la lógica del componente a un hook.
+
+La cuarta opción la descartamos, no deja de ser "mover toda la mierda" a otro sitio.
+
+Y dándole una pensada, tendría sentido aislar toda la monitirización es un hook:
+
+- Encpasulamos toda esa funcionalidad y está relacionada.
+- Sólo tendríamos que pasarle por parametro el `setKanbanContent`.
+- Podemos darle un nombre que sea descriptivo, por ejemplo `useKanbanMonitor` que no deja ser una especialización de la funcion `monitorForElements`.
+
+Vamos a darle caña:
+
+_./src/kanban/kanban-monitor.hook.tsx_
+
+```tsx
+import {
+  ElementDragPayload,
+  monitorForElements,
+} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { CardContent, KanbanContent } from "../model";
+import { DropTargetRecord } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
+import { moveCard, moveColumn } from "../kanban.container.business";
+import React from "react";
+
+// Esto podría ir en business
+const isDropCard = (source: ElementDragPayload) => {
+  return source.data.dragType === "CARD";
+};
+
+const isDropColumn = (source: ElementDragPayload) => {
+  return source.data.dragType === "COLUMN";
+};
+
+export const useKanbanMonitor = (
+  kanbanContent: KanbanContent,
+  setKanbanContent: (value: React.SetStateAction<KanbanContent>) => void
+) => {
+  const dropCard = (
+    source: ElementDragPayload,
+    destination: DropTargetRecord
+  ) => {
+    const card = source.data.card as CardContent;
+    const columnId = destination.data.columnId as number;
+    const destinationCardId = destination.data.cardId as number;
+
+    // También aquí nos aseguramos de que estamos trabajando con el último estado
+    setKanbanContent((kanbanContent) =>
+      moveCard(card, { columnId, cardId: destinationCardId }, kanbanContent)
+    );
+  };
+
+  const dropColumn = (
+    source: ElementDragPayload,
+    destination: DropTargetRecord
+  ) => {
+    const columnOriginId = source.data.columnOriginId as number;
+    const columnDestinationId = destination.data.ColumnDestinationId as number;
+
+    // También aquí nos aseguramos de que estamos trabajando con el último estado
+    setKanbanContent((kanbanContent) =>
+      moveColumn(columnOriginId, columnDestinationId, kanbanContent)
+    );
+  };
+
+  React.useEffect(() => {
+    return monitorForElements({
+      onDrop({ source, location }) {
+        const destination = location.current.dropTargets[0];
+        if (!destination) {
+          // si se suelta fuera de cualquier target
+          return;
+        }
+
+        if (isDropCard(source)) {
+          dropCard(source, destination);
+        }
+
+        if (isDropColumn(source)) {
+          dropColumn(source, destination);
+        }
+      },
+    });
+  }, [kanbanContent]);
+};
+```
+
+Y ahora en el container:
+
+_./src/kanban/kanban.container.tsx_
+
+```diff
+import React from "react";
+- import {
+-  ElementDragPayload,
+-  monitorForElements,
+- } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import {
+-  CardContent,
+  KanbanContent,
+  createDefaultKanbanContent,
+} from "./model";
+import { loadKanbanContent } from "./api";
+- import { moveCard, moveColumn } from "./kanban.container.business";
+import { Column } from "./components";
+import classes from "./kanban.container.module.css";
+- import { DropTargetRecord } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
++ import { useKanbanMonitor } from "./kanban-monitor.hook";
+```
+
+```diff
+export const KanbanContainer: React.FC = () => {
+  const [kanbanContent, setKanbanContent] = React.useState<KanbanContent>(
+    createDefaultKanbanContent()
+  );
+
+  React.useEffect(() => {
+    loadKanbanContent().then((content) => setKanbanContent(content));
+  }, []);
+
+-  const dropCard = (
+-    source: ElementDragPayload,
+-    destination: DropTargetRecord
+-  ) => {
+-    const card = source.data.card as CardContent;
+-    const columnId = destination.data.columnId as number;
+-    const destinationCardId = destination.data.cardId as number;
+-
+-    // También aquí nos aseguramos de que estamos trabajando con el último estado
+-    setKanbanContent((kanbanContent) =>
+-      moveCard(card, { columnId, cardId: destinationCardId }, kanbanContent)
+-    );
+-  };
+-
+-  const dropColumn = (
+-    source: ElementDragPayload,
+-    destination: DropTargetRecord
+-  ) => {
+-    const columnOriginId = source.data.columnOriginId as number;
+-    const columnDestinationId = destination.data.ColumnDestinationId as number;
+-
+-    // También aquí nos aseguramos de que estamos trabajando con el último estado
+-    setKanbanContent((kanbanContent) =>
+-      moveColumn(columnOriginId, columnDestinationId, kanbanContent)
+-    );
+-  };
+-
+-  const isDropCard = (source: ElementDragPayload) => {
+-    return source.data.dragType === "CARD";
+-  };
+-
+-  const isDropColumn = (source: ElementDragPayload) => {
+-    return source.data.dragType === "COLUMN";
+-  };
+-
+-  React.useEffect(() => {
+-    return monitorForElements({
+-      onDrop({ source, location }) {
+-        const destination = location.current.dropTargets[0];
+-        if (!destination) {
+-          // si se suelta fuera de cualquier target
+-          return;
+-        }
+-
+-        if (isDropCard(source)) {
+-          dropCard(source, destination);
+-        }
+-
+-        if (isDropColumn(source)) {
+-          dropColumn(source, destination);
+-        }
+-      },
+-    });
+-  }, [kanbanContent]);
+
++  useKanbanMonitor(kanbanContent, setKanbanContent);
+
+  return (
+    <div className={classes.container}>
+
+```
