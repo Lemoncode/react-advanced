@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { MODULE_TEAMS_ROUTES } from "@teams/core/routing";
-import { GithubCollectionPod } from "@teams/pods";
+import { MODULE_TEAMS_ROUTES } from "@teams/index";
+import { GithubCollectionPod } from "@teams/index";
 import classes from "./dashboard.scene.module.css";
 
 export const DashboardScene: React.FC = () => {

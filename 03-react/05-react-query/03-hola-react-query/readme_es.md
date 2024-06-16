@@ -79,6 +79,14 @@ import { QueryClient } from "@tanstack/react-query";
 
 Y lo más interesante, el grado de granularidad que tenemos, además de poder tocar estos settings a nivel global, nos podemos bajar a nivel de consulta y definirlo para una en concreto.
 
+Vamos a crear un barrel:
+
+_./src/core/react-query/index.ts_
+
+```tsx
+export * from "./query";
+```
+
 Siguiente paso, a nivel de aplicación vamos a definir un provider para poder usar react-query:
 
 _./src/app.tsx_
@@ -219,7 +227,7 @@ export * from "./filter.component";
 
 Lo instanciamos...
 
-_./src/pods/github-collection/github-collection.container.tsx_
+_./src/pods/github-collection/github-collection.pod.tsx_
 
 ```diff
 import React from "react";
@@ -278,9 +286,10 @@ export const GithubCollectionPod: React.FC = () => {
     <div>
       <FilterComponent
 +       initialValue={filter}
-        onSearch={(value) =>
+        onSearch={
+-        (value) =>
 -          console.log(`Aquí empieza tu aventura: ${value}`);
-+         setFilter(value)
++         setFilter
         }
       />
 ```
@@ -525,7 +534,7 @@ _./src/pods/github-member/github-member.pod.tsx_
 import React from "react";
 + import { useQuery } from "@tanstack/react-query";
 import { getGithubMemberDetail } from "./github-member.repository";
-- import { createDefaultMemberDetail } from "./github-member.vm";
+import { createDefaultMemberDetail } from "./github-member.vm";
 import { GithubMemberComponent } from "./github-member.component";
 
 interface Props {

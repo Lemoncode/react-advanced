@@ -14,7 +14,7 @@ export const HomePage = () => {
 
   return (
     <div>
-      <MyForm name={name} onChange={setName} time={time} />
+      <MyForm name={name} onChange={setName} time={time}/>
     </div>
   );
 };

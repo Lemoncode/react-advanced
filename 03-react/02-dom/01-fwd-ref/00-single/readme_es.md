@@ -7,7 +7,7 @@ a un elemento del DOM (por ejemplo un _input_ o un _select_), y poder cambiar pr
 como por ejemplo asignarle el foco a ese elemento o cualquier otra.
 
 Esto está genial si la referencia la tenemos dentro del mismo componente, pero ¿y si quisiéramos
-pasar esa referencia desde el componente padre? Las _ForwardRef_ nos pueden ser de gran ayuda.
+pasar esa referencia desde el componente padre? Las _ForwardRef_ nos pueden ser de gran ayuda, o bueno ya veremos que en React 19 ni nos hace falta.
 
 Este ejemplo toma como punto de partida el ejemplo _00-boiler-plate_.
 
@@ -60,7 +60,7 @@ _./src/app.tsx_
 import React from "react";
 import { InputComponent } from "./common/input.component";
 
-export function App() {
+export default function App() {
   const [firstName, setFirstName] = React.useState("");
   const [secondName, setSecondName] = React.useState("");
 
@@ -84,7 +84,7 @@ export function App() {
 
 Ahora viene la parte interesante: queremos que cuando el usuario pulse en el botón, el foco se asigne al segundo _InputComponent_.
 
-¿Cómo podríamos intentar implementar esto con lo que sabemos de _React_? Podríamos exponer una propiedad _ref_, esto no va a funcionar, veamos por qué...
+¿Cómo podríamos intentar implementar esto con lo que sabemos de _React_? Podríamos exponer una propiedad _ref_, esto no va a funcionar (en React 18), veamos por qué...
 
 Primero en el _InputComponent_ exponemos la propiedad _ref_. Es el nombre de la propiedad que tienen todos los componentes nativos en _React_ para obtener su instancia:
 
@@ -279,6 +279,7 @@ interface InputProps {
 - innerRef?: React.RefObject<HTMLInputElement>;
 }
 
+// IMPORTANTE ELIMNTAR React.FC<inputProps> si no no expone hacía arriba Ref
 - export const InputComponent : React.FC<InputProps> = (props) => {
 + export const InputComponent = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 -     const { label, value, onChange, innerRef } = props;

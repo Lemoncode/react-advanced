@@ -2,7 +2,7 @@
   "todos": [
     {
       "id": 1,
-      "description": "hola en memoria",
+      "description": "Hola en memoria",
       "isDone": true
     },
     {
@@ -12,13 +12,8 @@
     },
     {
       "id": 3,
-      "description": "2023",
+      "description": "Otra tarea",
       "isDone": true
-    },
-    {
-      "id": 4,
-      "description": "actualizado244",
-      "isDone": false
     }
   ]
 }

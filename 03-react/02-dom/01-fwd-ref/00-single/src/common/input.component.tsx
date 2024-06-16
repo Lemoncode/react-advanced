@@ -6,21 +6,22 @@ export interface InputProps {
   onChange: (newValue: string) => void;
 }
 
-export const InputComponent = React.forwardRef<HTMLInputElement, InputProps>(
-  (props, ref) => {
-    const { label, value, onChange } = props;
+export const InputComponent = React.forwardRef<
+  HTMLInputElement,
+  InputProps
+>((props, ref) => {
+  const { label, value, onChange } = props;
 
-    const handleChange = (event: any) => {
-      onChange(event.target.value);
-    };
+  const handleChange = (event: any) => {
+    onChange(event.target.value);
+  };
 
-    return (
-      <input
-        placeholder={label}
-        value={value}
-        onChange={handleChange}
-        ref={ref}
-      />
-    );
-  }
-);
+  return (
+    <input
+      ref={ref}
+      placeholder={label}
+      value={value}
+      onChange={handleChange}
+    />
+  );
+});

@@ -1,8 +1,8 @@
 import { produce } from "immer";
+import { TaskVm } from "../task-collection.vm";
 import { useMutation } from "@tanstack/react-query";
 import { insertTask, updateTask } from "../task-collection.repository";
 import { queryClient, queryKeys } from "@tasks/core/react-query";
-import { TaskVm } from "../task-collection.vm";
 
 export const useTaskMutation = () => {
   const { mutate: insertTaskMutation } = useMutation({

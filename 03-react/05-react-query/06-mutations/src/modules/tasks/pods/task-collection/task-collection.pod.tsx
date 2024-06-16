@@ -1,37 +1,9 @@
 import React from "react";
-import { Mode } from "./task-collection.vm";
-import classes from "./task-collection.pod.module.css";
-import { TaskAppendComponent, TaskRowComponent } from "./components";
-import { useTaskCollectionQuery, useTaskMutation } from "./queries";
 import { TaskVm } from "./task-collection.vm";
-
-const usePodQuery = () => {
-  const [mode, setMode] = React.useState<Mode>("Readonly");
-  // TODO: Mover ese -1 a una constante
-  const [editingId, setEditingId] = React.useState(-1);
-  const [connectionLost, setConnectionLost] = React.useState(false);
-  const { taskCollection, isError } = useTaskCollectionQuery(!connectionLost);
-  const { insertTaskMutation, updateTaskMutation } = useTaskMutation();
-
-  React.useEffect(() => {
-    if (isError) {
-      setConnectionLost(true);
-    }
-  }, [isError]);
-
-  return {
-    mode,
-    setMode,
-    editingId,
-    setEditingId,
-    connectionLost,
-    setConnectionLost,
-    taskCollection,
-    insertTaskMutation,
-    updateTaskMutation,
-    isError,
-  };
-};
+import { TaskAppendComponent } from "./components";
+import { usePodQuery } from "./task-collection.hook";
+import classes from "./task-collection.pod.module.css";
+import { TaskRowComponent } from "./components/task-row.component";
 
 export const TaskCollectionPod: React.FC = () => {
   const {
@@ -46,24 +18,25 @@ export const TaskCollectionPod: React.FC = () => {
     setConnectionLost,
   } = usePodQuery();
 
-  // TODO: esto lo podemos mover al hook usePodQuery
-  const setReadonlyMode = () => {
+  const setReadOnlyMode = () => {
     setMode("Readonly");
     setEditingId(-1);
   };
 
   const handleAppend = (item: TaskVm) => {
     insertTaskMutation(item);
-    setReadonlyMode();
+    setReadOnlyMode();
   };
 
   const handleUpdate = (item: TaskVm) => {
     updateTaskMutation(item);
-    setReadonlyMode();
+    setMode("Readonly");
+    setReadOnlyMode();
   };
 
   const handleCancel = () => {
-    setReadonlyMode();
+    setMode("Readonly");
+    setEditingId(-1);
   };
 
   const handleEnterEditMode = (id: number) => {
@@ -80,7 +53,7 @@ export const TaskCollectionPod: React.FC = () => {
   return (
     <div>
       <h1>Task Collection POD</h1>
-      <div className={classes.todoList}>
+      <div className={classes.todolist}>
         {taskCollection.map((task) => (
           <TaskRowComponent
             key={task.id}
@@ -92,13 +65,13 @@ export const TaskCollectionPod: React.FC = () => {
             onCancel={handleCancel}
           />
         ))}
+        <TaskAppendComponent
+          mode={mode}
+          setAppendMode={() => setMode("Append")}
+          onCancel={() => setMode("Readonly")}
+          onAppend={handleAppend}
+        />
       </div>
-      <TaskAppendComponent
-        mode={mode}
-        setAppendMode={() => setMode("Append")}
-        onCancel={() => setMode("Readonly")}
-        onAppend={handleAppend}
-      />
     </div>
   );
 };

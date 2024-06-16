@@ -1,5 +1,6 @@
-// TODO: esto se podía hacer parametizable
-// Así el módulo standalone podría ir con ruta raíz y el módulo integrado con ruta /tasks
+// TODO: esto submodulo podría ir en el router raíz
+// así podríamos tanto tener rutas de raíz si ejeutamos esto como stand alone
+// o on prefijos en el módulo que toque
 const baseTasksModuleRoutes = "/tasks";
 
 const genPath = (path: string) => `${baseTasksModuleRoutes}${path}`;

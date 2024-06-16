@@ -1,2 +1,2 @@
-export * from "./home.router.tsx";
-export * from "./home-routes.const.ts";
+export * from "./home-routes.const";
+export * from "./home.router";

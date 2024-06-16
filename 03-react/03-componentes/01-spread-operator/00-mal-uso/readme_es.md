@@ -21,8 +21,6 @@ npm install
 _./src/demo/name-component.tsx_
 
 ```tsx
-import React from "react";
-
 interface Props {
   name: string;
   onChange: (name: string) => void;
@@ -48,7 +46,6 @@ export const NameComponent = (props: Props) => {
 _./src/demo/my-form.component.tsx_
 
 ```tsx
-import React from "react";
 import { NameComponent } from "./name-component";
 
 interface Props {
@@ -91,7 +88,7 @@ Y añadir el formulario en el _app.tsx_.
 _./src/app.tsx_
 
 ```diff
-import React from "react";
+import './App.css'
 + import { HomePage } from "./demo/home.page";
 
 export const App = () => {
@@ -105,6 +102,8 @@ export const App = () => {
 _./src/demo/name-component.component.tsx_
 
 ```diff
++ import React from "react";
+
 - export const NameComponent = (props: Props) => {
 + export const NameComponent = React.memo((props: Props) => {
   const {name, onChange} = props;
@@ -152,6 +151,9 @@ Pero si podemos aplanar las _props_:
 _./src/demo/my-form.component.tsx_
 
 ```diff
+export const MyForm = (props: Props) => {
+-  const { name, onChange } = props;
+  return (
     <div>
 -      <NameComponent name={name} onChange={onChange} />
 +      <NameComponent {...props} />
@@ -200,8 +202,7 @@ interface Props {
 }
 
 export const MyForm = (props: Props) => {
--  const { name, onChange } = props;
-+  const { name, onChange, time } = props;
++  const { time } = props;
 
   return (
     <div>
@@ -225,6 +226,10 @@ Si en vez del _spread operator_, le indicamos de forma explícita las _props_, v
 _./src/demo/my-form.component.tsx_
 
 ```diff
+-  const { time } = props;
++ const { name, onChange, time } = props;
+
+  return (
     <div>
 -      <NameComponent {...props} />
 +      <NameComponent name={name} onChange={onChange} />

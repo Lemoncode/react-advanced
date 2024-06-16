@@ -5,6 +5,8 @@ interface Props extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const InputInfo: React.FC<Props> = (props: Props) => {
+  const { label, ...inputProps } = props;
+
   const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log("Aquí pongo mi código");
     if (props.onChange) {
@@ -14,8 +16,12 @@ export const InputInfo: React.FC<Props> = (props: Props) => {
 
   return (
     <div className={classes.container}>
-      <input type="number" {...props} onChange={(e) => handleOnChange(e)} />
-      <label>{props.label}</label>
+      <input
+        type="number"
+        {...inputProps}
+        onChange={(e) => handleOnChange(e)}
+      />
+      <label>{label}</label>
     </div>
   );
 };

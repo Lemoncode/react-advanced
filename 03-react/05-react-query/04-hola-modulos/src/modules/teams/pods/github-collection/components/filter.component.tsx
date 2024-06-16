@@ -8,7 +8,7 @@ interface Props {
 export const FilterComponent: React.FC<Props> = (props) => {
   const { initialValue, onSearch } = props;
   const [value, setValue] = React.useState(initialValue);
-
+  
   return (
     <>
       <div>

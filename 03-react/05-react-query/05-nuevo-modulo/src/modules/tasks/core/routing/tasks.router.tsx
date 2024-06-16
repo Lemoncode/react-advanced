@@ -1,4 +1,5 @@
 import { MODULE_TASKS_ROUTES } from "./tasks.routes.const";
+
 import { TaskCollectionScene } from "@tasks/scenes";
 
 export const moduleTasksRoutes = [

@@ -2,22 +2,17 @@
 
 ## Resumen
 
-Un escenario muy común que nos encontramos cuando desarrollamos una aplicación
-es que ciertos componentes se tienen que mostrar o no dependiendo de ciertas
-condiciones.
+Un escenario muy común que nos encontramos cuando desarrollamos una aplicación es que ciertos componentes se tienen que mostrar o no dependiendo de ciertas condiciones.
 
-Esto de primeras puede resultar muy obvio, puedes usar el operador and _&&_,
-indicar la condición y después el _markup_ que se tendría que mostrar si
-la condición es _true_.
+Esto de primeras puede resultar muy obvio, puedes usar el operador and _&&_, indicar la condición y después el _markup_ que se tendría que mostrar si la condición es _true_.
 
 Está "_facilidad_" nos puede llevar a grandes quebradores de cabeza:
 
 - En algunos casos la condición puede cortocircuitar de forma errónea.
-- En otros casos nuestro código puede ser muy difícil de leer y mantener,
-  sobre todo cuando tienes que anidar varios condicionales.
 
-En estos ejemplos vamos a empezar a trabajar con esto e ir
-sugiriendo buenas prácticas.
+- En otros casos nuestro código puede ser muy difícil de leer y mantener, sobre todo cuando tienes que anidar varios condicionales.
+
+En estos ejemplos vamos a empezar a trabajar con esto e ir sugiriendo buenas prácticas.
 
 ## Paso a Paso
 
@@ -84,7 +79,7 @@ export const loadClient = (): Promise<Client> => {
 };
 ```
 
-- De momento el componente va a mostrar el nombre de esa persona, aquí el modo estricto nos viene de gra ayuda.
+- De momento el componente va a mostrar el nombre de esa persona, aquí el modo estricto nos es de gran ayuda.
 
 _./src/components/client/client.component.tsx_
 
@@ -117,11 +112,12 @@ _./src/components/client/index.ts_
 export * from "./client.component";
 ```
 
-- Vamos a añadirlo al _app.tsx_
+- Vamos a añadirlo al _App.tsx_
 
 ```diff
-import React from "react";
-+ import { ClientComponent } from "./components/client";
++ import { ClientComponent } from "./components/client/client.component";
+import './App.css'
+
 
 export const App = () => {
 -  return <h1>Hello React !!</h1>;
@@ -146,8 +142,7 @@ _./src/components/client/client.component.tsx_
 
 ¿Qué estamos haciendo aquí?
 
-- En cuanto introducimos las llaves en _JSX_ estamos indicando que
-  vamos a ejecutar código _javascript_.
+- En cuanto introducimos las llaves en _JSX_ estamos indicando que vamos a ejecutar código _javascript_.
 
 - Lo que hacemos es ver qué valor tiene _client_, si es _false_, _null_, _undefined_ o cero va a valer _false_, si no _true_.
 
@@ -160,13 +155,13 @@ _./src/components/client/client.component.tsx_
 ```diff
 return (
 + <>
-+ { client &&
++ { client && (
     <div>
       <h1>Client</h1>
 -      <h2>{client && client.name}</h2>
 +      <h2>{client.name}</h2>
     </div>
-+ }
++ )}
 + </>
   );
 ```
@@ -192,7 +187,7 @@ return (
 
 Esta solución puede ser curiosa para un solo campo, aun así estamos devolviendo un _null_ por aquí...
 
-- Otra opción es usar el operador _??_.
+- Otra más opción es añadir el operador _??_.
 
 _./src/components/client/client.component.tsx_
 
@@ -238,9 +233,18 @@ export const ClientComponent = () => {
 };
 ````
 
+Tambíen podríamos añadir un indicador de carga:
+
+```diff
+ if(!client) {
+-   return (null);
++   return (<h1>Loading...</h1>);
+ }
+```
+
 De esta manera no estamos manchando el flujo principal de nuestro TSX, aunque queda un poco raro el componente.
 
-- Una opción que me personalmente me gusta más es la de usar siempre valores seguros,es decir, en vez de inicializar a _null_ utilizar un _factory_ para mostrar un valor por defecto bien formado, esto es:
+- Una opción que personalmente me gusta más es la de usar siempre valores seguros,es decir, en vez de inicializar a _null_ utilizar un _factory_ para mostrar un valor por defecto bien formado, esto es:
   - En el caso de una instancia, la misma informada con datos _dummy_.
   - En el caso de un _array_, un _array_ vacío.
 
@@ -289,4 +293,21 @@ import { loadClient } from "./client.api";
 export const ClientComponent = () => {
 -  const [client, setClient] = useState<Client>(null);
 +  const [client, setClient] = useState<Client>(createEmptyClient());
+
+  React.useEffect(() => {
+    loadClient().then((client) => setClient(client));
+  }, []);
+
+-  if (!client) {
+-    return <h1>Loading...</h1>;
+-  }
+
+  return (
+```
+
+y si queremos añadirle una optimización más:
+
+```ts
+export const ClientComponent = () => {
+  const [client, setClient] = useState<Client>(() => createEmptyClient());
 ```

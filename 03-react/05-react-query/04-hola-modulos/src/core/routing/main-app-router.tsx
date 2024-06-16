@@ -16,6 +16,7 @@ export const MainAppRouter: React.FC = () => {
             </ModuleTeamRootProviders>
           }
         >
+          {/* Ojo a la ñapa aquí */}
           {moduleHomeRoutes.map((route: any) => (
             <Route key={route.path} path={route.path} element={route.element} />
           ))}

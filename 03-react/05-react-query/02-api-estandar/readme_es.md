@@ -1,6 +1,6 @@
 # Api estándar
 
-Vamos a cargar la lista de miembros de github y la ficha de un miembro utilizando _useEffect_, después nos veremos que posibles problemas hemos introducido (suponiendo que esto es un proyecto grande) y que soluiones nos da _react-query_.
+Vamos a cargar la lista de miembros de github y la ficha de un miembro utilizando _useEffect_, después nos veremos que posibles problemas hemos introducido (suponiendo que esto es un proyecto grande) y que soluciones nos da _react-query_.
 
 Aunque para esta proyecto (con lo pequeño y simple que es) sería sobrearquitectura, vamos a estructurar bien la API y razonar el porqué de cada decisión.
 
@@ -132,17 +132,17 @@ npm run dev
 
 Para la complejidad de este proyecto podríamos directamente meter un _axios_ o _fetch_ directamente en el componente y tirar millas.
 
-En este caso nos vamos a complicar la vida, simulando que estamos en un proyecto más complejo, ... que no nos gusta de usar el fetch directamente en el componente:
+En este caso nos vamos a complicar la vida, simulando que estamos en un proyecto más complejo, ... que cosas no nos gustan de usar el `fetch` directamente en el componente:
 
 - Lo normal en un proyecto grande es que el modelo que se recibe del servidor, no se ajusta a lo que pide el cliente al 100%:
 
   - Algo tan tonto como gestionar fechas, suelen venir serializadas de la API en un formato dado y seguramente las queramos pasar a objeto Date y viceversa.
 
-  - O comprobaciones de datos, muchas veces las APIs nos devuelven null en ciertos campos y mejor convertirlo a valores fáciles de manejar (como 'Desconocido', 'Seleccione uno', '-1'...).
+  - Comprobaciones de datos, muchas veces las APIs nos devuelven null en ciertos campos y mejor convertirlo a valores fáciles de manejar (como 'Desconocido', 'Seleccione uno', '-1'...).
 
-  - O estructuras de datos que necesitan de un masaje previo para ser consumidas por el cliente.
+  - También hay estructuras de datos que necesitan de un masaje previo para ser consumidas por el cliente.
 
-  - El objetivo es "vaciar el cangrejo", es decir que el componente se dedique a lo que es bueno, gestionar el interfaz de usuario, y el resto lo saquemos a piezas que hacen una cosa y una sola cosa, que además sean fáciles de testear.
+  - El objetivo es "vaciar el cangrejo", es decir que el componente se dedique a gestionar el interfaz de usuario, y el resto lo saquemos a piezas que hacen una cosa y una sola cosa, que además sean fáciles de testear.
 
 Así que nos vamos a complicar la vida :).
 
@@ -195,7 +195,7 @@ _.src/pods/github-collection/api/github-collection.api.ts_
 import Axios from "axios";
 import { GithubMemberApiModel } from "./github-collection.model";
 
-getGithubMembers = async (
+export const getGithubMembers = async (
   organization: string
 ): Promise<GithubMemberApiModel[]> => {
   const { data } = await Axios.get<GithubMemberApiModel[]>(
@@ -274,7 +274,7 @@ _.src/pods/github-collection/api/github-collection.api.ts_
 ```diff
 import Axios from "axios";
 - import { GithubMemberApiModel } from "./github-collection.model";
-+ import { GithubMemberApiModel, validateGithubMember } from "./model";
++ import { GithubMemberApiModel, validateGithubMember } from "./github-collection.model";
 
 getGithubMembers = async (
   organization: string
@@ -351,7 +351,7 @@ export * from "./github-collection.api";
 export * from "./github-collection.model";
 ```
 
-Ya tenemos la llamada a la API lista, vamos ahora a definir el view modelo que vamos a usar en el componente (en este caso es más simple):
+Ya tenemos la llamada a la API lista, vamos ahora a definir el view model que vamos a usar en el componente (en este caso es más simple):
 
 _./src/pods/github-collection/github-collection.vm.ts_
 
@@ -393,7 +393,7 @@ import React from "react";
 + import { GithubMemberVm } from "./github-collection.vm";
 
 export const GithubCollectionPod: React.FC = () => (
-+ const [githubMembers, setGithubMembers] = React.useState<GithubMemberVm
++ const [githubMembers, setGithubMembers] = React.useState<GithubMemberVm[]>([]);
 +
 + React.useEffect(() => {
 +   const loadGithubMembers = async () => {
@@ -454,6 +454,7 @@ import React from "react";
 - import { getGithubMembers } from "./api/github-collection.api";
 - import { mapGithubMemberFromApiToVm } from "./github-collection.mapper";
 + import { getGithubMembersCollection } from "./github-collection.repository";
+import { GithubMemberVm } from "./github-collection.vm";
 
 export const GithubCollectionPod: React.FC = () => (
  const [githubMembers, setGithubMembers] = React.useState<GithubMemberVm
@@ -511,6 +512,13 @@ _./src/pods/github-collection/github-collection.component.module.css_
 }
 ```
 
+Y como vamos a combinar más de un CSS en un elemento, vamos a instalar este helper:
+
+```bash
+npm install classnames --save
+npm install @types/classnames --save-dev
+```
+
 _./src/pods/github-collection/github-collection.component.tsx_
 
 ```tsx
@@ -557,9 +565,7 @@ import { GithubMemberVm } from "./github-collection.vm";
 ```
 
 ```diff
-+ import { GithubCollectionComponent } from "./github-collection.component";
 
-// (...)
 
   return (
     <div>
@@ -569,7 +575,7 @@ import { GithubMemberVm } from "./github-collection.vm";
 -          <span>{githubMember.name}</span>
 -        </div>
 -      ))}
-+      <GithubCollectionComponent githubMembers={githubMembers}>
++      <GithubCollectionComponent githubMembers={githubMembers}/>
     </div>
   );
 ```
@@ -734,7 +740,7 @@ const GitHubMemberSchema = z.object({
   site_admin: z.boolean(),
 });
 
-export type GitHubMember = z.infer<typeof GitHubMemberSchema>;
+export type GithubMemberApiModel = z.infer<typeof GitHubMemberSchema>;
 
 export const validateGithubMember = (data: unknown): boolean => {
   const validationResult = GitHubMemberSchema.safeParse(data);
@@ -751,7 +757,7 @@ export const validateGithubMember = (data: unknown): boolean => {
 
 la llamada a la API
 
-_./pods/github-member/github-member.api.ts_
+_./pods/github-member/api/github-member.api.ts_
 
 ```ts
 import Axios from "axios";
@@ -901,6 +907,7 @@ _./src/pods/github-member/github-member.component.tsx_
 ```tsx
 import React from "react";
 import { GithubMemberVm } from "./github-member.vm";
+import classes from "./github-member.component.module.css";
 
 interface Props {
   githubMember: GithubMemberVm;

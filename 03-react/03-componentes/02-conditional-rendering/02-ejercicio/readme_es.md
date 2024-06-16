@@ -1,11 +1,10 @@
 # Ejercicio conditional Rendering
 
-Vamos a partir del típico escenario de "esto es una mierda pero funciona"
-:)
+Vamos a partir del típico escenario de "esto es una mierda pero funciona" :)
 
 Queremos editar la ficha de un cliente, tenemos la siguiente casuística:
 
-- El usuario puede tener la nacionalidad (NIF), ser residente (NIE), o ser extranjero (pasaporte).
+- El usuario puede tener la nacionalidad (NIF), ser residente (NIE), o ser extranjero (Pasaporte).
 
 - Si tiene la nacionalidad, debe rellenar campos NIF, nombre, apellidoA, apellidoB, provincia.
 

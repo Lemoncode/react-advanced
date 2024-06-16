@@ -24,7 +24,7 @@ const GitHubMemberSchema = z.object({
   site_admin: z.boolean(),
 });
 
-export type GitHubMember = z.infer<typeof GitHubMemberSchema>;
+export type GithubMemberApiModel = z.infer<typeof GitHubMemberSchema>;
 
 export const validateGithubMember = (data: unknown): boolean => {
   const validationResult = GitHubMemberSchema.safeParse(data);

@@ -17,13 +17,11 @@ export const TaskAppendComponent: React.FC<Props> = (props: Props) => {
       {mode !== "Append" ? (
         <button onClick={setAppendMode}>Enter Insert New TODO Mode</button>
       ) : (
-        <div>
-          <TaskItemEdit
-            item={createEmptyTask()}
-            onSave={onAppend}
-            onCancel={onCancel}
-          />
-        </div>
+        <TaskItemEdit
+          item={createEmptyTask()}
+          onSave={onAppend}
+          onCancel={onCancel}
+        />
       )}
     </div>
   );

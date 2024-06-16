@@ -1,9 +1,7 @@
 import { MODULE_TEAMS_ROUTES } from "./teams-routes.const";
 
-import {
-  GithubMemberCollectionScene,
-  GithubMemberScene,
-} from "@/modules/teams/scenes";
+// TODO: esto va a fallar porque no tenemos las escenas migradas
+import { GithubMemberCollectionScene, GithubMemberScene } from "@teams/scenes";
 
 export const moduleTeamsRoutes = [
   {

@@ -15,15 +15,25 @@ Partimos del ejemplo anterior de este curso e instalamos las dependencias.
 npm install
 ```
 
-También vamos a levantar un backend de pruebas:
+También vamos a levantar un backend de pruebas (abrimos un terminal separado):
 
 ```bash
 cd 99-server
 ```
 
+```bash
+npm install
+```
+
+```bash
+npm start
+```
+
+Y lo dejamos arrancado.
+
 Vamos a crear el pod de tareas:
 
-_./src/modules/tasks/pods/tasks-collection/task-collection.pod.tsx_
+_./src/modules/tasks/pods/task-collection/task-collection.pod.tsx_
 
 ```tsx
 export const TaskCollectionPod: React.FC = () => {
@@ -66,7 +76,7 @@ Probamos que lo hemos creado bien:
 npm run dev
 ```
 
-Para acceder la servidor, lo suyo es que la API base la metamos en una variable de entorno (aquí si creamos módulos separados cada módulo tendría la suya) ¿Podría tener esto un problema con los despliegues?
+Para acceder al servidor, lo suyo es que la API base la metamos en una variable de entorno (aquí si creamos módulos separados cada módulo tendría la suya) ¿Podría tener esto un problema con los despliegues?
 
 - Lo que es Front End nunca va en el area de variables de entornos que podemos tener en un servidor en la nube, se reemplaza en tiempo de build.
 - Si podría ser un problema si queremos que se cambie la URL de base desde la aplicación principal, en ese caso podríamos optar por meter un punto de entrada para que la aplicación decidiera la URL de base (sobreescribiendo la variable de entorno)
@@ -104,7 +114,7 @@ Instalamos zod:
 npm install zod
 ```
 
-Vamos a definir el esquema de ZOD y el modelo de datos, tenemos para tarea, los siguientes campos:
+Vamos a definir el esquema de ZOD y el modelo de datos que usaremos para definir una tarea, tenemos los siguientes campos:
 
 - id: numérico.
 - description: string.
@@ -191,14 +201,13 @@ export const getTaskCollection = async (): Promise<vm.TaskVm[]> => {
 };
 ```
 
-Vamos a darle uso a _React Query_ para cargar la lista de tareas (he implementamos lo mínimo para ver que salen datos):
+Vamos a darle uso a _React Query_ para cargar la lista de tareas (he implementado lo mínimo para ver que salen datos):
 
 _./src/modules/tasks/pods/tasks-collection/task-collection.pod.tsx_
 
 ```diff
-+ import { useQuery } from "react-query";
-+ import {getTaskCollection} as repository from "./task-collection.repository";
-+ import { TaskVm } from "./task-collection.vm";
++ import { useQuery } from "@tanstack/react-query";
++ import { getTaskCollection } from "./task-collection.repository";
 
 export const TaskCollectionPod: React.FC = () => {
 
@@ -211,12 +220,12 @@ export const TaskCollectionPod: React.FC = () => {
   return (
     <div>
       <h1>Task Collection POD</h1>
-      {
++      {
 +      taskCollection.map((task) => (
 +        <div key={task.id}>
 +          <span>{task.description}</span>
 +        </div>
-      }
++      ))}
     </div>
   );
 };
@@ -315,6 +324,8 @@ npm run dev
 
 Vamos a empezar a jugar con las opciones que nos ofrece React Query, primero nos fijamos en _refetchOnWindowFocus_.
 
+> ¡ OJO ! Esto ha cambiado en la versión 5 de React Query, _refetchOnWindowsFocus_ está ahora suscrito a la visibilidad de la pestaña, antes estaba suscrito a la ventana, evento [visibilityChange](https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilitychange_event), más info [aquí](https://tanstack.com/query/v5/docs/framework/react/guides/migrating-to-v5#window-focus-refetching-no-longer-listens-to-the-focus-event) y este [issue sobre version 5](https://github.com/TanStack/query/discussions/6568)
+
 Está opción está por defecto a true ¿Qué quiere decir esto?
 
 Vamos a abrir side by side fichero de datos json y la aplicación, y vamos a modificar el json, en cuanto pinchamos en la ventana los datos se recargan sólos.
@@ -344,6 +355,8 @@ Si nos vamos a las devtool, podemos ver:
 - Puedo incluso relanzarlas.
 
 Bueno, hasta aquí el happy path, vamos a tirar abajo la api rest y ver que pasa:
+
+** VAMOS AL TERMINAL DONDE ESTA NUESTRO SERVER DE API Y CTR+C **
 
 _Paramos al rest api de todos_
 
@@ -446,7 +459,7 @@ Antes de seguir vamos a darle un estilo mínimo a la lista de tareas:
 _./src/modules/tasks/pods/tasks-collection/task-collection.pod.css_
 
 ```css
-.todo-list {
+.todolist {
   display: grid;
   grid-template-columns: 1fr 3fr;
   grid-gap: 1rem;
@@ -466,7 +479,7 @@ _./src/modules/tasks/pods/tasks-collection/task-collection.pod.tsx_
   return (
     <div>
       <h1>Task Collection POD</h1>
-+      <div className={classes.todoList}>
++      <div className={classes.todolist}>
       {taskCollection.map((task) => (
 -        <div key={task.id}>
 -          <span>{task.description}</span>
@@ -554,7 +567,7 @@ interface Props {
 }
 
 export const TaskAppendComponent: React.FC<Props> = (props: Props) => {
-  const { mode, setAppendMode, onAppend, onCancel } = props;
+  const { mode, setAppendMode, onCancel } = props;
 
   return (
     <div>
@@ -712,13 +725,20 @@ import React from "react";
 ```
 
 ```diff
+export const TaskAppendComponent: React.FC<Props> = (props: Props) => {
+-  const { mode, setAppendMode, onCancel } = props;
++  const { mode, setAppendMode, onAppend, onCancel } = props;
+
+
+// (...)
+
   ) : (
     <div>
 -      <h3>Here goes editing thing...</h3>
 -      <button onClick={onCancel}>Cancel</button>
 +        {/* Recordar onAppend en destructuring props*/}
 +         <TaskItemEdit
-+           item={createEmptyTodoItem()}
++           item={createEmptyTask()}
 +           onSave={onAppend}
 +           onCancel={onCancel}
 +         />
@@ -816,11 +836,13 @@ _./src/modules/tasks/pods/task-collection/task-collection.pod.tsx_
 ```diff
 import React from "react";
 import { useTaskCollectionQuery } from "./use-task-collection-query.hook";
-import { Mode } from "./task-collection.vm";
+- import { Mode } from "./task-collection.vm";
++ import { Mode, TaskVm } from "./task-collection.vm";
 import classes from "./task-collection.pod.module.css";
 import { TaskAppendComponent } from "./components";
 + import { useMutation } from "@tanstack/react-query";
 + import { insertTask } from "./task-collection.repository";
+import classes from "./task-collection.pod.module.css";
 ```
 
 ```diff
@@ -859,11 +881,14 @@ Pues que como no perdemos foco, y no se recarga el componente, se queda con la q
 _Nos toca antes del refactor importar queryClient y querykeys_
 
 ```diff
++ import { queryClient, queryKeys } from "@tasks/core/react-query";
+// (...)
+
   const { mutate: insertTaskMutation } = useMutation({
     mutationFn: insertTask,
 +    onSuccess: () => {
 +      queryClient.invalidateQueries({
-+        queryKey: queryKeys.all(),
++        queryKey: queryKeys.all,
 +      });
 +    },
 ```
@@ -881,11 +906,11 @@ Vamos a hacer un refactor, metemos la mutación en un hook, aquí podemos elegir
 
 Usamos un hook para el mutation:
 
-_./src/modules/tasks/pods/task-collection/mutations/use-task-mutation.hook.ts_
+_./src/modules/tasks/pods/task-collection/queries/use-task-mutation.hook.ts_
 
 ```ts
 import { useMutation } from "@tanstack/react-query";
-import { insertTask } from "./task-collection.repository";
+import { insertTask } from "../task-collection.repository";
 import { queryClient, queryKeys } from "@tasks/core/react-query";
 
 export const useTaskMutation = () => {
@@ -954,11 +979,15 @@ Comprobamos que no hemos roto nada :)
 npm run dev
 ```
 
-Podemos simplifcar el POD, vamos a crear un hook que almacene el modo y el estado de la conexión (se podría haber roto en dos separados, per ahorramos poco?)
+Podemos simplifcar el POD, vamos a crear un hook que almacene el modo y el estado de la conexión (se podría haber roto en dos separados, pero ahorramos poco?)
 
-_./src/modules/tasks/pods/task-collection/task-collection.hook.ts_
+_./src/modules/tasks/pods/task-collection/task-collection.hook.tsx_
 
 ```diff
++ import React from "react";
++ import { useTaskCollectionQuery, useTaskMutation } from "./queries";
++ import { Mode } from "./task-collection.vm";
++
 + const usePodQuery = () => {
 +  const [mode, setMode] = React.useState<Mode>("Readonly");
 +  const [connectionLost, setConnectionLost] = React.useState(false);
@@ -981,7 +1010,19 @@ _./src/modules/tasks/pods/task-collection/task-collection.hook.ts_
 +    isError,
 +  };
 + };
-+
+```
+
+Y en pod se nos queda:
+
+```diff
+import React from "react";
+- import { Mode, TaskVm } from "./task-collection.vm";
++ import { TaskVm } from "./task-collection.vm";
+import { TaskAppendComponent } from "./components";
+- import { useTaskCollectionQuery, useTaskMutation } from "./queries";
++ import { usePodQuery } from "./task-collection.hook";
+import classes from "./task-collection.pod.module.css";
+
  export const TaskCollectionPod: React.FC = () => {
 -  const [mode, setMode] = React.useState<Mode>("Readonly");
 -  const [connectionLost, setConnectionLost] = React.useState(false);
@@ -1026,7 +1067,7 @@ interface Props {
   onEdit: (id: number) => void;
 }
 
-export const TaskDisplayComponent: React.FC<Props> = (props: Props) => {
+export const TaskDisplayRowComponent: React.FC<Props> = (props: Props) => {
   const { item, onEdit } = props;
 
   return (
@@ -1055,7 +1096,7 @@ _./src/modules/tasks/pods/task-collection/task-collection.pod.tsx_
 ```diff
 import classes from "./task-collection.pod.module.css";
 - import { TaskAppendComponent } from "./components";
-+ import { TaskAppendComponent, TaskDisplayComponent } from "./components";
++ import { TaskAppendComponent, TaskDisplayRowComponent } from "./components";
 ```
 
 ```diff
@@ -1106,7 +1147,7 @@ Si pinchamos en _edit_ vemos que no pasa nada, toca ponerse manos a la obra:
 
 Vamos primero a por el estado:
 
-_./src/modules/tasks/pods/task-collection/task-collection.pod.ts_
+_./src/modules/tasks/pods/task-collection/task-collection.hook.tsx_
 
 ```diff
 const usePodQuery = () => {
@@ -1455,7 +1496,7 @@ export const useTaskMutation = () => {
 
 Y nos vamos al pod:
 
-_./src/modules/tasks/pods/task-collection/task-collection.pod.tsx_
+_./src/modules/tasks/pods/task-collection/task-collection.hook.tsx_
 
 ```diff
 const usePodQuery = () => {
@@ -1487,6 +1528,25 @@ const usePodQuery = () => {
     isError,
   };
 };
+```
+
+Y en el POD:
+
+_./src/modules/tasks/pods/task-collection/task-collection.pod.tsx_
+
+```diff
+export const TaskCollectionPod: React.FC = () => {
+  const {
+    mode,
+    setMode,
+    editingId,
+    setEditingId,
+    taskCollection,
+    insertTaskMutation,
++   updateTaskMutation,    
+    isError,
+    setConnectionLost,
+  } = usePodQuery();
 ```
 
 ```diff

@@ -2,11 +2,11 @@
 
 ## Resumen
 
-En un formulario real es muy normal mostrar u ocultar _markup_ dependiendo de qué opciones elijamos, es más, es normal que tengamos condiciones anidadas, si no llevamos cuidado esto puede hacer que nuestra aplicación se convierta en un caso de _markup_ y que sea muy difícil de mantener, el proceso que sigo cuando me encuentro con estos escenarios:
+En un formulario real es muy normal mostrar u ocultar _markup_ dependiendo de qué opciones elijamos, es más, es normal que tengamos condiciones anidadas, si no llevamos cuidado esto puede hacer que nuestra aplicación se convierta en un caos de _markup_ y que sea muy difícil de mantener, el proceso que sigo cuando me encuentro con estos escenarios:
 
-- Primero entender el problema.
+- Primero entiendo el problema.
 
-- Segundo empezar implementando sin preocuparme de optimizar, salvo que en ese paso este muy claro.
+- Segundo empiezo implementando sin preocuparme de optimizar, salvo que en ese paso este muy claro.
 
 - Conforme implemento y voy encontrando problemas o posibles mejoras, voy refactorizando, para ello:
 
@@ -28,12 +28,11 @@ Como resultado espero:
 
 - Un _markup_ que me dé un nivel de abstracción y puede navegar al detalle de cada funcionalidad y me la encuentre encapsulada en un componente, y a su vez ese componente en subcomponentes.
 
-- Unos _custom hooks_ que tengan cada uno bien delimitada su responsabilidad, pueda probar,
-  e incluso puede que alguno pueda promocionar a común.
+- Unos _custom hooks_ que tengan cada uno bien delimitada su responsabilidad, pueda probar, e incluso puede que alguno sea promocionable a común.
 
-- Un código plano en TS.
+- Un código plano en TypeScript con lógica de negocio o de utilidad (llamalo como más cómodo te sea)
 
-En este ejemplo vamos a estudiar las opciones que tenemos para aplicar _rendering_ condicional, más allá de la básica de _&&_
+En este ejemplo vamos a estudiar las opciones que tenemos para aplicar _rendering_ condicional, más allá de lo básico de usar el operador and _&&_
 
 ## Paso a Paso
 
@@ -48,7 +47,7 @@ npm install
 - Vamos a ver problemas de usar _&&_, a vuela pluma
   - Manchamos el _markup_ y añadimos complejidad para leerlo.
   - Si necesitamos anidarlo se nos complica el tema.
-  - Hay que tener cuidado, que esa condición se evalúa.
+  - Hay que tener cuidado, la condici´n del _&&_ se evalúa.
 
 ¿Qué quiere decir esto de que es "evalúa"? Vamos a por un caso divertido:
 
@@ -149,7 +148,8 @@ Vamos a añadir algunos datos para probar esto:
 
 ```diff
 export const PlayGround: React.FC = () => {
-  const [clientNameCollection, setClientNameCollection] = React.useState<
+-  const [clientNameCollection, _] = React.useState<
++  const [clientNameCollection, setClientNameCollection] = React.useState<
     string[]
   >([]);
 
@@ -223,7 +223,7 @@ export const PlayGround: React.FC = () => {
 };
 ```
 
-- Vamos a por otro ejemplo, que pasa si tenemos varios casos que sean "_hermanos_", por ejemplo (ojo esto se podía hacer en un componente y pasar el colo por parámetro, pero es por simplificar, imaginate que son datos de ciudadanos UE, USA y otras zonas geográficas :)):
+- Vamos a por otro ejemplo, que pasa si tenemos varios casos que sean "_hermanos_", por ejemplo (ojo esto se podía hacer en un componente y pasar el color por parámetro, pero es por simplificar, imaginate que son datos de ciudadanos UE, USA y otras zonas geográficas :)):
 
 _./src/components/playground/playground.tsx_
 
@@ -398,7 +398,7 @@ _./src/components/playground/playground.tsx_
 };
 ```
 
-Esto de la función _autoinvocada_ no tiene mala pinta, pero vamos a ver si podemos dejarlo más claro en el JSX, vamos a crear un objeto con _keys_ para _notification state_ (se podría automatizar con _TypeScript_, habría que darle una vuelta).
+Esto de la función _autoinvocada_ no tiene mala pinta, pero vamos a ver si podemos dejarlo más claro en el JSX, vamos a modificar el enum de status para que tenga las _keys_ para _notification state_ (se podría automatizar con _TypeScript_ o usar otra solucíon, habría que darle una vuelta).
 
 _./src/components/playground/playground.tsx_
 

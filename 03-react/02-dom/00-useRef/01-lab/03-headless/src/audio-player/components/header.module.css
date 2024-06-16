@@ -1,0 +1,13 @@
+.header {
+  background: linear-gradient(to right, #3a3a3a, #262626);
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.headerText {
+  color: yellow;
+  font-size: 20px;
+}

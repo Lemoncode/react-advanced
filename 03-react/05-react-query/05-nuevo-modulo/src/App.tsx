@@ -3,9 +3,9 @@ import { MainAppRouter } from "@/core/routing";
 
 function App() {
   return (
-    <>
-        <MainAppRouter />
-    </>
+    <div>
+      <MainAppRouter />
+    </div>
   );
 }
 

@@ -1,8 +1,7 @@
 import * as React from "react";
-import "./App.css";
 import { InputInfo } from "./components/input-info.component";
 
-function App() {
+export const App = () => {
   const [value, setValue] = React.useState("");
   const [myNumber, setMyNumber] = React.useState(0);
 
@@ -15,7 +14,6 @@ function App() {
         }
         label="Campo numérico"
       />
-
       <InputInfo
         value={value}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -26,6 +24,6 @@ function App() {
       />
     </div>
   );
-}
+};
 
 export default App;

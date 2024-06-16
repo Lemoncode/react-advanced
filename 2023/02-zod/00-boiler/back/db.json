@@ -1,0 +1,114 @@
+{
+  "pacientes": [
+    {
+      "id": 1,
+      "nif": "12345678A",
+      "nombre": "Juan",
+      "apellidos": "Pérez",
+      "edad": 35,
+      "fechaNacimiento": "1988-05-15T12:00:00Z",
+      "alergias": ["Polen"],
+      "medicacion": null,
+      "medidasPresionArterial": [
+        {
+          "fechaHora": "2023-11-01T08:30:00Z",
+          "sistolica": 120,
+          "diastolica": 80
+        },
+        {
+          "fechaHora": "2023-11-02T14:15:00Z",
+          "sistolica": 130,
+          "diastolica": 85
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "nif": "23456789B",
+      "nombre": "María",
+      "apellidos": "López",
+      "edad": 28,
+      "fechaNacimiento": "1995-03-20T10:45:00Z",
+      "alergias": null,
+      "medicacion": ["Aspirina"],
+      "medidasPresionArterial": [
+        {
+          "fechaHora": "2023-11-01T09:45:00Z",
+          "sistolica": 110,
+          "diastolica": 70
+        },
+        {
+          "fechaHora": "2023-11-02T16:30:00Z",
+          "sistolica": 125,
+          "diastolica": 80
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "nif": "34567890C",
+      "nombre": "Luis",
+      "apellidos": "González",
+      "edad": 42,
+      "fechaNacimiento": "1981-12-10T14:20:00Z",
+      "alergias": ["Penicilina", "Frutos secos"],
+      "medicacion": ["Ibuprofeno"],
+      "medidasPresionArterial": [
+        {
+          "fechaHora": "2023-11-01T11:15:00Z",
+          "sistolica": 140,
+          "diastolica": 90
+        },
+        {
+          "fechaHora": "2023-11-02T12:45:00Z",
+          "sistolica": 130,
+          "diastolica": 85
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "nif": "45678901D",
+      "nombre": "Elena",
+      "apellidos": "Martínez",
+      "edad": 55,
+      "fechaNacimiento": "1968-08-05T16:10:00Z",
+      "alergias": null,
+      "medicacion": null,
+      "medidasPresionArterial": [
+        {
+          "fechaHora": "2023-11-01T13:20:00Z",
+          "sistolica": 130,
+          "diastolica": 80
+        },
+        {
+          "fechaHora": "2023-11-02T10:30:00Z",
+          "sistolica": 140,
+          "diastolica": 90
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "nif": "56789012E",
+      "nombre": "Carlos",
+      "apellidos": "Sánchez",
+      "edad": 30,
+      "fechaNacimiento": "1992-04-25T09:55:00Z",
+      "alergias": ["Polen", "Maní"],
+      "medicacion": ["Lisinopril", "Metformina"],
+      "medidasPresionArterial": [
+        {
+          "fechaHora": "2023-11-01T17:00:00Z",
+          "sistolica": 120,
+          "diastolica": 80
+        },
+        {
+          "fechaHora": "2023-11-02T18:15:00Z",
+          "sistolica": 125,
+          "diastolica": 85
+        }
+      ]
+    }
+  ]
+}

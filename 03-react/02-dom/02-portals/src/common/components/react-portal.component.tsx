@@ -14,18 +14,19 @@ interface Props {
 }
 
 export const ReactPortalComponent: React.FC<Props> = (props) => {
-  const { children, wrapperId } = props;
   const [wrapperElement, setWrapperElement] =
     React.useState<HTMLElement | null>(null);
+  const { children, wrapperId } = props;
 
   React.useLayoutEffect(() => {
-    let createdOnTheFly = false;
     let element = document.getElementById(wrapperId);
+    let createdOnTheFly = false;
 
     if (!element) {
       element = createWrapperAndAppendToBody(wrapperId);
       createdOnTheFly = true;
     }
+
     setWrapperElement(element);
 
     return () => {

@@ -70,12 +70,14 @@ export const App = () => {
     </div>
   );
 };
+
+export default App;
 ```
 
 - Vamos a probarlo:
 
 ```bash
-npm start
+npm run dev
 ```
 
 - Todo parece que funciona, pero tenemos algo muy feo en nuestro componente input... un _any_ como un castillo en las _props_.
@@ -174,6 +176,7 @@ _./src/components/input-info.component.tsx_
 ```
 
 - Con esto ya podemos usar el componente como un _input_ normal, pero con la etiqueta adicional, si metemos algo que no aplica nos va a "_chillar_" ¿Por qué? Porque en este caso acotamos el rango de campos en las _props_, y al _spread operator_ le llega la lista de _props_ valida.
+
 - Bueno esto está casi casi bien, hay un detalle, y es que al _input_ le estamos pasando una propiedad de más _label_, vamos a aplicar _destructuring_ para quedarnos con las _props_ del _input_ limpia.
 
 _./src/components/input-info.component.tsx_
@@ -187,7 +190,8 @@ export const InputInfo: React.FC<Props> = (props: Props) => {
     <div className={classes.container}>
 -      <input {...Props} />
 +      <input {...inputProps} />
-      <label>{props.label}</label>
+-      <label>{props.label}</label>
++      <label>{label}</label>
     </div>
   );
 };

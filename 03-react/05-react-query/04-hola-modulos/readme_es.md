@@ -97,7 +97,7 @@ export const MODULE_TEAMS_ROUTES = {
 
 Vamos a exponer las rutas de una manera que la pueda consumir el módulo principal:
 
-_./src/modules/teams/core/routing/teams.router.ts_
+_./src/modules/teams/core/routing/teams.router.tsx_
 
 ```ts
 import { MODULE_TEAMS_ROUTES } from "./teams-routes.const";
@@ -240,7 +240,7 @@ export * from "./github-member.scene";
 
 ### Conectando...
 
-Vamos a crear unos barrels cada módulo para que el módulo principal pueda tirar de ellos.
+Vamos a crear unos barrels en cada módulo para que el módulo principal pueda tirar de ellos.
 
 _./src/modules/teams/index.ts_
 
@@ -493,6 +493,8 @@ export default App;
 
 ```
 
+Aprovechamos para borrar las carpetas `pods` y `scenes` que colgaban directamente de `src`, ojo que igual nos da algún problema algún import que nos hayamos dejado colgando.
+
 Y lo levantamos
 
 # Que le queda a esto
@@ -502,7 +504,7 @@ Idealmente podríamos dividir esto entre varios proyectos (librería externa o i
 - Estamos acoplados a una versión de React concreta.
 - Estamos acoplados a una versión de React Router concreta.
 
-Lo idea sería que: cada módulo pudiera estar escrito con la tecnología que quisiéramos.
+Lo ideal sería que: cada módulo pudiera estar escrito con la tecnología que quisiéramos.
 
 Esto nos permite poder ir actualizando módulos de manera independiente, y no atar una aplicación a una tecnología y versión.
 
@@ -541,9 +543,13 @@ Aquí nos meteríamos en un buen jardín:
 Cómo recomendación:
 
 - No os metáis en Micro Front ends si no os hace falta.
+
 - Es algo complejo.
+
 - Piensa si no se podría resolver con una librería.
+
 - En una aplicación que no tengan que compartir datos entre módulos (sólo el token de seguridad), crear aplicaciones totalmente separadas (con librerías comunes).
+
 - Si tienes una aplicación que va a ser enorme y van a compartir datos entre módulos... es necesario que te vayas a este enfoque de Micro Frotn Ends... enhorabuena te vas a comer un marró considerable.
 
 Por otro lado hay muchas formas de enfocar MicroFrontEnds:
@@ -553,11 +559,3 @@ Por otro lado hay muchas formas de enfocar MicroFrontEnds:
 - Otro es el de sustituir páginas con componentes ricos (como estáis haciendo en Caché).
 
 - Otro que he visto es crear Microfront ends independientes que se combinan y uno puede tirar de otro (un señor lio)
-
-```
-
-```
-
-```
-
-```

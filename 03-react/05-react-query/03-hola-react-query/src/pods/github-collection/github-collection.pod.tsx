@@ -6,10 +6,8 @@ import { queryClient } from "@/core/react-query";
 import { githubKeys } from "@/core/react-query/query-keys";
 
 export const GithubCollectionPod: React.FC = () => {
-  const [filter, setFilter] = React.useState("");
-
-  const { githubMembers, isSuccess, refetch } =
-    useGithubCollectionQuery(filter);
+  const [filter, setFilter] = React.useState("lemoncode");
+  const { githubMembers, isSuccess } = useGithubCollectionQuery(filter);
 
   React.useEffect(() => {
     if (isSuccess) {
@@ -26,12 +24,7 @@ export const GithubCollectionPod: React.FC = () => {
       >
         Invalidar todas las consultas de github
       </button>
-
-      <button onClick={() => refetch()}>Refrescar</button>
-      <FilterComponent
-        initialValue={filter}
-        onSearch={(value) => setFilter(value)}
-      />
+      <FilterComponent initialValue={filter} onSearch={setFilter} />
       <GithubCollectionComponent githubMembers={githubMembers} />
     </div>
   );

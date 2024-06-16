@@ -7,9 +7,9 @@ export const useTaskCollectionQuery = (enabled: boolean) => {
   const { data: taskCollection = [], isError } = useQuery<TaskVm[]>({
     queryKey: queryKeys.taskCollection(),
     queryFn: () => getTaskCollection(),
-    refetchOnWindowFocus: false,
-    retry: false,
+    refetchOnWindowFocus: true,
     enabled,
+    retry: false,
   });
 
   return {

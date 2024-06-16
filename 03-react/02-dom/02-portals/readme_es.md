@@ -35,6 +35,7 @@ _./index.html_
   <body>
     <div id="root"></div>
 +    <div id="lastnode"></div>
+     <script type="module" src="/src/main.tsx"></script>
   </body>
 ```
 
@@ -64,7 +65,7 @@ export const ReactPortalComponent: React.FC<Props> = (props) => {
 };
 ```
 
-Ojo a la exclamación aquí, le estamos diciendo a modo estricto que ignore si esto puede ser null (por seguridad podríamos lanzar una excepción si eso paso o añadir código defensivo)
+Ojo a la exclamación aquí, le estamos diciendo a modo estricto que ignore si esto puede ser null (por seguridad podríamos lanzar una excepción si eso pasa o añadir código defensivo)
 
 ¿Si quitamos la exclamación que pasa?
 
@@ -98,6 +99,7 @@ Pero esto da un error, _oye que el elemento puede seguir siendo nulo !!_ ¿Por q
 export const ReactPortalComponent: React.FC<Props> = (props) => {
   const { children, wrapperId } = props;
 
+-  const fallbackContainer = document.createDocumentFragment();
 -  return ReactDOM.createPortal(
 -    children,
 -    document.getElementById(wrapperId) ? (
@@ -117,7 +119,7 @@ export const ReactPortalComponent: React.FC<Props> = (props) => {
 };
 ```
 
-Este código es muy limpio, pero es de los que _si fallo, no aviso_ vamos a darle una ultima vuelta de tuerca... esta situación no es normal porque no pegar un buen castañazo y simplificar el código... sin miedo:
+Este código es muy limpio, pero es de los que _si fallo, no aviso_ vamos a darle una ultima vuelta de tuerca... (lo normal es que no pase, pero por ser limpios y correctos, y de paso aprender un poco):
 
 ```diff
 export const ReactPortalComponent: React.FC<Props> = (props) => {
@@ -251,7 +253,7 @@ _./src/common/components/react-portal.component.tsx_
 import ReactDOM from "react-dom";
 ....
 export const ReactPortalComponent: React.FC<Props> = (props) => {
-+  const [wrapperElement, setWrapperElement] = React.useState(null);
++  const [wrapperElement, setWrapperElement] = React.useState<HTMLElement|null>(null);
   const { children, wrapperId } = props;
 
 + React.useLayoutEffect(() => {
@@ -310,40 +312,61 @@ Vamos a definir algo de estilado:
 _./src/common/components/modal/modal.module.css_
 
 ```css
-.modal {
+.overlay {
   position: fixed;
-  inset: 0; /* inset sets all 4 values (top right bottom left) much like how we set padding, margin etc., */
-  background-color: rgba(0, 0, 0, 0.6);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  transition: all 0.3s ease-in-out;
-  overflow: hidden;
-  padding: 40px 20px 20px;
+  align-items: center;
+  z-index: 1000;
 }
 
-.modal-content {
-  width: 70%;
-  height: 70%;
-  background-color: #282c34;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
+.modal {
+  background: #fff;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease-in-out;
 }
 
-.close-btn {
-  padding: 1rem;
-  border-radius: 0.25rem;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.closeBtn {
+  background: none;
   border: none;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  -webkit-border-radius: 0.25rem;
-  -moz-border-radius: 0.25rem;
-  -ms-border-radius: 0.25rem;
-  -o-border-radius: 0.25rem;
+  font-size: 24px;
+  cursor: pointer;
+  color: #aaa;
+  transition: color 0.2s;
+}
+
+.closeBtn:hover {
+  color: #000;
+}
+
+.modalContent {
+  padding: 20px;
 }
 ```
 
@@ -365,14 +388,19 @@ export const Modal: React.FC<Props> = (props) => {
   if (!isOpen) return null;
 
   return (
-    <div className={classes.modal}>
-      <button className={classes.closeBtn} onClick={handleClose}>
-        Close
-      </button>
-      <div className={classes.modalContent}>{children}</div>
+    <div className={classes.overlay}>
+      <div className={classes.modal}>
+        <div className={classes.modalHeader}>
+          <button className={classes.closeBtn} onClick={handleClose}>
+            &times;
+          </button>
+        </div>
+        <div className={classes.modalContent}>{children}</div>
+      </div>
     </div>
   );
 };
+
 ```
 
 Vamos a crear un _barrel_:
@@ -448,27 +476,7 @@ npm start
 
 Y bien, vamos ahora a por el martillo fino.
 
-Lo primero, si le vamos a añadir un _z-index_ elevado para evitar que algún componente de terceros que pueda usar este atributo muestre su componente por encima:
-
-_./src/common/components/modal/modal.css_
-
-```diff
-.modal {
-  position: fixed;
-  inset: 0; /* inset sets all 4 values (top right bottom left) much like how we set padding, margin etc., */
-  background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease-in-out;
-  overflow: hidden;
-+  z-index: 999;
-  padding: 40px 20px 20px;
-}
-```
-
-Después, ¿Qué pasa si queremos cerrar el modal con el teclado? Es muy normal que un usuario quiera que esto se cierre pulsando ESC:
+¿Qué pasa si queremos cerrar el modal con el teclado? Es muy normal que un usuario quiera que esto se cierre pulsando ESC:
 
 En este caso vamos a buscar una solución en el propio componente modal, en cuanto se cargue el componente y se asigne el _handler_ de cierre coloco un _event listener_ para escuchar el evento del teclado, y lo desmonto en cuanto se desmonte el componente:
 

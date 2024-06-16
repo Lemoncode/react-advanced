@@ -1,11 +1,11 @@
-import "./App.css";
+import './App.css'
 
 function App() {
   return (
-    <>
-      <h1>React App Boilerplate</h1>
-    </>
-  );
+    <div>
+      <h1>React Boiler plate</h1>
+    </div>
+  )
 }
 
-export default App;
+export default App

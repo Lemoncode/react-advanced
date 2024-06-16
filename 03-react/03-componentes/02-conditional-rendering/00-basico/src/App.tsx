@@ -1,5 +1,5 @@
+import { ClientComponent } from "./components/client/client.component";
 import "./App.css";
-import { ClientComponent } from "./components/client";
 
 function App() {
   return <ClientComponent />;

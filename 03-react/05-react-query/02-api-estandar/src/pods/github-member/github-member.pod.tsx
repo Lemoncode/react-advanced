@@ -1,6 +1,6 @@
 import React from "react";
-import { getGithubMemberDetail } from "./github-member.repository";
 import { createDefaultMemberDetail } from "./github-member.vm";
+import { getGithubMemberDetail } from "./github-member.repository";
 import { GithubMemberComponent } from "./github-member.component";
 
 interface Props {

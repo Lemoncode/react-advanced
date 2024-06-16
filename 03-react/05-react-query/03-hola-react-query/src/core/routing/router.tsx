@@ -1,12 +1,11 @@
 import React from "react";
 import { HashRouter, Route, Routes } from "react-router-dom";
 import { ROUTES } from "./routes.const";
-
 import {
   DashboardScene,
-  GithubMemberCollectionScene,
   GithubMemberScene,
-} from "@/scenes/";
+  GithubMemberCollectionScene,
+} from "@/scenes";
 
 export const Router: React.FC = () => {
   return (

@@ -3,7 +3,7 @@ import { TaskVm } from "../../task-collection.vm";
 
 interface Props {
   item: TaskVm;
-  onEdit: (item: number) => void;
+  onEdit: (id: number) => void;
 }
 
 export const TaskDisplayRowComponent: React.FC<Props> = (props: Props) => {

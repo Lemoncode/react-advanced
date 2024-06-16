@@ -6,6 +6,12 @@ enum Status {
   Error = "Error",
 }
 
+const NOTIFICATION_STATES = (message: string) => ({
+  [Status.Info]: <InfoNotificationComponent message={message} />,
+  [Status.Warning]: <WarningNotificationComponent message={message} />,
+  [Status.Error]: <ErrorNotificationComponent message={message} />,
+});
+
 interface InfoProps {
   message: string;
 }
@@ -29,12 +35,6 @@ interface ErrorProps {
 const ErrorNotificationComponent: React.FC<ErrorProps> = ({ message }) => (
   <h5 style={{ color: "Crimson" }}>{message}</h5>
 );
-
-const NOTIFICATION_STATES = (message: string) => ({
-  [Status.Info]: <InfoNotificationComponent message={message} />,
-  [Status.Warning]: <WarningNotificationComponent message={message} />,
-  [Status.Error]: <ErrorNotificationComponent message={message} />,
-});
 
 export const PlayGround: React.FC = () => {
   const [status, setStatus] = React.useState<Status>(Status.Info);
