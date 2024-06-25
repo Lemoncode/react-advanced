@@ -123,7 +123,15 @@ export const CharacterCollectionInnerPage = ({ charactersPromise }: Props) => {
 };
 ```
 
-¿Cómo va esto? - Llamamos a API que devuelve promesa en componente padre. - Envolvemos con suspense en componente hijo, de esta forma hasta que no se resuelvan los _use_ en los componentes hijos no los renderiza. - El componente hijo hace un _use_ de la promesa, cuando se resuelva ya ejecuta el código. - Mientras la promesa no se resuelva, suspense deja el componente hijo a la espera.
+¿Cómo va esto? 
+
+- Llamamos a API que devuelve promesa en componente padre. 
+
+- Envolvemos con suspense en componente hijo, de esta forma hasta que no se resuelvan los _use_ en los componentes hijos no los renderiza.
+
+ - El componente hijo hace un _use_ de la promesa, cuando se resuelva ya ejecuta el código. 
+ 
+ - Mientras la promesa no se resuelva, suspense deja el componente hijo a la espera.
 
 ¿Y si sale algo mal? Podemos usar un Error Boundary, para mantenerlo todo sencillo vamos a dejarlo todo en el mismo fichero:
 

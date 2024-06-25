@@ -103,7 +103,13 @@ Solucíon:
 
 Oye y mostrar cuanto tiempo lleva la canción, ¿cómo lo hacemos? Te toca de nuevo.
 
-Pistas: - El tiempo nos lo da el atributo `currentTime` del elemento audio que hemos usado antes. - Lo que nos hace falta es una forma de ir leyéndolo cada X tiempo y que se actulice. - ¿Qué podemos hacer? Pues un `setInterval` que cada X tiempo lea el `currentTime` y tenemos ya dos state, uno para el `currentTime` y otro con la duración de la misma (así podemos motrar una barra de progreso). - ¿Donde lo enganchamos? En un `useEffect` que se ejecute cuando el audio cambie de estado.
+Pistas:
+
+- El tiempo nos lo da el atributo `currentTime` del elemento audio que hemos usado antes.
+
+- Lo que nos hace falta es una forma de ir leyéndolo cada X tiempo y que se actualice.
+
+- ¿Qué podemos hacer? Pues un `setInterval` que cada X tiempo lea el `currentTime` y tenemos ya dos state, uno para el `currentTime` y otro con la duración de la misma (así podemos motrar una barra de progreso). - ¿Donde lo enganchamos? En un `useEffect` que se ejecute cuando el audio cambie de estado.
 
 Solución:
 
